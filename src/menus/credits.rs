@@ -11,7 +11,7 @@ pub(super) fn plugin(app: &mut App) {
         go_back.run_if(in_state(Menu::Credits).and(input_just_pressed(KeyCode::Escape))),
     );
 
-    app.load_resource::<CreditsAssets>();
+    // app.load_resource::<CreditsAssets>();
     app.add_systems(OnEnter(Menu::Credits), start_credits_music);
 }
 
@@ -85,18 +85,18 @@ fn go_back(mut next_menu: ResMut<NextState<Menu>>) {
     next_menu.set(Menu::Main);
 }
 
-#[derive(Resource, Asset, Clone, Reflect)]
+#[derive(Resource, Clone, Reflect)]
 #[reflect(Resource)]
 struct CreditsAssets {
-    #[dependency]
-    music: Handle<AudioSource>,
+    // #[dependency]
+    // music: Handle<AudioSource>,
 }
 
 impl FromWorld for CreditsAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            music: assets.load("audio/music/Monkeys Spinning Monkeys.ogg"),
+            // music: assets.load("audio/music/Monkeys Spinning Monkeys.ogg"),
         }
     }
 }
@@ -105,6 +105,6 @@ fn start_credits_music(mut commands: Commands, credits_music: Res<CreditsAssets>
     commands.spawn((
         Name::new("Credits Music"),
         DespawnOnExit(Menu::Credits),
-        music(credits_music.music.clone()),
+        // music(credits_music.music.clone()),
     ));
 }
