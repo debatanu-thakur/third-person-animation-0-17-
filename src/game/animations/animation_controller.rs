@@ -1,10 +1,10 @@
-use bevy::prelude::*;
+use bevy::{gltf::Gltf, prelude::*};
 use bevy_tnua::prelude::*;
 
 use crate::game::player::Player;
 
 use super::{
-    animation_assets::PlayerAnimations,
+    animation_assets::{PlayerAnimationGltfs, PlayerAnimations},
     models::{AnimationState, CharacterAnimationController},
 };
 
@@ -17,25 +17,81 @@ pub struct AnimationNodes {
     pub fall: AnimationNodeIndex,
 }
 
+/// Extracts animation clips from loaded GLTF files
+pub fn extract_animations_from_gltf(
+    mut commands: Commands,
+    gltf_handles: Res<PlayerAnimationGltfs>,
+    gltf_assets: Res<Assets<Gltf>>,
+    asset_server: Res<AssetServer>,
+) {
+    // Check if all GLTF files are loaded using asset_server
+    if !asset_server.is_loaded_with_dependencies(&gltf_handles.idle_gltf) {
+        return;
+    }
+    if !asset_server.is_loaded_with_dependencies(&gltf_handles.run_gltf) {
+        return;
+    }
+    if !asset_server.is_loaded_with_dependencies(&gltf_handles.jump_gltf) {
+        return;
+    }
+    if !asset_server.is_loaded_with_dependencies(&gltf_handles.falling_gltf) {
+        return;
+    }
+
+    // Try to extract GLTFs
+    let Some(idle_gltf) = gltf_assets.get(&gltf_handles.idle_gltf) else {
+        warn!("Failed to get idle GLTF asset");
+        return;
+    };
+    let Some(run_gltf) = gltf_assets.get(&gltf_handles.run_gltf) else {
+        warn!("Failed to get run GLTF asset");
+        return;
+    };
+    let Some(jump_gltf) = gltf_assets.get(&gltf_handles.jump_gltf) else {
+        warn!("Failed to get jump GLTF asset");
+        return;
+    };
+    let Some(falling_gltf) = gltf_assets.get(&gltf_handles.falling_gltf) else {
+        warn!("Failed to get falling GLTF asset");
+        return;
+    };
+
+    // Debug: Print what's in the GLTF
+    info!("Idle GLTF animations count: {}", idle_gltf.animations.len());
+
+    // Extract first animation from each GLTF using the animations Vec (like user suggested: gltf.animations[0])
+    let idle_clip = idle_gltf.animations.first().cloned();
+    let run_clip = run_gltf.animations.first().cloned();
+    let jump_clip = jump_gltf.animations.first().cloned();
+    let falling_clip = falling_gltf.animations.first().cloned();
+
+    // Verify we got all animations
+    let (Some(idle), Some(run), Some(jump), Some(falling)) =
+        (idle_clip, run_clip, jump_clip, falling_clip)
+    else {
+        warn!("Some animation clips couldn't be extracted from GLTF files");
+        warn!("Make sure Mixamo animations are properly exported with animation data");
+        return;
+    };
+
+    // Create the PlayerAnimations resource with extracted clips
+    let animations = PlayerAnimations {
+        idle,
+        run,
+        jump,
+        falling,
+    };
+
+    commands.insert_resource(animations);
+    info!("Successfully extracted animation clips from GLTF files!");
+}
+
 /// Creates the animation graph with all clips and transitions
 pub fn setup_animation_graph(
     mut commands: Commands,
     animations: Res<PlayerAnimations>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
-    animation_clips: Res<Assets<AnimationClip>>,
 ) {
-    // Check if animation clips are actually loaded
-    let clips_loaded = animation_clips.get(&animations.idle).is_some()
-        && animation_clips.get(&animations.run).is_some()
-        && animation_clips.get(&animations.jump).is_some()
-        && animation_clips.get(&animations.falling).is_some();
-
-    if !clips_loaded {
-        warn!("Animation clips not yet loaded or invalid. Skipping animation graph setup.");
-        warn!("Make sure you have downloaded actual Mixamo animations (not placeholder files).");
-        return;
-    }
-
     let mut graph = AnimationGraph::new();
 
     // Add all animation clips as nodes

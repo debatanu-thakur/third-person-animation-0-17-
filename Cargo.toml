@@ -7,6 +7,7 @@ edition = "2024"
 [dependencies]
 avian3d = "0.4.1"
 bevy = { version = "0.17", default-features = false, features = [
+    "animation",
     "bevy_animation",
     "bevy_asset",
     "bevy_color",

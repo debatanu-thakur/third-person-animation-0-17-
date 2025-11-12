@@ -997,6 +997,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "47b3d762ebbfa5fc45ba59591b8d57283f73684c1c539fb4ed91203007099518"
 dependencies = [
  "base64 0.22.1",
+ "bevy_animation",
  "bevy_app 0.17.0",
  "bevy_asset 0.17.0",
  "bevy_camera",

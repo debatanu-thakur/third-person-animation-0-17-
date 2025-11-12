@@ -10,10 +10,10 @@ use bevy_tnua_avian3d::*;
 use crate::{asset_tracking::LoadResource, screens::Screen};
 
 use self::{
-    animation_assets::PlayerAnimations,
+    animation_assets::{PlayerAnimationGltfs, PlayerAnimations},
     animation_controller::{
-        apply_animation_state, attach_animation_controller, setup_animation_graph,
-        update_animation_state,
+        apply_animation_state, attach_animation_controller, extract_animations_from_gltf,
+        setup_animation_graph, update_animation_state,
     },
     controls::apply_controls,
 };
@@ -25,19 +25,28 @@ pub(super) fn plugin(app: &mut App) {
         TnuaAvian3dPlugin::new(FixedUpdate),
     ));
 
-    // Load animation assets
-    app.load_resource::<PlayerAnimations>();
+    // Load GLTF files containing animations
+    app.load_resource::<PlayerAnimationGltfs>();
 
-    // Animation systems
+    // Animation systems - multi-stage loading:
+    // 1. Load GLTF files (PlayerAnimationGltfs)
+    // 2. Extract animation clips from GLTFs -> PlayerAnimations resource
+    // 3. Build animation graph from clips -> AnimationNodes resource
+    // 4. Apply animations to player
     app.add_systems(
         Update,
         (
-            // Try to setup animation graph when PlayerAnimations is added
-            // Will retry until AnimationNodes resource exists (clips loaded successfully)
+            // Stage 1: Extract animations from loaded GLTF files
+            extract_animations_from_gltf
+                .run_if(resource_added::<PlayerAnimationGltfs>)
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(not(resource_exists::<PlayerAnimations>)),
+            // Stage 2: Setup animation graph once clips are extracted
             setup_animation_graph
                 .run_if(resource_added::<PlayerAnimations>)
                 .run_if(in_state(Screen::Gameplay))
                 .run_if(not(resource_exists::<animation_controller::AnimationNodes>)),
+            // Stage 3: Attach and update animations
             attach_animation_controller
                 .run_if(in_state(Screen::Gameplay))
                 .run_if(resource_exists::<animation_controller::AnimationNodes>),
