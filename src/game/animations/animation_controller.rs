@@ -116,11 +116,15 @@ pub fn attach_animation_controllers(
     mut commands: Commands,
     player_query: Query<(Entity, &Children), (With<Player>, Without<CharacterAnimationController>)>,
     scene_query: Query<&Children>,
-    animation_player_query: Query<Entity, With<AnimationPlayer>>,
+    mut animation_player_query: Query<&mut AnimationPlayer>,
     graph_handle: Option<Res<AnimationGraphHandle>>,
+    animation_nodes: Option<Res<AnimationNodes>>,
 ) {
     // Wait until animation graph is ready
     let Some(graph_handle) = graph_handle else {
+        return;
+    };
+    let Some(animation_nodes) = animation_nodes else {
         return;
     };
 
@@ -143,6 +147,13 @@ pub fn attach_animation_controllers(
         }
 
         if let Some(anim_entity) = animation_player_entity {
+            // Start the idle animation
+            // Note: In Bevy 0.17, AnimationGraph is shared via the handle in AnimationPlayer
+            info!("Starting idle animation");
+            if let Ok(mut anim_player) = animation_player_query.get_mut(anim_entity) {
+                anim_player.start(animation_nodes.idle).repeat();
+            }
+
             commands.entity(player_entity).insert((
                 AnimationState::Idle,
                 CharacterAnimationController {
@@ -151,7 +162,9 @@ pub fn attach_animation_controllers(
                 },
             ));
 
-            info!("Animation controller attached to player");
+            info!("Animation controller attached to player with graph");
+        } else {
+            warn!("Could not find AnimationPlayer in character hierarchy");
         }
     }
 }
@@ -167,6 +180,7 @@ pub fn update_animation_state(
         let new_state = determine_animation_state(controller);
 
         if *anim_state != new_state {
+            info!("Animation state changing: {:?} -> {:?}", *anim_state, new_state);
             *anim_state = new_state;
         }
     }
@@ -218,8 +232,13 @@ pub fn apply_animation_state(
                 AnimationState::Falling => nodes.fall,
             };
 
+            info!("Applying animation state: {:?}", anim_state);
+
             // Start the animation and repeat it (Bevy 0.17 API)
+            // The AnimationGraph is shared via the handle stored in CharacterAnimationController
             player.start(node_index).repeat();
+        } else {
+            warn!("Could not get AnimationPlayer for entity {:?}", controller.animation_player);
         }
     }
 }

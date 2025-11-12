@@ -7,7 +7,8 @@ use avian3d::{PhysicsPlugins, prelude::PhysicsDebugPlugin};
 use bevy_hotpatching_experiments::prelude::*;
 
 mod asset_tracking;
-mod audio;
+// TODO: Re-enable audio when audio feature is restored
+// mod audio;
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod game;
@@ -51,7 +52,8 @@ impl Plugin for AppPlugin {
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
-            audio::plugin,
+            // TODO: Re-enable audio when audio feature is restored
+            // audio::plugin,
             #[cfg(feature = "dev")]
             dev_tools::plugin,
             menus::plugin,
