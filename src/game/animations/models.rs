@@ -15,15 +15,6 @@ impl Default for AnimationState {
     }
 }
 
-/// Stores the indices of animation nodes in the animation graph
-#[derive(Resource)]
-pub struct AnimationNodes {
-    pub idle: AnimationNodeIndex,
-    pub run: AnimationNodeIndex,
-    pub jump: AnimationNodeIndex,
-    pub fall: AnimationNodeIndex,
-}
-
 /// Component that stores the animation graph and player for a character
 #[derive(Component)]
 pub struct CharacterAnimationController {

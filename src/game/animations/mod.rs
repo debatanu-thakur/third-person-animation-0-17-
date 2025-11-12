@@ -32,12 +32,21 @@ pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
         (
+            // Try to setup animation graph when PlayerAnimations is added
+            // Will retry until AnimationNodes resource exists (clips loaded successfully)
             setup_animation_graph
                 .run_if(resource_added::<PlayerAnimations>)
-                .run_if(in_state(Screen::Gameplay)),
-            attach_animation_controller.run_if(in_state(Screen::Gameplay)),
-            update_animation_state.run_if(in_state(Screen::Gameplay)),
-            apply_animation_state.run_if(in_state(Screen::Gameplay)),
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(not(resource_exists::<animation_controller::AnimationNodes>)),
+            attach_animation_controller
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(resource_exists::<animation_controller::AnimationNodes>),
+            update_animation_state
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(resource_exists::<animation_controller::AnimationNodes>),
+            apply_animation_state
+                .run_if(in_state(Screen::Gameplay))
+                .run_if(resource_exists::<animation_controller::AnimationNodes>),
             apply_controls.run_if(in_state(Screen::Gameplay)),
         ),
     );

@@ -5,15 +5,37 @@ use crate::game::player::Player;
 
 use super::{
     animation_assets::PlayerAnimations,
-    models::{AnimationNodes, AnimationState, CharacterAnimationController},
+    models::{AnimationState, CharacterAnimationController},
 };
+
+/// Stores the indices of animation nodes in the animation graph
+#[derive(Resource)]
+pub struct AnimationNodes {
+    pub idle: AnimationNodeIndex,
+    pub run: AnimationNodeIndex,
+    pub jump: AnimationNodeIndex,
+    pub fall: AnimationNodeIndex,
+}
 
 /// Creates the animation graph with all clips and transitions
 pub fn setup_animation_graph(
     mut commands: Commands,
     animations: Res<PlayerAnimations>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
+    animation_clips: Res<Assets<AnimationClip>>,
 ) {
+    // Check if animation clips are actually loaded
+    let clips_loaded = animation_clips.get(&animations.idle).is_some()
+        && animation_clips.get(&animations.run).is_some()
+        && animation_clips.get(&animations.jump).is_some()
+        && animation_clips.get(&animations.falling).is_some();
+
+    if !clips_loaded {
+        warn!("Animation clips not yet loaded or invalid. Skipping animation graph setup.");
+        warn!("Make sure you have downloaded actual Mixamo animations (not placeholder files).");
+        return;
+    }
+
     let mut graph = AnimationGraph::new();
 
     // Add all animation clips as nodes
@@ -34,6 +56,8 @@ pub fn setup_animation_graph(
 
     // Store the graph handle as a resource for easy access
     commands.insert_resource(AnimationGraphHandle(graph_handle));
+
+    info!("Animation graph successfully created with Mixamo animations!");
 }
 
 /// Resource to store the animation graph handle
