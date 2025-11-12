@@ -1,7 +1,8 @@
 mod assets;
 mod movement;
 use crate::{
-    asset_tracking::LoadResource, game::third_person_camera::ThirdPersonCameraTarget,
+    asset_tracking::LoadResource,
+    game::{animations::models::AnimationState, third_person_camera::ThirdPersonCameraTarget},
     screens::Screen,
 };
 use avian3d::prelude::*;
