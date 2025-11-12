@@ -23,20 +23,11 @@ pub fn extract_animations_from_gltf(
     gltf_handles: Res<PlayerAnimationGltfs>,
     gltf_assets: Res<Assets<Gltf>>,
     asset_server: Res<AssetServer>,
+    player_animations: Option<Res<PlayerAnimations>>,
 ) {
-    // Check if all GLTF files are loaded using asset_server
-    if !asset_server.is_loaded_with_dependencies(&gltf_handles.idle_gltf) {
+    if let Some(_) = player_animations {
         return;
-    }
-    if !asset_server.is_loaded_with_dependencies(&gltf_handles.run_gltf) {
-        return;
-    }
-    if !asset_server.is_loaded_with_dependencies(&gltf_handles.jump_gltf) {
-        return;
-    }
-    if !asset_server.is_loaded_with_dependencies(&gltf_handles.falling_gltf) {
-        return;
-    }
+    };
 
     // Try to extract GLTFs
     let Some(idle_gltf) = gltf_assets.get(&gltf_handles.idle_gltf) else {
@@ -121,7 +112,7 @@ pub fn setup_animation_graph(
 pub struct AnimationGraphHandle(pub Handle<AnimationGraph>);
 
 /// Attaches animation controller to newly spawned players
-pub fn attach_animation_controller(
+pub fn attach_animation_controllers(
     mut commands: Commands,
     player_query: Query<(Entity, &Children), (With<Player>, Without<CharacterAnimationController>)>,
     scene_query: Query<&Children>,
