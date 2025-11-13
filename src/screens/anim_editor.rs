@@ -950,15 +950,15 @@ fn setup_preview_scene(mut commands: Commands) {
         Transform::from_xyz(4.0, 8.0, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
     ));
 
-    // Spawn preview camera
+    // Spawn preview camera with unique order to avoid conflicts
     commands.spawn((
         AnimEditorUi, // Mark for cleanup
         PreviewCamera,
         Camera3d::default(),
         Transform::from_xyz(0.0, 1.5, 4.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
         Camera {
-            // Render to the main surface, behind UI
-            order: 0, // Default order, renders before UI overlay
+            // Use unique order to avoid ambiguity with other cameras
+            order: -10, // Renders first, before UI and other cameras
             clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.12)),
             ..default()
         },
