@@ -5,6 +5,7 @@ use std::{fs, path::PathBuf};
 use bevy::{
     ecs::{spawn::SpawnWith, system::IntoObserverSystem},
     gltf::Gltf,
+    input::mouse::MouseWheel,
     prelude::*,
     ui::RelativeCursorPosition,
 };
@@ -64,6 +65,7 @@ pub(super) fn plugin(app: &mut App) {
             update_slider_visuals,
             update_slider_labels,
             update_filename_label,
+            orbit_camera_controls, // Orbit camera controls
         )
             .run_if(in_state(Screen::AnimEditor)),
     );
@@ -919,15 +921,77 @@ fn setup_preview_scene(mut commands: Commands) {
         AnimEditorUi, // Mark for cleanup
         PreviewCamera,
         Camera3d::default(),
-        Transform::from_xyz(0.0, 1.5, 3.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
+        Transform::from_xyz(0.0, 1.5, 4.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
         Camera {
-            // Render to the main surface
-            order: -1, // Render before UI
+            // Render to the main surface, behind UI
+            order: 0, // Default order, renders before UI overlay
+            clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.12)),
             ..default()
         },
     ));
 
     info!("Preview scene setup complete");
+}
+
+/// System to handle orbit camera controls
+fn orbit_camera_controls(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut mouse_wheel: EventReader<MouseWheel>,
+    mut camera_query: Query<&mut Transform, With<PreviewCamera>>,
+    time: Res<Time>,
+) {
+    if let Ok(mut transform) = camera_query.single_mut() {
+        let mut rotation_delta = Vec2::ZERO;
+        let mut zoom_delta = 0.0;
+
+        // Keyboard rotation (arrow keys)
+        if keyboard.pressed(KeyCode::ArrowLeft) {
+            rotation_delta.x += 100.0 * time.delta_secs();
+        }
+        if keyboard.pressed(KeyCode::ArrowRight) {
+            rotation_delta.x -= 100.0 * time.delta_secs();
+        }
+        if keyboard.pressed(KeyCode::ArrowUp) {
+            rotation_delta.y += 100.0 * time.delta_secs();
+        }
+        if keyboard.pressed(KeyCode::ArrowDown) {
+            rotation_delta.y -= 100.0 * time.delta_secs();
+        }
+
+        // Mouse wheel zoom
+        for event in mouse_wheel.read() {
+            zoom_delta += event.y * 0.5;
+        }
+
+        // Apply rotation
+        if rotation_delta != Vec2::ZERO {
+            let orbit_point = Vec3::new(0.0, 1.0, 0.0);
+
+            // Horizontal rotation (around Y axis)
+            let rotation_y = Quat::from_rotation_y(rotation_delta.x.to_radians());
+            let offset = transform.translation - orbit_point;
+            transform.translation = orbit_point + rotation_y.mul_vec3(offset);
+
+            // Look at the target
+            transform.look_at(orbit_point, Vec3::Y);
+        }
+
+        // Apply zoom
+        if zoom_delta != 0.0 {
+            let direction = (transform.translation - Vec3::new(0.0, 1.0, 0.0)).normalize();
+            transform.translation -= direction * zoom_delta;
+
+            // Clamp distance
+            let min_dist = 1.0;
+            let max_dist = 10.0;
+            let current_dist = (transform.translation - Vec3::new(0.0, 1.0, 0.0)).length();
+            if current_dist < min_dist {
+                transform.translation = Vec3::new(0.0, 1.0, 0.0) + direction * min_dist;
+            } else if current_dist > max_dist {
+                transform.translation = Vec3::new(0.0, 1.0, 0.0) + direction * max_dist;
+            }
+        }
+    }
 }
 
 /// System to spawn the preview character when GLTF is loaded
@@ -965,7 +1029,9 @@ fn spawn_preview_character(
                     .id();
 
                 editor_state.preview_character_entity = Some(character_entity);
+                editor_state.is_playing = true; // Auto-play animations
                 info!("Preview character spawned: {:?}", character_entity);
+                info!("Auto-play enabled");
             }
         }
     }
