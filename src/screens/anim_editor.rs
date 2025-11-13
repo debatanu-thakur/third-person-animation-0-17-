@@ -558,6 +558,40 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 // Divider
                 parent.spawn(divider());
 
+                // Animations list section
+                parent.spawn((
+                    Node {
+                        width: percent(100),
+                        flex_direction: FlexDirection::Column,
+                        row_gap: px(GAP_TINY),
+                        ..default()
+                    },
+                )).with_children(|section| {
+                    section.spawn(small_header("Available Animations"));
+
+                    if editor_state.available_animations.is_empty() {
+                        section.spawn(widget::label("Load a GLTF file to see animations"));
+                    } else {
+                        // List all available animations
+                        for anim_name in &editor_state.available_animations {
+                            section.spawn((
+                                Text::new(format!("• {}", anim_name)),
+                                TextFont::from_font_size(FONT_SIZE_SMALL),
+                                TextColor(LABEL_TEXT),
+                            ));
+                        }
+
+                        section.spawn((
+                            Text::new(format!("Total: {} animations", editor_state.available_animations.len())),
+                            TextFont::from_font_size(FONT_SIZE_TINY),
+                            TextColor(LABEL_TEXT.with_alpha(0.7)),
+                        ));
+                    }
+                });
+
+                // Divider
+                parent.spawn(divider());
+
                 parent.spawn(small_button("⏯ Play/Pause", toggle_playback));
                 parent.spawn(small_button("💾 Save", save_configuration));
             });
