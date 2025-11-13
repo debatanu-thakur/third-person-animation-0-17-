@@ -11,6 +11,7 @@ pub struct AnimationNodes {
     pub idle: AnimationNodeIndex,
     pub walk: AnimationNodeIndex,
     pub run: AnimationNodeIndex,
+    pub walk_run_blend: AnimationNodeIndex,  // Blend node for smooth walk-run transitions
     pub jump: AnimationNodeIndex,
     pub fall: AnimationNodeIndex,
 }
@@ -48,6 +49,11 @@ pub fn setup_animation_graph(
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
     let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
+    // Create a blend node for smooth walk-run transitions
+    // The blend weight will be controlled dynamically based on speed
+    // Weight 0.0 = 100% walk, Weight 1.0 = 100% run
+    let walk_run_blend = graph.add_blend(0.0, [walk_node, run_node], root_node);
+
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
 
@@ -55,6 +61,7 @@ pub fn setup_animation_graph(
         idle: idle_node,
         walk: walk_node,
         run: run_node,
+        walk_run_blend,
         jump: jump_node,
         fall: fall_node,
     });
@@ -111,7 +118,7 @@ fn determine_animation_state(controller: &TnuaController) -> AnimationState {
         // anything else - consider it a bug.
         Some(other) => {
             warn!("Unknown action {other}");
-            AnimationState::Walk
+            AnimationState::Idle
         },
         // No action name means that no action is currently being performed - which means the
         // animation should be decided by the basis.
@@ -121,8 +128,8 @@ fn determine_animation_state(controller: &TnuaController) -> AnimationState {
             let Some((_, basis_state)) = controller.concrete_basis::<TnuaBuiltinWalk>() else {
                 // Since we only use the walk basis in this example, if we can't get get this
                 // basis' state it probably means the system ran before any basis was set, so we
-                // just stkip this frame.
-                return AnimationState::Walk;
+                // just skip this frame.
+                return AnimationState::Idle;
             };
             if basis_state.standing_on_entity().is_none() {
                 // The walk basis keeps track of what the character is standing on. If it doesn't
@@ -130,17 +137,16 @@ fn determine_animation_state(controller: &TnuaController) -> AnimationState {
                 // character has walked off a cliff and needs to fall.
                 AnimationState::Falling
             } else {
-                // Speed thresholds for animation transitions
+                // Speed threshold for idle
                 const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
-                const WALK_TO_RUN_THRESHOLD: f32 = 2.5; // Above this = running
 
                 let speed = basis_state.running_velocity.length();
                 if speed < IDLE_THRESHOLD {
                     AnimationState::Idle
-                } else if speed < WALK_TO_RUN_THRESHOLD {
-                    AnimationState::Walk
                 } else {
-                    AnimationState::Running(speed)
+                    // Any movement uses the Moving state with the actual speed
+                    // The blend between walk and run animations will be handled automatically
+                    AnimationState::Moving(speed)
                 }
             }
         }
@@ -162,10 +168,11 @@ fn apply_animation_state(
             // `Maintain` means that we did not switch to a different variant, so there is no need
             // to change animations.
 
-            // Specifically for the running animation, even when the state remains the speed can
-            // still change. When it does, we simply need to update the speed in the animation
-            // player.
-
+            // For the Moving state, even when the state variant remains the same, the speed can
+            // change. We need to update the blend weight to smoothly transition between walk and run.
+            if let AnimationState::Moving(speed) = state {
+                update_walk_run_blend(animation_player, animation_nodes, *speed);
+            }
         }
         TnuaAnimatingStateDirective::Alter {
             old_state: _,
@@ -179,8 +186,7 @@ fn apply_animation_state(
             // can try to phase from the old animation to the new one.
             animation_player.stop_all();
 
-            // Depending on the new state, we choose the animation to run and its parameters (here
-            // they are the speed and whether or not to repeat)
+            // Depending on the new state, we choose the animation to run and its parameters
             match state {
                 AnimationState::Idle => {
                     animation_player
@@ -188,21 +194,14 @@ fn apply_animation_state(
                         .set_speed(1.0)
                         .repeat();
                 }
-                AnimationState::Running(speed) => {
+                AnimationState::Moving(speed) => {
+                    // Start the walk-run blend node
                     animation_player
-                        .start(animation_nodes.run)
-                        // The running animation, in particular, has a speed that depends on how
-                        // fast the character is running. Note that if the speed changes while the
-                        // character is still running we won't get `Alter` again - so it's
-                        // important to also update the speed in `Maintain { State: Running }`.
-                        .set_speed(*speed)
-                        .repeat();
-                }
-                AnimationState::Walk => {
-                    animation_player
-                        .start(animation_nodes.walk)
+                        .start(animation_nodes.walk_run_blend)
                         .set_speed(1.0)
                         .repeat();
+                    // Set the initial blend weight based on speed
+                    update_walk_run_blend(animation_player, animation_nodes, *speed);
                 }
                 AnimationState::Jumping => {
                     info!("I am jumping");
@@ -213,4 +212,23 @@ fn apply_animation_state(
             }
         }
     }
+}
+
+/// Updates the walk-run blend weight based on current speed
+/// This provides smooth transitions between walking and running animations
+fn update_walk_run_blend(
+    animation_player: &mut AnimationPlayer,
+    animation_nodes: &AnimationNodes,
+    speed: f32,
+) {
+    // Speed thresholds that match MovementController
+    const WALK_SPEED: f32 = 2.0;
+    const RUN_SPEED: f32 = 5.0;
+
+    // Calculate blend factor: 0.0 = 100% walk, 1.0 = 100% run
+    // Clamp between walk and run speeds, then normalize to 0.0-1.0
+    let blend_factor = ((speed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED)).clamp(0.0, 1.0);
+
+    // Update the blend node weight
+    animation_player.set_blend_weight(animation_nodes.walk_run_blend, blend_factor);
 }
