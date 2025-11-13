@@ -11,7 +11,8 @@ use bevy::{
 };
 
 use crate::{
-    game::configs::assets::{AnimationBlendingConfig, SpeedThresholds},
+    game::configs::{AnimationAssignments, AnimationBlendingConfig},
+    game::configs::assets::SpeedThresholds,
     screens::Screen,
     theme::{palette::*, widget},
 };
@@ -821,6 +822,12 @@ fn create_new_config(_: On<Pointer<Click>>, mut editor_state: ResMut<EditorState
             walk_speed: editor_state.walk_speed,
             run_speed: editor_state.run_speed,
         },
+        animations: AnimationAssignments {
+            idle: editor_state.selected_idle_anim.clone(),
+            walk: editor_state.selected_walk_anim.clone(),
+            run: editor_state.selected_run_anim.clone(),
+            jump: editor_state.selected_jump_anim.clone(),
+        },
     };
 
     // Serialize to RON format
@@ -874,6 +881,12 @@ fn save_configuration(_: On<Pointer<Click>>, editor_state: Res<EditorState>) {
             idle_threshold: editor_state.idle_threshold,
             walk_speed: editor_state.walk_speed,
             run_speed: editor_state.run_speed,
+        },
+        animations: AnimationAssignments {
+            idle: editor_state.selected_idle_anim.clone(),
+            walk: editor_state.selected_walk_anim.clone(),
+            run: editor_state.selected_run_anim.clone(),
+            jump: editor_state.selected_jump_anim.clone(),
         },
     };
 
@@ -948,6 +961,12 @@ fn handle_file_selection(
                         editor_state.walk_speed = config.speed_thresholds.walk_speed;
                         editor_state.run_speed = config.speed_thresholds.run_speed;
 
+                        // Update animation assignments
+                        editor_state.selected_idle_anim = config.animations.idle.clone();
+                        editor_state.selected_walk_anim = config.animations.walk.clone();
+                        editor_state.selected_run_anim = config.animations.run.clone();
+                        editor_state.selected_jump_anim = config.animations.jump.clone();
+
                         // Update filename (remove .ron extension and path)
                         if let Some(filename) = event.path.file_stem().and_then(|s| s.to_str()) {
                             editor_state.config_filename = filename.to_string();
@@ -957,6 +976,11 @@ fn handle_file_selection(
                         info!("  idle_threshold: {}", editor_state.idle_threshold);
                         info!("  walk_speed: {}", editor_state.walk_speed);
                         info!("  run_speed: {}", editor_state.run_speed);
+                        info!("  animations: idle={:?}, walk={:?}, run={:?}, jump={:?}",
+                            editor_state.selected_idle_anim,
+                            editor_state.selected_walk_anim,
+                            editor_state.selected_run_anim,
+                            editor_state.selected_jump_anim);
                     }
                     Err(e) => {
                         error!("Failed to parse RON config: {}", e);

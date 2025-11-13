@@ -4,7 +4,7 @@ use bevy::prelude::*;
 
 use crate::asset_tracking::LoadResource;
 
-pub use assets::{AnimationBlendingConfig, AnimationBlendingConfigLoader};
+pub use assets::{AnimationAssignments, AnimationBlendingConfig, AnimationBlendingConfigLoader};
 
 pub(super) fn plugin(app: &mut App) {
     // Register the asset loader for RON config files

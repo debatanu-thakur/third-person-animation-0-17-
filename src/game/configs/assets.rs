@@ -9,6 +9,33 @@ use serde::{Deserialize, Serialize};
 pub struct AnimationBlendingConfig {
     /// Speed thresholds for animation transitions
     pub speed_thresholds: SpeedThresholds,
+    /// Animation assignments for different movement states
+    #[serde(default)]
+    pub animations: AnimationAssignments,
+}
+
+/// Animation assignments for different movement states
+#[derive(Reflect, Clone, Debug, Serialize, Deserialize)]
+pub struct AnimationAssignments {
+    /// Idle animation name
+    pub idle: Option<String>,
+    /// Walk animation name
+    pub walk: Option<String>,
+    /// Run animation name
+    pub run: Option<String>,
+    /// Jump animation name
+    pub jump: Option<String>,
+}
+
+impl Default for AnimationAssignments {
+    fn default() -> Self {
+        Self {
+            idle: None,
+            walk: None,
+            run: None,
+            jump: None,
+        }
+    }
 }
 
 /// Speed thresholds that control animation blending
@@ -35,6 +62,7 @@ impl Default for AnimationBlendingConfig {
                 walk_speed: 2.0,
                 run_speed: 8.0,
             },
+            animations: AnimationAssignments::default(),
         }
     }
 }
