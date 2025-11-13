@@ -9,6 +9,7 @@ use super::models::{AnimationState, CharacterAnimationController};
 #[derive(Resource)]
 pub struct AnimationNodes {
     pub idle: AnimationNodeIndex,
+    pub walk: AnimationNodeIndex,
     pub run: AnimationNodeIndex,
     pub jump: AnimationNodeIndex,
     pub fall: AnimationNodeIndex,
@@ -41,6 +42,7 @@ pub fn setup_animation_graph(
 
     // Add all animation clips as nodes
     let idle_node = graph.add_clip(animations.idle.clone(), 1.0, root_node);
+    let walk_node = graph.add_clip(animations.walking.clone(), 1.0, root_node);
     let run_node = graph.add_clip(animations.running.clone(), 1.0, root_node);
     let jump_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
@@ -51,6 +53,7 @@ pub fn setup_animation_graph(
 
     commands.insert_resource(AnimationNodes {
         idle: idle_node,
+        walk: walk_node,
         run: run_node,
         jump: jump_node,
         fall: fall_node,
@@ -127,11 +130,17 @@ fn determine_animation_state(controller: &TnuaController) -> AnimationState {
                 // character has walked off a cliff and needs to fall.
                 AnimationState::Falling
             } else {
+                // Speed thresholds for animation transitions
+                const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
+                const WALK_TO_RUN_THRESHOLD: f32 = 2.5; // Above this = running
+
                 let speed = basis_state.running_velocity.length();
-                if 0.01 < speed {
-                    AnimationState::Running(speed)
-                } else {
+                if speed < IDLE_THRESHOLD {
                     AnimationState::Idle
+                } else if speed < WALK_TO_RUN_THRESHOLD {
+                    AnimationState::Walk
+                } else {
+                    AnimationState::Running(speed)
                 }
             }
         }
@@ -190,7 +199,10 @@ fn apply_animation_state(
                         .repeat();
                 }
                 AnimationState::Walk => {
-                    info!("Not animated yet");
+                    animation_player
+                        .start(animation_nodes.walk)
+                        .set_speed(1.0)
+                        .repeat();
                 }
                 AnimationState::Jumping => {
                     info!("I am jumping");

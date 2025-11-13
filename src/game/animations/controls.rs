@@ -50,13 +50,20 @@ pub fn apply_controls(
         direction += cam_right;
     }
 
+    // Determine speed based on whether Shift is pressed (run) or not (walk)
+    let is_running = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
+    let current_speed = if is_running {
+        movement_controller.run_speed
+    } else {
+        movement_controller.walk_speed
+    };
 
     // Feed the basis every frame. Even if the player doesn't move - just use `desired_velocity:
     // Vec3::ZERO`. `TnuaController` starts without a basis, which will make the character collider
     // just fall.
     controller.basis(TnuaBuiltinWalk {
         // The `desired_velocity` determines how the character will move.
-        desired_velocity: direction.normalize_or_zero() * movement_controller.speed,
+        desired_velocity: direction.normalize_or_zero() * current_speed,
         // The `float_height` must be greater (even if by little) from the distance between the
         // character's center and the lowest point of its collider.
         float_height: FLOAT_HEIGHT,

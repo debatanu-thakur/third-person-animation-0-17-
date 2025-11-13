@@ -18,7 +18,8 @@ pub struct Player;
 // Movement state
 #[derive(Component)]
 pub struct MovementController {
-    pub speed: f32,
+    pub walk_speed: f32,
+    pub run_speed: f32,
     pub sprint_multiplier: f32,
     pub jump_velocity: f32,
     pub jump_height: f32,
@@ -29,7 +30,8 @@ pub struct MovementController {
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            speed: 8.0, // Increased from 5.0 for tighter controls
+            walk_speed: 2.0,  // Walking speed (default movement)
+            run_speed: 5.0,   // Running speed (when Shift is held)
             sprint_multiplier: 1.5,
             jump_velocity: 22.0, // Increased from 8.0 for more responsive jumping
             jump_height: 2.0, // Increased from 8.0 for more responsive jumping
