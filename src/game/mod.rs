@@ -1,7 +1,7 @@
 //! The game's menus and transitions between them.
 
 mod camera_controller;
-mod configs;
+pub mod configs;
 mod player;
 mod scene;
 pub mod third_person_camera;
