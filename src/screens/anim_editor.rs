@@ -2,7 +2,12 @@
 
 use std::{fs, path::PathBuf};
 
-use bevy::{gltf::Gltf, prelude::*, ui::RelativeCursorPosition};
+use bevy::{
+    ecs::{spawn::SpawnWith, system::IntoObserverSystem},
+    gltf::Gltf,
+    prelude::*,
+    ui::RelativeCursorPosition,
+};
 
 use crate::{
     game::configs::assets::{AnimationBlendingConfig, SpeedThresholds},
@@ -14,6 +19,7 @@ use crate::{
 const FONT_SIZE_HEADER: f32 = 12.0;  // Was 24.0
 const FONT_SIZE_NORMAL: f32 = 9.0;   // Was 18.0
 const FONT_SIZE_SMALL: f32 = 8.0;    // Was 16.0
+const FONT_SIZE_TINY: f32 = 6.0;     // For headers that need to be even smaller
 const FONT_SIZE_TITLE: f32 = 16.0;   // Was 32.0
 
 const PADDING_LARGE: f32 = 10.0;     // Was 20.0
@@ -27,9 +33,10 @@ const GAP_MEDIUM: f32 = 7.5;         // Was 15.0
 const GAP_SMALL: f32 = 5.0;          // Was 10.0
 const GAP_TINY: f32 = 4.0;           // Was 8.0
 
-const BUTTON_HEIGHT: f32 = 20.0;     // Was 40.0
+const BUTTON_HEIGHT: f32 = 15.0;     // Was 20.0, reduced further
+const BUTTON_FONT_SIZE: f32 = 7.0;   // For button text
 const SLIDER_HEIGHT: f32 = 10.0;     // Was 20.0
-const TOP_BAR_HEIGHT: f32 = 40.0;    // Was 80.0
+const TOP_BAR_HEIGHT: f32 = 30.0;    // Was 40.0, reduced further
 
 const PANEL_WIDTH_LEFT: f32 = 150.0; // Was 300.0
 const PANEL_WIDTH_RIGHT: f32 = 200.0; // Was 400.0
@@ -287,8 +294,8 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
             },
             BorderColor::all(BUTTON_TEXT),
         )).with_children(|bar| {
-            bar.spawn(widget::header("Animation Editor"));
-            bar.spawn(widget::button("Back to Menu", back_to_menu));
+            bar.spawn(widget::header("Animation Editor")); // Keep main title at normal size
+            bar.spawn(small_button("Back to Menu", back_to_menu));
         });
 
         // Three-panel layout
@@ -318,7 +325,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 BackgroundColor(PANEL_BACKGROUND),
                 BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
-                parent.spawn(widget::header("GLTF Models"));
+                parent.spawn(small_header("GLTF Models"));
 
                 if editor_state.gltf_files.is_empty() {
                     parent.spawn(widget::label("No .glb files found"));
@@ -361,7 +368,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     }
                 }
 
-                parent.spawn(widget::header("Configurations"));
+                parent.spawn(small_header("Configurations"));
 
                 if editor_state.config_files.is_empty() {
                     parent.spawn(widget::label("No .ron files found"));
@@ -404,7 +411,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     }
                 }
 
-                parent.spawn(widget::button("+ New Config", create_new_config));
+                parent.spawn(small_button("+ New Config", create_new_config));
             });
 
             // Center Panel - 3D Preview (inlined from spawn_center_panel)
@@ -430,7 +437,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     BackgroundColor(NODE_BACKGROUND.with_alpha(0.8)),
                     BorderRadius::all(px(BORDER_RADIUS_SMALL)),
                 )).with_children(|info| {
-                    info.spawn(widget::header("3D Preview"));
+                    info.spawn(small_header("3D Preview"));
                 });
 
                 // Bottom info
@@ -465,7 +472,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
                 // Header
-                parent.spawn(widget::header("Blend Controls"));
+                parent.spawn(small_header("Blend Controls"));
 
                 // Speed preview slider section
                 parent.spawn((
@@ -549,8 +556,8 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 // Divider
                 parent.spawn(divider());
 
-                parent.spawn(widget::button("⏯ Play/Pause", toggle_playback));
-                parent.spawn(widget::button("💾 Save Configuration", save_configuration));
+                parent.spawn(small_button("⏯ Play/Pause", toggle_playback));
+                parent.spawn(small_button("💾 Save", save_configuration));
             });
         });
     });
@@ -566,6 +573,56 @@ fn divider() -> impl Bundle {
             ..default()
         },
         BackgroundColor(BUTTON_TEXT.with_alpha(0.3)),
+    )
+}
+
+/// Small header variant for AnimEditor
+fn small_header(text: impl Into<String>) -> impl Bundle {
+    (
+        Name::new("Small Header"),
+        Text(text.into()),
+        TextFont::from_font_size(FONT_SIZE_TINY),
+        TextColor(HEADER_TEXT),
+    )
+}
+
+/// Small button variant for AnimEditor with custom sizing
+fn small_button<E, B, M, I>(text: impl Into<String>, action: I) -> impl Bundle
+where
+    E: EntityEvent,
+    B: Bundle,
+    I: IntoObserverSystem<E, B, M>,
+{
+    let text_str = text.into();
+    let action = IntoObserverSystem::into_system(action);
+    (
+        Name::new("Small Button Container"),
+        Node::default(),
+        Children::spawn(SpawnWith(|parent: &mut ChildSpawner| {
+            parent
+                .spawn((
+                    Name::new(format!("Small Button: {}", text_str.clone())),
+                    Button,
+                    BackgroundColor(BUTTON_BACKGROUND),
+                    Node {
+                        width: px(100.0),  // Smaller width
+                        height: px(BUTTON_HEIGHT),
+                        padding: UiRect::all(px(PADDING_TINY)),
+                        align_items: AlignItems::Center,
+                        justify_content: JustifyContent::Center,
+                        ..default()
+                    },
+                    BorderRadius::all(px(BORDER_RADIUS_SMALL)),
+                    children![(
+                        Name::new("Small Button Text"),
+                        Text(text_str),
+                        TextFont::from_font_size(BUTTON_FONT_SIZE),
+                        TextColor(BUTTON_TEXT),
+                        Pickable::IGNORE,
+                    )],
+                ))
+                .observe(action);
+        })),
     )
 }
 
