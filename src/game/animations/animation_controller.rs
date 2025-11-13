@@ -92,20 +92,10 @@ pub fn update_animation_state(
 pub fn determine_animation_state(controller: &TnuaController) -> AnimationState {
     let current_status_for_animating = match controller.action_name() {
         Some(TnuaBuiltinJump::NAME) => {
-            // In case of jump, we want to cast it so that we can get the concrete jump state.
-            let (_, jump_state) = controller
-                .concrete_action::<TnuaBuiltinJump>()
-                .expect("action name mismatch");
-            // Depending on the state of the jump, we need to decide if we want to play the jump
-            // animation or the fall animation.
-            match jump_state {
-                TnuaBuiltinJumpState::NoJump => AnimationState::Idle,
-                TnuaBuiltinJumpState::StartingJump { .. } => AnimationState::Jumping,
-                TnuaBuiltinJumpState::SlowDownTooFastSlopeJump { .. } => AnimationState::Jumping,
-                TnuaBuiltinJumpState::MaintainingJump { .. } => AnimationState::Jumping,
-                TnuaBuiltinJumpState::StoppedMaintainingJump => AnimationState::Jumping,
-                TnuaBuiltinJumpState::FallSection => AnimationState::Falling,
-            }
+            // Jump action is active - play the full jump animation sequence
+            // The standing_jump animation includes the full jump and landing, so we
+            // don't need to check the jump state or handle falling separately
+            AnimationState::Jumping
         }
         // Tnua should only have the `action_name` of the actions you feed to it. If it has
         // anything else - consider it a bug.
@@ -124,23 +114,17 @@ pub fn determine_animation_state(controller: &TnuaController) -> AnimationState 
                 // just skip this frame.
                 return AnimationState::Idle;
             };
-            if basis_state.standing_on_entity().is_none() {
-                // The walk basis keeps track of what the character is standing on. If it doesn't
-                // stand on anything, `standing_on_entity` will be empty - which means the
-                // character has walked off a cliff and needs to fall.
-                AnimationState::Falling
-            } else {
-                // Speed threshold for idle
-                const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
 
-                let speed = basis_state.running_velocity.length();
-                if speed < IDLE_THRESHOLD {
-                    AnimationState::Idle
-                } else {
-                    // Any movement uses the Moving state with the actual speed
-                    // The blend between walk and run animations will be handled automatically
-                    AnimationState::Moving(speed)
-                }
+            // Speed threshold for idle
+            const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
+
+            let speed = basis_state.running_velocity.length();
+            if speed < IDLE_THRESHOLD {
+                AnimationState::Idle
+            } else {
+                // Any movement uses the Moving state with the actual speed
+                // The blend between walk and run animations will be handled automatically
+                AnimationState::Moving(speed)
             }
         }
     };
@@ -202,10 +186,10 @@ fn apply_animation_state(
                     update_walk_run_blend(animation_player, animation_nodes, *speed);
                 }
                 AnimationState::Jumping => {
-                    info!("I am jumping");
-                }
-                AnimationState::Falling => {
-                    info!("I am falling");
+                    // Play full jump animation (includes landing sequence)
+                    animation_player
+                        .start(animation_nodes.jump)
+                        .set_speed(1.0);
                 }
             }
         }

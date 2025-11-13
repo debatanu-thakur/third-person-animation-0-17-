@@ -16,7 +16,6 @@ pub struct AnimationNodes {
     pub run: AnimationNodeIndex,
     pub movement_blend: AnimationNodeIndex,  // Blend node for walk-run
     pub jump: AnimationNodeIndex,
-    pub fall: AnimationNodeIndex,
 }
 
 /// Creates the animation graph with proper blending structure
@@ -65,9 +64,8 @@ pub fn setup_animation_graph(
     let walk_node = graph.add_clip(animations.walking.clone(), 1.0, movement_blend_node);
     let run_node = graph.add_clip(animations.running.clone(), 1.0, movement_blend_node);
 
-    // Jump and fall are also children of root (for now)
+    // Jump is a child of root (includes full jump and landing sequence)
     let jump_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
-    let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
@@ -78,7 +76,6 @@ pub fn setup_animation_graph(
         run: run_node,
         movement_blend: movement_blend_node,
         jump: jump_node,
-        fall: fall_node,
     });
 
     // Store the graph handle
@@ -190,24 +187,11 @@ fn apply_animation_blending(
             }
         }
         AnimationState::Jumping => {
-            // Play standing jump animation
+            // Play standing jump animation (includes full jump and landing sequence)
             ensure_animation_playing(animation_player, animation_nodes.jump);
 
             if let Some(jump_anim) = animation_player.animation_mut(animation_nodes.jump) {
                 jump_anim.set_weight(1.0);
-            }
-
-            // Stop other animations
-            stop_animation(animation_player, animation_nodes.idle);
-            stop_animation(animation_player, animation_nodes.walk);
-            stop_animation(animation_player, animation_nodes.run);
-        }
-        AnimationState::Falling => {
-            // Play falling animation
-            ensure_animation_playing(animation_player, animation_nodes.fall);
-
-            if let Some(fall_anim) = animation_player.animation_mut(animation_nodes.fall) {
-                fall_anim.set_weight(1.0);
             }
 
             // Stop other animations

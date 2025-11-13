@@ -5,8 +5,7 @@ use bevy::prelude::*;
 pub enum AnimationState {
     Idle,
     Moving(f32),  // Speed value - used for walk-run blending
-    Jumping,
-    Falling,
+    Jumping,      // Includes full jump and landing sequence
 }
 
 impl Default for AnimationState {
