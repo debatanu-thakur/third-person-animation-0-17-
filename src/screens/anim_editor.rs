@@ -2,16 +2,24 @@
 
 use std::path::PathBuf;
 
-use bevy::prelude::*;
+use bevy::{gltf::Gltf, prelude::*};
 
 use crate::{screens::Screen, theme::{palette::*, widget}};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<EditorState>();
+    app.add_event::<FileSelectedEvent>();
+
     app.add_systems(
         OnEnter(Screen::AnimEditor),
         (scan_asset_files, spawn_anim_editor).chain(),
     );
+
+    app.add_systems(
+        Update,
+        (handle_file_selection, load_gltf_animations).run_if(in_state(Screen::AnimEditor)),
+    );
+
     app.add_systems(OnExit(Screen::AnimEditor), cleanup_anim_editor);
 }
 
@@ -30,10 +38,21 @@ struct EditorState {
     gltf_files: Vec<PathBuf>,
     /// List of .ron config files found in assets/config
     config_files: Vec<PathBuf>,
-    /// Currently selected GLTF file
+    /// Currently selected GLTF file path
     selected_gltf: Option<PathBuf>,
-    /// Currently selected config file
+    /// Currently selected config file path
     selected_config: Option<PathBuf>,
+    /// Handle to the loaded GLTF asset
+    loaded_gltf_handle: Option<Handle<Gltf>>,
+    /// List of animation names extracted from the loaded GLTF
+    available_animations: Vec<String>,
+}
+
+/// Event fired when a file is selected
+#[derive(Event)]
+struct FileSelectedEvent {
+    path: PathBuf,
+    is_gltf: bool,
 }
 
 /// System to scan the assets folder for GLTF and config files
@@ -204,6 +223,8 @@ struct FileButton {
 /// Create a clickable file button
 fn file_button(filename: &str, path: PathBuf) -> impl Bundle {
     let file_path = path.clone();
+    let is_gltf = path.extension().and_then(|s| s.to_str()) == Some("glb");
+
     (
         FileButton { path },
         Name::new(format!("File: {}", filename)),
@@ -221,8 +242,12 @@ fn file_button(filename: &str, path: PathBuf) -> impl Bundle {
             TextFont::from_font_size(18.0),
             TextColor(BUTTON_TEXT),
         )],
-    ).observe(move |_trigger: Trigger<Pointer<Click>>| {
+    ).observe(move |_trigger: Trigger<Pointer<Click>>, mut events: EventWriter<FileSelectedEvent>| {
         info!("Selected file: {:?}", file_path);
+        events.send(FileSelectedEvent {
+            path: file_path.clone(),
+            is_gltf,
+        });
     })
 }
 
@@ -281,6 +306,60 @@ fn create_new_config(_: On<Pointer<Click>>) {
     // TODO: Implement new config creation
 }
 
+/// System to handle file selection events
+fn handle_file_selection(
+    mut events: EventReader<FileSelectedEvent>,
+    mut editor_state: ResMut<EditorState>,
+    asset_server: Res<AssetServer>,
+) {
+    for event in events.read() {
+        if event.is_gltf {
+            info!("Loading GLTF file: {:?}", event.path);
+
+            // Convert PathBuf to asset path (remove "assets/" prefix)
+            if let Some(asset_path) = event.path.to_str() {
+                let asset_path = asset_path.strip_prefix("assets/").unwrap_or(asset_path);
+
+                // Load the GLTF file
+                let handle: Handle<Gltf> = asset_server.load(asset_path);
+
+                editor_state.selected_gltf = Some(event.path.clone());
+                editor_state.loaded_gltf_handle = Some(handle);
+                editor_state.available_animations.clear();
+
+                info!("GLTF load started for: {}", asset_path);
+            }
+        } else {
+            info!("Loading config file: {:?}", event.path);
+            editor_state.selected_config = Some(event.path.clone());
+            // TODO: Load and parse the RON config file
+        }
+    }
+}
+
+/// System to extract animations from loaded GLTF
+fn load_gltf_animations(
+    mut editor_state: ResMut<EditorState>,
+    gltf_assets: Res<Assets<Gltf>>,
+) {
+    // Check if we have a GLTF handle and it's loaded
+    if let Some(handle) = &editor_state.loaded_gltf_handle {
+        if let Some(gltf) = gltf_assets.get(handle) {
+            // Only process if we haven't extracted animations yet
+            if editor_state.available_animations.is_empty() && !gltf.named_animations.is_empty() {
+                // Extract animation names
+                let anim_names: Vec<String> = gltf.named_animations.keys()
+                    .map(|s| s.to_string())
+                    .collect();
+
+                info!("Found {} animations: {:?}", anim_names.len(), anim_names);
+
+                editor_state.available_animations = anim_names;
+            }
+        }
+    }
+}
+
 fn cleanup_anim_editor(
     mut commands: Commands,
     query: Query<Entity, With<AnimEditorUi>>,
@@ -295,4 +374,6 @@ fn cleanup_anim_editor(
     editor_state.config_files.clear();
     editor_state.selected_gltf = None;
     editor_state.selected_config = None;
+    editor_state.loaded_gltf_handle = None;
+    editor_state.available_animations.clear();
 }
