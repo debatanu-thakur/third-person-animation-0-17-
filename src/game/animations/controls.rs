@@ -56,7 +56,7 @@ pub fn apply_controls(
     // just fall.
     controller.basis(TnuaBuiltinWalk {
         // The `desired_velocity` determines how the character will move.
-        desired_velocity: direction.normalize_or_zero() * 2.0,
+        desired_velocity: direction.normalize_or_zero() * movement_controller.speed,
         // The `float_height` must be greater (even if by little) from the distance between the
         // character's center and the lowest point of its collider.
         float_height: FLOAT_HEIGHT,
@@ -79,11 +79,4 @@ pub fn apply_controls(
         });
     }
 
-    // if direction.length_squared() > 0.0 {
-    //     // player_transform.rotate_y(angle);.slerp(direction, ROTATION_SPEED * time.delta_secs());
-    //     let target_rotation = Quat::from_rotation_arc(Vec3::NEG_Z, direction.normalize_or_zero());
-    //     player_transform.rotation = player_transform
-    //         .rotation
-    //         .slerp(target_rotation, ROTATION_SPEED * time.delta_secs());
-    // }
 }

@@ -39,6 +39,8 @@ pub struct PlayerAnimations {
     pub running: Handle<AnimationClip>,
     pub standing_jump: Handle<AnimationClip>,
     pub running_jump: Handle<AnimationClip>,
+    pub walking: Handle<AnimationClip>,
+
 }
 
 /// Extracts scene and animations from the loaded player GLTF
@@ -87,10 +89,10 @@ pub fn extract_player_assets(
     let running_jump = gltf.named_animations.get("running_jump")
         .or_else(|| gltf.named_animations.get("Running Jump"))
         .cloned();
-
+    let walking = gltf.named_animations.get("walking").cloned();
     // Verify we got all required animations
-    let (Some(idle), Some(running), Some(standing_jump), Some(running_jump)) =
-        (idle, running, standing_jump, running_jump)
+    let (Some(idle), Some(running), Some(standing_jump), Some(running_jump), Some(walking)) =
+        (idle, running, standing_jump, running_jump, walking)
     else {
         error!("Failed to extract all required animations from player GLTF!");
         error!("Expected animation names: idle, running, standing_jump, running_jump");
@@ -106,6 +108,7 @@ pub fn extract_player_assets(
             running,
             standing_jump,
             running_jump,
+            walking,
         },
     };
 

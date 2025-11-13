@@ -1,5 +1,4 @@
 mod assets;
-mod movement;
 use crate::{
     asset_tracking::LoadResource,
     game::{animations::models::AnimationState, third_person_camera::ThirdPersonCameraTarget},
@@ -9,8 +8,7 @@ use avian3d::prelude::*;
 use bevy::prelude::*;
 
 pub use assets::{PlayerAnimations, PlayerAssets, PlayerGltfAsset};
-use bevy_hotpatching_experiments::hot;
-use bevy_tnua::prelude::*;
+use bevy_tnua::{TnuaAnimatingState, prelude::*};
 use bevy_tnua_avian3d::*;
 
 // Player marker component
@@ -31,7 +29,7 @@ pub struct MovementController {
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            speed: 1.0, // Increased from 5.0 for tighter controls
+            speed: 8.0, // Increased from 5.0 for tighter controls
             sprint_multiplier: 1.5,
             jump_velocity: 22.0, // Increased from 8.0 for more responsive jumping
             jump_height: 2.0, // Increased from 8.0 for more responsive jumping
@@ -61,13 +59,11 @@ fn spawn_player(
     mut commands: Commands,
     player_assets: Res<PlayerAssets>,
 ) {
-    let scale: f32 = 0.01;
     commands
         .spawn((
             Name::new("Player"),
             Player,
             MovementController::default(),
-            // animation::AnimationState::default(), // Start with Idle animation state
             ThirdPersonCameraTarget, // Tells camera to follow this entity
             DespawnOnExit(Screen::Gameplay), // Cleanup when leaving Gameplay screen
             Transform::from_translation(spawn_config.position),
@@ -78,13 +74,13 @@ fn spawn_player(
             TnuaController::default(),
             LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
             TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
+            TnuaAnimatingState::<AnimationState>::default(),
         ))
         .with_children(|parent| {
             parent.spawn((
                 SceneRoot(player_assets.character_scene.clone()),
                 Transform::from_translation(Vec3::new(0., -0.8, 0.))
                     .with_rotation(Quat::from_rotation_y(std::f32::consts::PI))
-                    .with_scale(Vec3::splat(scale)), // <-- Scale only visuals
             ));
         });
 }
@@ -98,8 +94,6 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         assets::extract_player_assets
             .run_if(resource_added::<PlayerGltfAsset>)
-            .run_if(in_state(Screen::Gameplay))
-            .run_if(not(resource_exists::<PlayerAssets>)),
     );
 
     // Set stronger gravity for faster falling (default is -9.81)

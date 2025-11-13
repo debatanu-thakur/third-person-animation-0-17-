@@ -4,9 +4,10 @@ use bevy::prelude::*;
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum AnimationState {
     Idle,
-    Running,
+    Running(f32),
     Jumping,
     Falling,
+    Walk,
 }
 
 impl Default for AnimationState {
