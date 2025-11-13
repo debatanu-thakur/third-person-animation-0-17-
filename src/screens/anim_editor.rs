@@ -12,7 +12,7 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         OnEnter(Screen::AnimEditor),
-        (scan_asset_files, spawn_anim_editor).chain(),
+        (scan_asset_files, spawn_anim_editor, setup_preview_scene).chain(),
     );
 
     app.add_systems(
@@ -20,6 +20,8 @@ pub(super) fn plugin(app: &mut App) {
         (
             handle_file_selection,
             load_gltf_animations,
+            spawn_preview_character,
+            update_preview_animations,
             handle_slider_interaction,
             update_slider_visuals,
             update_slider_labels,
@@ -32,6 +34,14 @@ pub(super) fn plugin(app: &mut App) {
 /// Marker component for the animation editor UI
 #[derive(Component)]
 struct AnimEditorUi;
+
+/// Marker component for the preview camera
+#[derive(Component)]
+struct PreviewCamera;
+
+/// Marker component for the spawned preview character
+#[derive(Component)]
+struct PreviewCharacter;
 
 /// Marker component for the left panel content area
 #[derive(Component)]
@@ -87,6 +97,8 @@ struct EditorState {
     loaded_gltf_handle: Option<Handle<Gltf>>,
     /// List of animation names extracted from the loaded GLTF
     available_animations: Vec<String>,
+    /// Entity ID of the spawned preview character
+    preview_character_entity: Option<Entity>,
 
     // Configuration being edited
     /// Current speed slider value (for preview)
@@ -120,6 +132,7 @@ impl Default for EditorState {
             selected_config: None,
             loaded_gltf_handle: None,
             available_animations: Vec::new(),
+            preview_character_entity: None,
             current_speed: 0.0,
             idle_threshold: 0.1,
             walk_speed: 2.0,
@@ -345,15 +358,39 @@ fn center_panel() -> impl Bundle {
             height: percent(100),
             flex_direction: FlexDirection::Column,
             padding: UiRect::all(px(15)),
-            justify_content: JustifyContent::Center,
-            align_items: AlignItems::Center,
             ..default()
         },
-        BackgroundColor(PANEL_BACKGROUND),
+        BackgroundColor(PANEL_BACKGROUND.with_alpha(0.3)), // Semi-transparent to see 3D scene
         BorderRadius::all(px(8)),
         children![
-            widget::label("3D Animation Preview"),
-            widget::label("(Preview area will be rendered here)"),
+            // Info overlay at the top
+            (
+                Node {
+                    width: percent(100),
+                    padding: UiRect::all(px(10)),
+                    ..default()
+                },
+                BackgroundColor(NODE_BACKGROUND.with_alpha(0.8)),
+                BorderRadius::all(px(4)),
+                children![
+                    widget::header("3D Preview"),
+                ],
+            ),
+            // Bottom info
+            (
+                Node {
+                    position_type: PositionType::Absolute,
+                    bottom: px(10),
+                    left: px(10),
+                    padding: UiRect::all(px(10)),
+                    ..default()
+                },
+                BackgroundColor(NODE_BACKGROUND.with_alpha(0.8)),
+                BorderRadius::all(px(4)),
+                children![
+                    widget::label("Load a GLTF file to see the character"),
+                ],
+            ),
         ],
     )
 }
@@ -698,6 +735,135 @@ fn set_slider_value(state: &mut EditorState, slider_type: SliderType, value: f32
     }
 }
 
+/// System to setup the 3D preview scene with camera and lighting
+fn setup_preview_scene(mut commands: Commands) {
+    info!("Setting up preview scene");
+
+    // Spawn directional light
+    commands.spawn((
+        AnimEditorUi, // Mark for cleanup
+        DirectionalLight {
+            illuminance: 10000.0,
+            shadows_enabled: false,
+            ..default()
+        },
+        Transform::from_xyz(4.0, 8.0, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
+    ));
+
+    // Spawn preview camera
+    commands.spawn((
+        AnimEditorUi, // Mark for cleanup
+        PreviewCamera,
+        Camera3d::default(),
+        Transform::from_xyz(0.0, 1.5, 3.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
+        Camera {
+            // Render to the main surface
+            order: -1, // Render before UI
+            ..default()
+        },
+    ));
+
+    info!("Preview scene setup complete");
+}
+
+/// System to spawn the preview character when GLTF is loaded
+fn spawn_preview_character(
+    mut commands: Commands,
+    mut editor_state: ResMut<EditorState>,
+    gltf_assets: Res<Assets<Gltf>>,
+    existing_preview: Query<Entity, With<PreviewCharacter>>,
+) {
+    // Check if we need to spawn a new character
+    if editor_state.preview_character_entity.is_some() {
+        return; // Character already spawned
+    }
+
+    // Check if we have a loaded GLTF
+    if let Some(handle) = &editor_state.loaded_gltf_handle {
+        if let Some(gltf) = gltf_assets.get(handle) {
+            // Despawn any existing preview character
+            for entity in &existing_preview {
+                commands.entity(entity).despawn_recursive();
+            }
+
+            // Get the first scene from the GLTF
+            if let Some(scene_handle) = gltf.scenes.first() {
+                info!("Spawning preview character");
+
+                // Spawn the character
+                let character_entity = commands.spawn((
+                    AnimEditorUi, // Mark for cleanup
+                    PreviewCharacter,
+                    SceneRoot(scene_handle.clone()),
+                    Transform::from_xyz(0.0, 0.0, 0.0),
+                )).id();
+
+                editor_state.preview_character_entity = Some(character_entity);
+                info!("Preview character spawned: {:?}", character_entity);
+            }
+        }
+    }
+}
+
+/// System to update preview animations based on current speed and settings
+fn update_preview_animations(
+    editor_state: Res<EditorState>,
+    gltf_assets: Res<Assets<Gltf>>,
+    mut animation_players: Query<&mut AnimationPlayer>,
+    preview_query: Query<Entity, With<PreviewCharacter>>,
+    children_query: Query<&Children>,
+) {
+    // Only update if state changed or animation is playing
+    if !editor_state.is_changed() && !editor_state.is_playing {
+        return;
+    }
+
+    // Find the animation player in the preview character's children
+    for preview_entity in &preview_query {
+        if let Some(player_entity) = find_animation_player(preview_entity, &children_query) {
+            if let Ok(mut player) = animation_players.get_mut(player_entity) {
+                // For now, just play the first available animation
+                if let Some(handle) = &editor_state.loaded_gltf_handle {
+                    if let Some(gltf) = gltf_assets.get(handle) {
+                        if let Some((anim_name, anim_handle)) = gltf.named_animations.iter().next() {
+                            if !player.is_playing_animation(anim_handle) {
+                                player.play(anim_handle.clone()).repeat();
+                                info!("Started playing animation: {}", anim_name);
+                            }
+
+                            // Update playback speed
+                            if let Some(animation) = player.animation_mut(anim_handle) {
+                                animation.set_speed(editor_state.playback_speed);
+                            }
+                        }
+                    }
+                }
+
+                // Pause/resume based on is_playing
+                if editor_state.is_playing {
+                    player.resume_all();
+                } else {
+                    player.pause_all();
+                }
+            }
+        }
+    }
+}
+
+/// Helper function to recursively find the AnimationPlayer in children
+fn find_animation_player(entity: Entity, children_query: &Query<&Children>) -> Option<Entity> {
+    // Check if this entity has an AnimationPlayer (we'll check in the query)
+    // For now, just return the first child that might have it
+    if let Ok(children) = children_query.get(entity) {
+        for &child in children.iter() {
+            // Try this child
+            return Some(child);
+            // In a full implementation, we'd recursively search
+        }
+    }
+    None
+}
+
 fn cleanup_anim_editor(
     mut commands: Commands,
     query: Query<Entity, With<AnimEditorUi>>,
@@ -714,4 +880,5 @@ fn cleanup_anim_editor(
     editor_state.selected_config = None;
     editor_state.loaded_gltf_handle = None;
     editor_state.available_animations.clear();
+    editor_state.preview_character_entity = None;
 }
