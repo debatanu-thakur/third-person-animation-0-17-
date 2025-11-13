@@ -17,7 +17,13 @@ pub(super) fn plugin(app: &mut App) {
 
     app.add_systems(
         Update,
-        (handle_file_selection, load_gltf_animations).run_if(in_state(Screen::AnimEditor)),
+        (
+            handle_file_selection,
+            load_gltf_animations,
+            handle_slider_interaction,
+            update_slider_visuals,
+            update_slider_labels,
+        ).run_if(in_state(Screen::AnimEditor)),
     );
 
     app.add_systems(OnExit(Screen::AnimEditor), cleanup_anim_editor);
@@ -32,7 +38,7 @@ struct AnimEditorUi;
 struct LeftPanelContent;
 
 /// Marker component for sliders
-#[derive(Component)]
+#[derive(Component, Clone, Copy, Debug, PartialEq)]
 enum SliderType {
     Speed,
     IdleThreshold,
@@ -40,6 +46,18 @@ enum SliderType {
     RunSpeed,
     PlaybackSpeed,
 }
+
+/// Component for slider configuration
+#[derive(Component)]
+struct Slider {
+    slider_type: SliderType,
+    min: f32,
+    max: f32,
+}
+
+/// Marker component for the slider handle (filled portion)
+#[derive(Component)]
+struct SliderHandle(SliderType);
 
 /// Marker component for slider value labels
 #[derive(Component)]
@@ -468,8 +486,15 @@ fn slider_control(label: &str, slider_type: SliderType, min: f32, max: f32) -> i
                     ),
                 ],
             ),
-            // Slider bar (simplified for now - will make interactive later)
+            // Slider bar - interactive
             (
+                Name::new(format!("Slider Bar: {}", label)),
+                Slider {
+                    slider_type,
+                    min,
+                    max,
+                },
+                Button, // Make it clickable
                 Node {
                     width: percent(100),
                     height: px(20),
@@ -479,9 +504,12 @@ fn slider_control(label: &str, slider_type: SliderType, min: f32, max: f32) -> i
                 BackgroundColor(NODE_BACKGROUND),
                 BorderRadius::all(px(10)),
                 children![
+                    // Slider handle (filled portion)
                     (
+                        Name::new("Slider Handle"),
+                        SliderHandle(slider_type),
                         Node {
-                            width: percent(50),
+                            width: percent(0), // Will be updated based on value
                             height: percent(100),
                             ..default()
                         },
@@ -586,6 +614,87 @@ fn load_gltf_animations(
                 editor_state.available_animations = anim_names;
             }
         }
+    }
+}
+
+/// System to handle slider interactions (click and drag)
+fn handle_slider_interaction(
+    mut editor_state: ResMut<EditorState>,
+    slider_query: Query<(&Slider, &Node, &GlobalTransform, &Interaction), Changed<Interaction>>,
+) {
+    for (slider, node, transform, interaction) in &slider_query {
+        if *interaction == Interaction::Pressed {
+            // TODO: For now, just increment the value on click
+            // In a full implementation, we'd calculate based on mouse position
+            let current_value = get_slider_value(&editor_state, slider.slider_type);
+            let range = slider.max - slider.min;
+            let new_value = (current_value + range * 0.1).min(slider.max);
+
+            set_slider_value(&mut editor_state, slider.slider_type, new_value);
+            info!("Slider {:?} updated to: {:.2}", slider.slider_type, new_value);
+        }
+    }
+}
+
+/// System to update slider visual representation based on current values
+fn update_slider_visuals(
+    editor_state: Res<EditorState>,
+    mut handle_query: Query<(&SliderHandle, &mut Node)>,
+    slider_query: Query<(&Slider, &Children)>,
+) {
+    if !editor_state.is_changed() {
+        return;
+    }
+
+    for (slider, children) in &slider_query {
+        let current_value = get_slider_value(&editor_state, slider.slider_type);
+        let normalized = ((current_value - slider.min) / (slider.max - slider.min)).clamp(0.0, 1.0);
+
+        // Find and update the handle within this slider
+        for &child in children.iter() {
+            if let Ok((handle, mut node)) = handle_query.get_mut(child) {
+                if handle.0 == slider.slider_type {
+                    node.width = Val::Percent(normalized * 100.0);
+                }
+            }
+        }
+    }
+}
+
+/// System to update slider value labels
+fn update_slider_labels(
+    editor_state: Res<EditorState>,
+    mut label_query: Query<(&SliderValueLabel, &mut Text)>,
+) {
+    if !editor_state.is_changed() {
+        return;
+    }
+
+    for (label, mut text) in &mut label_query {
+        let value = get_slider_value(&editor_state, label.0);
+        **text = format!("{:.2}", value);
+    }
+}
+
+/// Helper function to get slider value from EditorState
+fn get_slider_value(state: &EditorState, slider_type: SliderType) -> f32 {
+    match slider_type {
+        SliderType::Speed => state.current_speed,
+        SliderType::IdleThreshold => state.idle_threshold,
+        SliderType::WalkSpeed => state.walk_speed,
+        SliderType::RunSpeed => state.run_speed,
+        SliderType::PlaybackSpeed => state.playback_speed,
+    }
+}
+
+/// Helper function to set slider value in EditorState
+fn set_slider_value(state: &mut EditorState, slider_type: SliderType, value: f32) {
+    match slider_type {
+        SliderType::Speed => state.current_speed = value,
+        SliderType::IdleThreshold => state.idle_threshold = value,
+        SliderType::WalkSpeed => state.walk_speed = value,
+        SliderType::RunSpeed => state.run_speed = value,
+        SliderType::PlaybackSpeed => state.playback_speed = value,
     }
 }
 
