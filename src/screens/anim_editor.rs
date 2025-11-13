@@ -88,6 +88,13 @@ struct PreviewCamera;
 #[derive(Component)]
 struct PreviewCharacter;
 
+/// Resource to store the animation graph node index for preview
+#[derive(Resource)]
+struct PreviewAnimationNode {
+    node_index: AnimationNodeIndex,
+    graph_handle: Handle<AnimationGraph>,
+}
+
 /// Marker component for the left panel content area
 #[derive(Component)]
 struct LeftPanelContent;
@@ -1087,15 +1094,22 @@ fn spawn_preview_character(
     mut editor_state: ResMut<EditorState>,
     gltf_assets: Res<Assets<Gltf>>,
     existing_preview: Query<Entity, With<PreviewCharacter>>,
+    mut graphs: ResMut<Assets<AnimationGraph>>,
+    preview_anim_node: Option<Res<PreviewAnimationNode>>,
 ) {
     // Check if we need to spawn a new character
     if editor_state.preview_character_entity.is_some() {
         return; // Character already spawned
     }
 
-    // Check if we have a loaded GLTF
+    // Check if we have a loaded GLTF and animations are loaded
     if let Some(handle) = &editor_state.loaded_gltf_handle {
         if let Some(gltf) = gltf_assets.get(handle) {
+            // Only spawn if we have animations loaded
+            if editor_state.available_animations.is_empty() {
+                return;
+            }
+
             // Despawn any existing preview character
             for entity in &existing_preview {
                 commands.entity(entity).despawn();
@@ -1117,6 +1131,23 @@ fn spawn_preview_character(
 
                 editor_state.preview_character_entity = Some(character_entity);
                 editor_state.is_playing = true; // Auto-play animations
+
+                // Create animation graph for the first animation if not already created
+                if preview_anim_node.is_none() {
+                    if let Some((anim_name, anim_clip)) = gltf.named_animations.iter().next() {
+                        let mut graph = AnimationGraph::new();
+                        let node_index = graph.add_clip(anim_clip.clone(), 1.0, graph.root);
+                        let graph_handle = graphs.add(graph);
+
+                        commands.insert_resource(PreviewAnimationNode {
+                            node_index,
+                            graph_handle,
+                        });
+
+                        info!("Created animation graph for: {}", anim_name);
+                    }
+                }
+
                 info!("Preview character spawned: {:?}", character_entity);
                 info!("Auto-play enabled");
             }
@@ -1126,57 +1157,66 @@ fn spawn_preview_character(
 
 /// System to update preview animations based on current speed and settings
 fn update_preview_animations(
+    mut commands: Commands,
     editor_state: Res<EditorState>,
-    gltf_assets: Res<Assets<Gltf>>,
     mut animation_players: Query<&mut AnimationPlayer>,
     preview_query: Query<Entity, With<PreviewCharacter>>,
     children_query: Query<&Children>,
+    preview_anim_node: Option<Res<PreviewAnimationNode>>,
 ) {
-    // Only update if state changed or animation is playing
-    if !editor_state.is_changed() && !editor_state.is_playing {
+    // Need animation node to play
+    let Some(anim_node) = preview_anim_node else {
         return;
-    }
+    };
 
     // Find the animation player in the preview character's children
     for preview_entity in &preview_query {
-        if let Some(player_entity) = find_animation_player(preview_entity, &children_query) {
+        if let Some(player_entity) = find_animation_player(preview_entity, &children_query, &animation_players) {
             if let Ok(mut player) = animation_players.get_mut(player_entity) {
-                // For now, just play the first available animation
-                if let Some(handle) = &editor_state.loaded_gltf_handle {
-                    if let Some(gltf) = gltf_assets.get(handle) {
-                        if let Some((anim_name, _anim_handle)) =
-                            gltf.named_animations.iter().next()
-                        {
-                            // In Bevy 0.17, we need to get the animation node index from the graph
-                            // For now, just play by name if the API supports it
-                            // This is a simplified version - full implementation would use animation graph
-                            info!("Would play animation: {}", anim_name);
+                // Set the animation graph if not already set
+                // Check by trying to play - if graph not set, it won't work
+                commands.entity(player_entity).insert(AnimationGraphHandle(anim_node.graph_handle.clone()));
 
-                            // Pause/resume based on is_playing
-                            if editor_state.is_playing {
-                                player.resume_all();
-                            } else {
-                                player.pause_all();
-                            }
-                        }
-                    }
+                // Start playing animation with repeat if not already playing
+                if !player.is_playing_animation(anim_node.node_index) && editor_state.is_playing {
+                    player.play(anim_node.node_index).repeat();
+                    info!("Started playing animation with repeat");
                 }
+
+                // Pause/resume based on is_playing state
+                if editor_state.is_playing {
+                    player.resume_all();
+                } else {
+                    player.pause_all();
+                }
+
+                // Apply playback speed - set on next play
+                // Speed is handled per-animation when we call play()
             }
         }
     }
 }
 
 /// Helper function to recursively find the AnimationPlayer in children
-fn find_animation_player(entity: Entity, children_query: &Query<&Children>) -> Option<Entity> {
-    // Check if this entity has an AnimationPlayer (we'll check in the query)
-    // For now, just return the first child that might have it
+fn find_animation_player(
+    entity: Entity,
+    children_query: &Query<&Children>,
+    animation_players: &Query<&mut AnimationPlayer>,
+) -> Option<Entity> {
+    // Check if this entity has an AnimationPlayer
+    if animation_players.contains(entity) {
+        return Some(entity);
+    }
+
+    // Recursively search children
     if let Ok(children) = children_query.get(entity) {
         for child in children.iter() {
-            // Try this child
-            return Some(child);
-            // In a full implementation, we'd recursively search
+            if let Some(player_entity) = find_animation_player(child, children_query, animation_players) {
+                return Some(player_entity);
+            }
         }
     }
+
     None
 }
 
@@ -1210,6 +1250,9 @@ fn cleanup_anim_editor(
     for entity in &query {
         commands.entity(entity).despawn();
     }
+
+    // Remove preview animation node resource
+    commands.remove_resource::<PreviewAnimationNode>();
 
     // Clear editor state
     editor_state.gltf_files.clear();
