@@ -89,7 +89,7 @@ pub fn extract_player_assets(
     let running_jump = gltf.named_animations.get("running_jump")
         .or_else(|| gltf.named_animations.get("Running Jump"))
         .cloned();
-    let walking = gltf.named_animations.get("walking").cloned();
+    let walking = gltf.named_animations.get("walk").cloned();
     // Verify we got all required animations
     let (Some(idle), Some(running), Some(standing_jump), Some(running_jump), Some(walking)) =
         (idle, running, standing_jump, running_jump, walking)
