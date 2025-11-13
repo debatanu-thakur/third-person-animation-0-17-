@@ -50,6 +50,7 @@ const CAMERA_ZOOM_SPEED: f32 = 0.2;  // Mouse wheel zoom speed (lower = slower)
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<EditorState>();
+    app.init_resource::<AnimationAssignmentMode>();
     app.add_message::<FileSelectedEvent>();
 
     app.add_systems(
@@ -68,6 +69,7 @@ pub(super) fn plugin(app: &mut App) {
             update_slider_visuals,
             update_slider_labels,
             update_filename_label,
+            handle_animation_assignment,
             orbit_camera_controls, // Orbit camera controls
         )
             .run_if(in_state(Screen::AnimEditor)),
@@ -93,6 +95,12 @@ struct PreviewCharacter;
 struct PreviewAnimationNode {
     node_index: AnimationNodeIndex,
     graph_handle: Handle<AnimationGraph>,
+}
+
+/// Resource to track which animation type is being assigned
+#[derive(Resource, Default)]
+struct AnimationAssignmentMode {
+    current_mode: Option<AnimationType>,
 }
 
 /// Marker component for the left panel content area
@@ -126,12 +134,18 @@ struct SliderHandle(SliderType);
 struct SliderValueLabel(SliderType);
 
 /// Marker component for animation selection buttons
-#[derive(Component)]
+#[derive(Component, Clone, Debug)]
 enum AnimationType {
     Idle,
     Walk,
     Run,
     Jump,
+}
+
+/// Component to mark an animation item button with its name
+#[derive(Component)]
+struct AnimationButton {
+    anim_name: String,
 }
 
 /// Marker component for the filename input label
@@ -583,13 +597,27 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     if editor_state.available_animations.is_empty() {
                         section.spawn(widget::label("Load a GLTF file to see animations"));
                     } else {
-                        // List all available animations
+                        // List all available animations as clickable buttons
                         for anim_name in &editor_state.available_animations {
                             section.spawn((
-                                Text::new(format!("• {}", anim_name)),
-                                TextFont::from_font_size(FONT_SIZE_SMALL),
-                                TextColor(LABEL_TEXT),
-                            ));
+                                AnimationButton {
+                                    anim_name: anim_name.clone(),
+                                },
+                                Button,
+                                Node {
+                                    width: percent(100),
+                                    padding: UiRect::all(px(PADDING_TINY)),
+                                    ..default()
+                                },
+                                BackgroundColor(Color::NONE),
+                            )).with_children(|btn| {
+                                btn.spawn((
+                                    Text::new(format!("• {}", anim_name)),
+                                    TextFont::from_font_size(FONT_SIZE_SMALL),
+                                    TextColor(LABEL_TEXT),
+                                    Pickable::IGNORE,
+                                ));
+                            });
                         }
 
                         section.spawn((
@@ -602,6 +630,104 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
 
                 // Divider
                 parent.spawn(divider());
+
+                // Animation Assignment section
+                if !editor_state.available_animations.is_empty() {
+                    parent.spawn((
+                        Node {
+                            width: percent(100),
+                            flex_direction: FlexDirection::Column,
+                            row_gap: px(GAP_TINY),
+                            ..default()
+                        },
+                    )).with_children(|section| {
+                        section.spawn(small_header("Animation Assignment"));
+                        section.spawn(widget::label("Select type, then click animation"));
+
+                        // Idle animation
+                        section.spawn((
+                            AnimationType::Idle,
+                            Button,
+                            Node {
+                                width: percent(100),
+                                padding: UiRect::all(px(PADDING_SMALL)),
+                                ..default()
+                            },
+                            BackgroundColor(BUTTON_BACKGROUND),
+                            BorderRadius::all(px(BORDER_RADIUS_SMALL)),
+                        )).with_children(|btn| {
+                            btn.spawn((
+                                Text::new(format!("Idle: {}", editor_state.selected_idle_anim.as_ref().unwrap_or(&"None".to_string()))),
+                                TextFont::from_font_size(FONT_SIZE_SMALL),
+                                TextColor(BUTTON_TEXT),
+                                Pickable::IGNORE,
+                            ));
+                        });
+
+                        // Walk animation
+                        section.spawn((
+                            AnimationType::Walk,
+                            Button,
+                            Node {
+                                width: percent(100),
+                                padding: UiRect::all(px(PADDING_SMALL)),
+                                ..default()
+                            },
+                            BackgroundColor(BUTTON_BACKGROUND),
+                            BorderRadius::all(px(BORDER_RADIUS_SMALL)),
+                        )).with_children(|btn| {
+                            btn.spawn((
+                                Text::new(format!("Walk: {}", editor_state.selected_walk_anim.as_ref().unwrap_or(&"None".to_string()))),
+                                TextFont::from_font_size(FONT_SIZE_SMALL),
+                                TextColor(BUTTON_TEXT),
+                                Pickable::IGNORE,
+                            ));
+                        });
+
+                        // Run animation
+                        section.spawn((
+                            AnimationType::Run,
+                            Button,
+                            Node {
+                                width: percent(100),
+                                padding: UiRect::all(px(PADDING_SMALL)),
+                                ..default()
+                            },
+                            BackgroundColor(BUTTON_BACKGROUND),
+                            BorderRadius::all(px(BORDER_RADIUS_SMALL)),
+                        )).with_children(|btn| {
+                            btn.spawn((
+                                Text::new(format!("Run: {}", editor_state.selected_run_anim.as_ref().unwrap_or(&"None".to_string()))),
+                                TextFont::from_font_size(FONT_SIZE_SMALL),
+                                TextColor(BUTTON_TEXT),
+                                Pickable::IGNORE,
+                            ));
+                        });
+
+                        // Jump animation
+                        section.spawn((
+                            AnimationType::Jump,
+                            Button,
+                            Node {
+                                width: percent(100),
+                                padding: UiRect::all(px(PADDING_SMALL)),
+                                ..default()
+                            },
+                            BackgroundColor(BUTTON_BACKGROUND),
+                            BorderRadius::all(px(BORDER_RADIUS_SMALL)),
+                        )).with_children(|btn| {
+                            btn.spawn((
+                                Text::new(format!("Jump: {}", editor_state.selected_jump_anim.as_ref().unwrap_or(&"None".to_string()))),
+                                TextFont::from_font_size(FONT_SIZE_SMALL),
+                                TextColor(BUTTON_TEXT),
+                                Pickable::IGNORE,
+                            ));
+                        });
+                    });
+
+                    // Divider
+                    parent.spawn(divider());
+                }
 
                 parent.spawn(small_button("⏯ Play/Pause", toggle_playback));
                 parent.spawn(small_button("💾 Save", save_configuration));
@@ -1231,6 +1357,52 @@ fn update_filename_label(
 
     for mut text in &mut label_query {
         **text = format!("Filename: {}.ron", editor_state.config_filename);
+    }
+}
+
+/// System to handle animation assignment interactions
+fn handle_animation_assignment(
+    mut editor_state: ResMut<EditorState>,
+    mut assignment_mode: ResMut<AnimationAssignmentMode>,
+    type_query: Query<(&AnimationType, &Interaction), (Changed<Interaction>, With<Button>)>,
+    anim_query: Query<(&AnimationButton, &Interaction), (Changed<Interaction>, With<Button>)>,
+) {
+    // Handle AnimationType button clicks to set assignment mode
+    for (anim_type, interaction) in &type_query {
+        if *interaction == Interaction::Pressed {
+            assignment_mode.current_mode = Some(anim_type.clone());
+            info!("Assignment mode set to: {:?}", anim_type);
+        }
+    }
+
+    // Handle AnimationButton clicks to assign animation
+    for (anim_btn, interaction) in &anim_query {
+        if *interaction == Interaction::Pressed {
+            if let Some(ref mode) = assignment_mode.current_mode {
+                match mode {
+                    AnimationType::Idle => {
+                        editor_state.selected_idle_anim = Some(anim_btn.anim_name.clone());
+                        info!("Assigned Idle animation: {}", anim_btn.anim_name);
+                    }
+                    AnimationType::Walk => {
+                        editor_state.selected_walk_anim = Some(anim_btn.anim_name.clone());
+                        info!("Assigned Walk animation: {}", anim_btn.anim_name);
+                    }
+                    AnimationType::Run => {
+                        editor_state.selected_run_anim = Some(anim_btn.anim_name.clone());
+                        info!("Assigned Run animation: {}", anim_btn.anim_name);
+                    }
+                    AnimationType::Jump => {
+                        editor_state.selected_jump_anim = Some(anim_btn.anim_name.clone());
+                        info!("Assigned Jump animation: {}", anim_btn.anim_name);
+                    }
+                }
+                // Clear assignment mode after successful assignment
+                assignment_mode.current_mode = None;
+            } else {
+                info!("No assignment mode selected. Click a type button first.");
+            }
+        }
     }
 }
 
