@@ -27,19 +27,6 @@ impl AnimationBlendingConfig {
     pub const PATH: &'static str = "config/animation_blending.ron";
 }
 
-impl FromWorld for AnimationBlendingConfig {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-
-        // Load the config file
-        let handle: Handle<AnimationBlendingConfig> = asset_server.load(Self::PATH);
-
-        // Return default config immediately
-        // The actual config will be loaded asynchronously
-        Self::default()
-    }
-}
-
 impl Default for AnimationBlendingConfig {
     fn default() -> Self {
         Self {
