@@ -1,0 +1,14 @@
+(
+    speed_thresholds: (
+        // Below this speed, character is idle (not moving)
+        idle_threshold: 0.1,
+
+        // Speed at which walking animation is at full weight
+        // This is the walk_speed from MovementController
+        walk_speed: 2.0,
+
+        // Speed at which running animation is at full weight
+        // This is the run_speed from MovementController
+        run_speed: 8.0,
+    ),
+)

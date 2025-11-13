@@ -1,7 +1,10 @@
 use bevy::prelude::*;
 use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, prelude::*};
 
-use crate::game::player::{Player, PlayerAssets};
+use crate::game::{
+    configs::AnimationBlendingConfig,
+    player::{Player, PlayerAssets},
+};
 
 use super::{models::AnimationState, animation_controller::determine_animation_state};
 
@@ -92,6 +95,7 @@ pub fn update_animation_state(
     >,
     mut animation_player_query: Query<&mut AnimationPlayer>,
     animation_nodes: Option<Res<AnimationNodes>>,
+    blend_config: Res<AnimationBlendingConfig>,
 ) {
     let Ok(mut animation_player) = animation_player_query.single_mut() else {
         return;
@@ -111,11 +115,11 @@ pub fn update_animation_state(
         match animating_directive {
             TnuaAnimatingStateDirective::Maintain { state } => {
                 // State variant unchanged, just update blending
-                apply_animation_blending(&mut animation_player, &animation_nodes, *state);
+                apply_animation_blending(&mut animation_player, &animation_nodes, *state, &blend_config);
             }
             TnuaAnimatingStateDirective::Alter { old_state: _, state } => {
                 // State variant changed, transition to new animation
-                apply_animation_blending(&mut animation_player, &animation_nodes, *state);
+                apply_animation_blending(&mut animation_player, &animation_nodes, *state, &blend_config);
             }
         }
     }
@@ -126,6 +130,7 @@ fn apply_animation_blending(
     animation_player: &mut AnimationPlayer,
     animation_nodes: &AnimationNodes,
     state: AnimationState,
+    config: &AnimationBlendingConfig,
 ) {
     match state {
         AnimationState::Idle => {
@@ -150,17 +155,17 @@ fn apply_animation_blending(
             ensure_animation_playing(animation_player, animation_nodes.walk);
             ensure_animation_playing(animation_player, animation_nodes.run);
 
-            // Calculate blend weights
-            const IDLE_THRESHOLD: f32 = 0.1;
-            const WALK_SPEED: f32 = 2.0;
-            const RUN_SPEED: f32 = 8.0;
+            // Get thresholds from config
+            let idle_threshold = config.speed_thresholds.idle_threshold;
+            let walk_speed = config.speed_thresholds.walk_speed;
+            let run_speed = config.speed_thresholds.run_speed;
 
             // Movement blend weight: 0 at idle threshold, 1 at walk speed and above
-            let movement_blend_weight = ((speed - IDLE_THRESHOLD) / (WALK_SPEED - IDLE_THRESHOLD))
+            let movement_blend_weight = ((speed - idle_threshold) / (walk_speed - idle_threshold))
                 .clamp(0.0, 1.0);
 
             // Walk-run blend within movement: 0 = all walk, 1 = all run
-            let walk_run_factor = ((speed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED))
+            let walk_run_factor = ((speed - walk_speed) / (run_speed - walk_speed))
                 .clamp(0.0, 1.0);
 
             // Set blend node weight (controls idle vs movement)
@@ -185,12 +190,30 @@ fn apply_animation_blending(
             }
         }
         AnimationState::Jumping => {
-            // TODO: Implement jumping animation
-            info!("Jumping - not yet implemented");
+            // Play standing jump animation
+            ensure_animation_playing(animation_player, animation_nodes.jump);
+
+            if let Some(jump_anim) = animation_player.animation_mut(animation_nodes.jump) {
+                jump_anim.set_weight(1.0);
+            }
+
+            // Stop other animations
+            stop_animation(animation_player, animation_nodes.idle);
+            stop_animation(animation_player, animation_nodes.walk);
+            stop_animation(animation_player, animation_nodes.run);
         }
         AnimationState::Falling => {
-            // TODO: Implement falling animation
-            info!("Falling - not yet implemented");
+            // Play falling animation
+            ensure_animation_playing(animation_player, animation_nodes.fall);
+
+            if let Some(fall_anim) = animation_player.animation_mut(animation_nodes.fall) {
+                fall_anim.set_weight(1.0);
+            }
+
+            // Stop other animations
+            stop_animation(animation_player, animation_nodes.idle);
+            stop_animation(animation_player, animation_nodes.walk);
+            stop_animation(animation_player, animation_nodes.run);
         }
     }
 }
@@ -199,5 +222,12 @@ fn apply_animation_blending(
 fn ensure_animation_playing(animation_player: &mut AnimationPlayer, node_index: AnimationNodeIndex) {
     if !animation_player.is_playing_animation(node_index) {
         animation_player.play(node_index).repeat();
+    }
+}
+
+/// Stops an animation if it's currently playing
+fn stop_animation(animation_player: &mut AnimationPlayer, node_index: AnimationNodeIndex) {
+    if animation_player.is_playing_animation(node_index) {
+        animation_player.stop(node_index);
     }
 }
