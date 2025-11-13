@@ -79,7 +79,7 @@ pub fn apply_controls(
     if keyboard.pressed(KeyCode::Space) {
         controller.action(TnuaBuiltinJump {
             // The height is the only mandatory field of the jump button.
-            height: movement_controller.jump_height,
+            height: 0.0,
             input_buffer_time: 0.5,
             // `TnuaBuiltinJump` also has customization fields with sensible defaults.
             ..Default::default()
