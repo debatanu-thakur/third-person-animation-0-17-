@@ -8,7 +8,7 @@ use crate::{
 use avian3d::prelude::*;
 use bevy::prelude::*;
 
-pub use assets::{PlayerAnimationGltf, PlayerAssets};
+pub use assets::{PlayerAnimations, PlayerAssets, PlayerGltfAsset};
 use bevy_hotpatching_experiments::hot;
 use bevy_tnua::prelude::*;
 use bevy_tnua_avian3d::*;
@@ -81,7 +81,7 @@ fn spawn_player(
         ))
         .with_children(|parent| {
             parent.spawn((
-                SceneRoot(player_assets.character_model.clone()),
+                SceneRoot(player_assets.character_scene.clone()),
                 Transform::from_translation(Vec3::new(0., -0.8, 0.))
                     .with_rotation(Quat::from_rotation_y(std::f32::consts::PI))
                     .with_scale(Vec3::splat(scale)), // <-- Scale only visuals
@@ -90,10 +90,18 @@ fn spawn_player(
 }
 
 pub(super) fn plugin(app: &mut App) {
-    // Load player assets
-    app.load_resource::<PlayerAssets>();
-    // Add Avian3D physics plugin with custom gravity
-    // app.add_systems(Update, movement::player_movement);
+    // Load player GLTF (contains model + animations)
+    app.load_resource::<PlayerGltfAsset>();
+
+    // Extract assets from loaded GLTF
+    app.add_systems(
+        Update,
+        assets::extract_player_assets
+            .run_if(resource_added::<PlayerGltfAsset>)
+            .run_if(in_state(Screen::Gameplay))
+            .run_if(not(resource_exists::<PlayerAssets>)),
+    );
+
     // Set stronger gravity for faster falling (default is -9.81)
     app.insert_resource(Gravity(Vec3::new(0.0, -100.0, 0.0)));
 }

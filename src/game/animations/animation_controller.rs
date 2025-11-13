@@ -1,12 +1,9 @@
-use bevy::{gltf::Gltf, prelude::*};
+use bevy::prelude::*;
 use bevy_tnua::prelude::*;
 
-use crate::game::player::Player;
+use crate::game::player::{Player, PlayerAssets};
 
-use super::{
-    animation_assets::{PlayerAnimationGltfs, PlayerAnimations},
-    models::{AnimationState, CharacterAnimationController},
-};
+use super::models::{AnimationState, CharacterAnimationController};
 
 /// Stores the indices of animation nodes in the animation graph
 #[derive(Resource)]
@@ -17,79 +14,22 @@ pub struct AnimationNodes {
     pub fall: AnimationNodeIndex,
 }
 
-/// Extracts animation clips from loaded GLTF files
-pub fn extract_animations_from_gltf(
-    mut commands: Commands,
-    gltf_handles: Res<PlayerAnimationGltfs>,
-    gltf_assets: Res<Assets<Gltf>>,
-    asset_server: Res<AssetServer>,
-    player_animations: Option<Res<PlayerAnimations>>,
-) {
-    if let Some(_) = player_animations {
-        return;
-    };
-
-    // Try to extract GLTFs
-    let Some(idle_gltf) = gltf_assets.get(&gltf_handles.idle_gltf) else {
-        warn!("Failed to get idle GLTF asset");
-        return;
-    };
-    let Some(run_gltf) = gltf_assets.get(&gltf_handles.run_gltf) else {
-        warn!("Failed to get run GLTF asset");
-        return;
-    };
-    let Some(jump_gltf) = gltf_assets.get(&gltf_handles.jump_gltf) else {
-        warn!("Failed to get jump GLTF asset");
-        return;
-    };
-    let Some(falling_gltf) = gltf_assets.get(&gltf_handles.falling_gltf) else {
-        warn!("Failed to get falling GLTF asset");
-        return;
-    };
-
-    // Debug: Print what's in the GLTF
-    info!("Idle GLTF animations count: {}", idle_gltf.animations.len());
-
-    // Extract first animation from each GLTF using the animations Vec (like user suggested: gltf.animations[0])
-    let idle_clip = idle_gltf.animations.first().cloned();
-    let run_clip = run_gltf.animations.first().cloned();
-    let jump_clip = jump_gltf.animations.first().cloned();
-    let falling_clip = falling_gltf.animations.first().cloned();
-
-    // Verify we got all animations
-    let (Some(idle), Some(run), Some(jump), Some(falling)) =
-        (idle_clip, run_clip, jump_clip, falling_clip)
-    else {
-        warn!("Some animation clips couldn't be extracted from GLTF files");
-        warn!("Make sure Mixamo animations are properly exported with animation data");
-        return;
-    };
-
-    // Create the PlayerAnimations resource with extracted clips
-    let animations = PlayerAnimations {
-        idle,
-        run,
-        jump,
-        falling,
-    };
-
-    commands.insert_resource(animations);
-    info!("Successfully extracted animation clips from GLTF files!");
-}
-
 /// Creates the animation graph with all clips and transitions
 pub fn setup_animation_graph(
     mut commands: Commands,
-    animations: Res<PlayerAnimations>,
+    player_assets: Res<PlayerAssets>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
 ) {
     let mut graph = AnimationGraph::new();
 
+    let animations = &player_assets.animations;
+
     // Add all animation clips as nodes
     let idle_node = graph.add_clip(animations.idle.clone(), 1.0, graph.root);
-    let run_node = graph.add_clip(animations.run.clone(), 1.0, graph.root);
-    let jump_node = graph.add_clip(animations.jump.clone(), 1.0, graph.root);
-    let fall_node = graph.add_clip(animations.falling.clone(), 1.0, graph.root);
+    let run_node = graph.add_clip(animations.running.clone(), 1.0, graph.root);
+    let jump_node = graph.add_clip(animations.standing_jump.clone(), 1.0, graph.root);
+    // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
+    let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, graph.root);
 
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
@@ -104,7 +44,7 @@ pub fn setup_animation_graph(
     // Store the graph handle as a resource for easy access
     commands.insert_resource(AnimationGraphHandle(graph_handle));
 
-    info!("Animation graph successfully created with Mixamo animations!");
+    info!("Animation graph successfully created with unified GLTF animations!");
 }
 
 /// Resource to store the animation graph handle
