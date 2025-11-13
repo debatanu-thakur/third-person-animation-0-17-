@@ -416,7 +416,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 parent.spawn(small_button("+ New Config", create_new_config));
             });
 
-            // Center Panel - 3D Preview (inlined from spawn_center_panel)
+            // Center Panel - 3D Preview (completely transparent to show 3D scene)
             panels.spawn((
                 Name::new("Center Panel - 3D Preview"),
                 Node {
@@ -426,7 +426,8 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     padding: UiRect::all(px(PADDING_MEDIUM)),
                     ..default()
                 },
-                BackgroundColor(PANEL_BACKGROUND.with_alpha(0.3)), // Semi-transparent to see 3D scene
+                // NO BackgroundColor - let the 3D scene show through!
+                Pickable::IGNORE, // Don't block picking events
                 BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
                 // Info overlay at the top
