@@ -16,7 +16,7 @@ pub struct PlayerAnimationGltf {
 
 impl PlayerAssets {
     /// Path to the player character GLB file
-    pub const PATH_CHARACTER: &'static str = "models/characters/brian.glb#Scene0";
+    pub const PATH_CHARACTER: &'static str = "models/characters/brian_parkour.glb#Scene0";
 }
 
 impl FromWorld for PlayerAssets {

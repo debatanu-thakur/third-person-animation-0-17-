@@ -12,14 +12,14 @@ pub(super) fn plugin(app: &mut App) {
 
     // TODO: Re-enable when bevy_ui_debug feature is restored
     // Toggle the debug overlay for UI.
-    // app.add_systems(
-    //     Update,
-    //     toggle_debug_ui.run_if(input_just_pressed(TOGGLE_KEY)),
-    // );
+    app.add_systems(
+        Update,
+        toggle_debug_ui.run_if(input_just_pressed(TOGGLE_KEY)),
+    );
 }
 
-// const TOGGLE_KEY: KeyCode = KeyCode::Backquote;
+const TOGGLE_KEY: KeyCode = KeyCode::Backquote;
 
-// fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {
-//     options.toggle();
-// }
+fn toggle_debug_ui(mut options: ResMut<UiDebugOptions>) {
+    options.toggle();
+}
