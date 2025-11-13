@@ -89,7 +89,7 @@ pub fn update_animation_state(
 }
 
 /// Determines which animation state to use based on Tnua controller
-fn determine_animation_state(controller: &TnuaController) -> AnimationState {
+pub fn determine_animation_state(controller: &TnuaController) -> AnimationState {
     let current_status_for_animating = match controller.action_name() {
         Some(TnuaBuiltinJump::NAME) => {
             // In case of jump, we want to cast it so that we can get the concrete jump state.

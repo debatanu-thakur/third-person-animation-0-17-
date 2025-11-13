@@ -1,3 +1,4 @@
+mod blending;
 mod animation_controller;
 mod controls;
 pub mod models;
@@ -9,9 +10,12 @@ use bevy_tnua_avian3d::*;
 use crate::screens::Screen;
 
 use self::{
-    animation_controller::{
+    blending::{
         setup_animation_graph,
         update_animation_state,
+    },
+    animation_controller::{
+        determine_animation_state,
     },
     controls::apply_controls,
 };
