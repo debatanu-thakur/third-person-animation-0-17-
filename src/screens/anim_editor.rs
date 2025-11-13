@@ -45,6 +45,9 @@ const PANEL_WIDTH_RIGHT: f32 = 200.0; // Was 400.0
 const BORDER_RADIUS: f32 = 4.0;      // Was 8.0
 const BORDER_RADIUS_SMALL: f32 = 2.0; // Was 4.0
 
+// Camera control constants
+const CAMERA_ZOOM_SPEED: f32 = 0.2;  // Mouse wheel zoom speed (lower = slower)
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<EditorState>();
     app.add_message::<FileSelectedEvent>();
@@ -265,7 +268,7 @@ fn scan_asset_files(mut editor_state: ResMut<EditorState>) {
 fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
     info!("Entering Animation Editor");
 
-    // Full-screen container
+    // Full-screen container (transparent to show 3D scene)
     let root = commands.spawn((
         AnimEditorUi,
         Name::new("AnimEditor Root"),
@@ -276,7 +279,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
             flex_direction: FlexDirection::Column,
             ..default()
         },
-        BackgroundColor(NODE_BACKGROUND),
+        // NO BackgroundColor - let the 3D scene show through!
         GlobalZIndex(1),
     )).id();
 
@@ -1058,9 +1061,9 @@ fn orbit_camera_controls(
             rotation_delta.y -= 100.0 * time.delta_secs();
         }
 
-        // Mouse wheel zoom
+        // Mouse wheel zoom (using configurable speed)
         for event in mouse_wheel.read() {
-            zoom_delta += event.y * 0.5;
+            zoom_delta += event.y * CAMERA_ZOOM_SPEED;
         }
 
         // Apply rotation
