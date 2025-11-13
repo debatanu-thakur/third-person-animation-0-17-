@@ -11,7 +11,6 @@ pub struct AnimationNodes {
     pub idle: AnimationNodeIndex,
     pub walk: AnimationNodeIndex,
     pub run: AnimationNodeIndex,
-    pub walk_run_blend: AnimationNodeIndex,  // Blend node for smooth walk-run transitions
     pub jump: AnimationNodeIndex,
     pub fall: AnimationNodeIndex,
 }
@@ -49,11 +48,6 @@ pub fn setup_animation_graph(
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
     let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
-    // Create a blend node for smooth walk-run transitions
-    // The blend weight will be controlled dynamically based on speed
-    // Weight 0.0 = 100% walk, Weight 1.0 = 100% run
-    let walk_run_blend = graph.add_blend(0.0, [walk_node, run_node], root_node);
-
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
 
@@ -61,7 +55,6 @@ pub fn setup_animation_graph(
         idle: idle_node,
         walk: walk_node,
         run: run_node,
-        walk_run_blend,
         jump: jump_node,
         fall: fall_node,
     });
@@ -169,7 +162,7 @@ fn apply_animation_state(
             // to change animations.
 
             // For the Moving state, even when the state variant remains the same, the speed can
-            // change. We need to update the blend weight to smoothly transition between walk and run.
+            // change. We need to update the blend weights to smoothly transition between walk and run.
             if let AnimationState::Moving(speed) = state {
                 update_walk_run_blend(animation_player, animation_nodes, *speed);
             }
@@ -195,12 +188,17 @@ fn apply_animation_state(
                         .repeat();
                 }
                 AnimationState::Moving(speed) => {
-                    // Start the walk-run blend node
+                    // Start both walk and run animations simultaneously
+                    // They will be blended based on their weights
                     animation_player
-                        .start(animation_nodes.walk_run_blend)
+                        .start(animation_nodes.walk)
                         .set_speed(1.0)
                         .repeat();
-                    // Set the initial blend weight based on speed
+                    animation_player
+                        .start(animation_nodes.run)
+                        .set_speed(1.0)
+                        .repeat();
+                    // Set the initial blend weights based on speed
                     update_walk_run_blend(animation_player, animation_nodes, *speed);
                 }
                 AnimationState::Jumping => {
@@ -214,7 +212,7 @@ fn apply_animation_state(
     }
 }
 
-/// Updates the walk-run blend weight based on current speed
+/// Updates the walk-run blend weights based on current speed
 /// This provides smooth transitions between walking and running animations
 fn update_walk_run_blend(
     animation_player: &mut AnimationPlayer,
@@ -223,12 +221,18 @@ fn update_walk_run_blend(
 ) {
     // Speed thresholds that match MovementController
     const WALK_SPEED: f32 = 2.0;
-    const RUN_SPEED: f32 = 5.0;
+    const RUN_SPEED: f32 = 8.0;  // Updated to match the new run_speed
 
     // Calculate blend factor: 0.0 = 100% walk, 1.0 = 100% run
     // Clamp between walk and run speeds, then normalize to 0.0-1.0
     let blend_factor = ((speed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED)).clamp(0.0, 1.0);
 
-    // Update the blend node weight
-    animation_player.set_blend_weight(animation_nodes.walk_run_blend, blend_factor);
+    // Set weights for walk and run animations
+    // Walk weight decreases as speed increases, run weight increases
+    let walk_weight = 1.0 - blend_factor;
+    let run_weight = blend_factor;
+
+    // Apply the weights to the playing animations
+    animation_player.animation_mut(animation_nodes.walk).map(|anim| anim.set_weight(walk_weight));
+    animation_player.animation_mut(animation_nodes.run).map(|anim| anim.set_weight(run_weight));
 }
