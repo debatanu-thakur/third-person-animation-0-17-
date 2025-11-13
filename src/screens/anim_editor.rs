@@ -936,8 +936,30 @@ fn set_slider_value(state: &mut EditorState, slider_type: SliderType, value: f32
 }
 
 /// System to setup the 3D preview scene with camera and lighting
-fn setup_preview_scene(mut commands: Commands) {
+fn setup_preview_scene(
+    mut commands: Commands,
+    mut camera_query: Query<(Entity, &mut Camera, &mut Transform), (With<Camera3d>, Without<PreviewCamera>)>,
+) {
     info!("Setting up preview scene");
+
+    // Reuse existing camera and add PreviewCamera component
+    if let Ok((camera_entity, mut camera, mut transform)) = camera_query.single_mut() {
+        info!("Reusing existing camera for AnimEditor preview");
+
+        // Add PreviewCamera marker component
+        commands.entity(camera_entity).insert(PreviewCamera);
+
+        // Configure camera for AnimEditor
+        camera.order = -10; // Unique order to avoid ambiguity
+        camera.clear_color = ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.12));
+
+        // Position camera for preview
+        *transform = Transform::from_xyz(0.0, 1.5, 4.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y);
+
+        info!("Camera configured for AnimEditor");
+    } else {
+        warn!("No suitable camera found to reuse, or camera already has PreviewCamera component");
+    }
 
     // Spawn ambient light for overall illumination
     commands.spawn((
@@ -982,20 +1004,6 @@ fn setup_preview_scene(mut commands: Commands) {
             ..default()
         },
         Transform::from_xyz(0.0, 2.0, -3.0),
-    ));
-
-    // Spawn preview camera with unique order to avoid conflicts
-    commands.spawn((
-        AnimEditorUi, // Mark for cleanup
-        PreviewCamera,
-        Camera3d::default(),
-        Transform::from_xyz(0.0, 1.5, 4.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
-        Camera {
-            // Use unique order to avoid ambiguity with other cameras
-            order: -10, // Renders first, before UI and other cameras
-            clear_color: ClearColorConfig::Custom(Color::srgb(0.1, 0.1, 0.12)),
-            ..default()
-        },
     ));
 
     info!("Preview scene setup complete with 3-point lighting");
@@ -1187,8 +1195,16 @@ fn update_filename_label(
 fn cleanup_anim_editor(
     mut commands: Commands,
     query: Query<Entity, With<AnimEditorUi>>,
+    camera_query: Query<Entity, With<PreviewCamera>>,
     mut editor_state: ResMut<EditorState>,
 ) {
+    // Remove PreviewCamera component from the camera to restore it
+    for camera_entity in &camera_query {
+        commands.entity(camera_entity).remove::<PreviewCamera>();
+        info!("Removed PreviewCamera component from camera");
+    }
+
+    // Despawn all AnimEditor UI elements and lights
     for entity in &query {
         commands.entity(entity).despawn();
     }
