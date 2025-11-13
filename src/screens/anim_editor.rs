@@ -31,8 +31,31 @@ struct AnimEditorUi;
 #[derive(Component)]
 struct LeftPanelContent;
 
+/// Marker component for sliders
+#[derive(Component)]
+enum SliderType {
+    Speed,
+    IdleThreshold,
+    WalkSpeed,
+    RunSpeed,
+    PlaybackSpeed,
+}
+
+/// Marker component for slider value labels
+#[derive(Component)]
+struct SliderValueLabel(SliderType);
+
+/// Marker component for animation selection buttons
+#[derive(Component)]
+enum AnimationType {
+    Idle,
+    Walk,
+    Run,
+    Jump,
+}
+
 /// Resource holding the editor state
-#[derive(Resource, Default)]
+#[derive(Resource)]
 struct EditorState {
     /// List of .glb files found in assets/models
     gltf_files: Vec<PathBuf>,
@@ -46,6 +69,51 @@ struct EditorState {
     loaded_gltf_handle: Option<Handle<Gltf>>,
     /// List of animation names extracted from the loaded GLTF
     available_animations: Vec<String>,
+
+    // Configuration being edited
+    /// Current speed slider value (for preview)
+    current_speed: f32,
+    /// Idle threshold configuration
+    idle_threshold: f32,
+    /// Walk speed threshold
+    walk_speed: f32,
+    /// Run speed threshold
+    run_speed: f32,
+    /// Selected idle animation
+    selected_idle_anim: Option<String>,
+    /// Selected walk animation
+    selected_walk_anim: Option<String>,
+    /// Selected run animation
+    selected_run_anim: Option<String>,
+    /// Selected jump animation
+    selected_jump_anim: Option<String>,
+    /// Playback speed multiplier
+    playback_speed: f32,
+    /// Is animation playing
+    is_playing: bool,
+}
+
+impl Default for EditorState {
+    fn default() -> Self {
+        Self {
+            gltf_files: Vec::new(),
+            config_files: Vec::new(),
+            selected_gltf: None,
+            selected_config: None,
+            loaded_gltf_handle: None,
+            available_animations: Vec::new(),
+            current_speed: 0.0,
+            idle_threshold: 0.1,
+            walk_speed: 2.0,
+            run_speed: 8.0,
+            selected_idle_anim: None,
+            selected_walk_anim: None,
+            selected_run_anim: None,
+            selected_jump_anim: None,
+            playback_speed: 1.0,
+            is_playing: true,
+        }
+    }
 }
 
 /// Event fired when a file is selected
@@ -280,19 +348,165 @@ fn right_panel() -> impl Bundle {
             height: percent(100),
             flex_direction: FlexDirection::Column,
             padding: UiRect::all(px(15)),
-            row_gap: px(10),
+            row_gap: px(15),
+            overflow: Overflow::scroll_y(),
             ..default()
         },
         BackgroundColor(PANEL_BACKGROUND),
         BorderRadius::all(px(8)),
         children![
-            widget::label("Blend Controls"),
+            // Header
+            widget::header("Blend Controls"),
 
-            // Placeholder content
-            widget::label("• Speed Slider"),
-            widget::label("• Animation Selection"),
-            widget::label("• Threshold Controls"),
-            widget::label("• Playback Controls"),
+            // Speed preview slider
+            control_section("Preview Speed", vec![
+                slider_control("Speed", SliderType::Speed, 0.0, 10.0),
+                widget::label("Adjust to see animation blending at different speeds"),
+            ]),
+
+            // Divider
+            divider(),
+
+            // Animation selection
+            control_section("Animation Assignment", vec![
+                widget::label("Idle:"),
+                animation_selector_placeholder(AnimationType::Idle),
+                widget::label("Walk:"),
+                animation_selector_placeholder(AnimationType::Walk),
+                widget::label("Run:"),
+                animation_selector_placeholder(AnimationType::Run),
+                widget::label("Jump:"),
+                animation_selector_placeholder(AnimationType::Jump),
+            ]),
+
+            // Divider
+            divider(),
+
+            // Threshold controls
+            control_section("Speed Thresholds", vec![
+                slider_control("Idle Threshold", SliderType::IdleThreshold, 0.0, 1.0),
+                slider_control("Walk Speed", SliderType::WalkSpeed, 0.0, 5.0),
+                slider_control("Run Speed", SliderType::RunSpeed, 2.0, 15.0),
+            ]),
+
+            // Divider
+            divider(),
+
+            // Playback controls
+            control_section("Playback", vec![
+                widget::button("⏯ Play/Pause", toggle_playback),
+                slider_control("Speed Multiplier", SliderType::PlaybackSpeed, 0.1, 3.0),
+            ]),
+
+            // Divider
+            divider(),
+
+            // Save button
+            widget::button("💾 Save Configuration", save_configuration),
+        ],
+    )
+}
+
+/// Create a labeled control section
+fn control_section(title: &str, controls: Vec<impl Bundle>) -> impl Bundle {
+    (
+        Name::new(format!("Section: {}", title)),
+        Node {
+            width: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(8),
+            ..default()
+        },
+        children![
+            (
+                Text::new(title),
+                TextFont::from_font_size(20.0).with_font(default()),
+                TextColor(HEADER_TEXT),
+            ),
+        ].into_iter().chain(controls.into_iter()).collect::<Vec<_>>(),
+    )
+}
+
+/// Create a visual divider
+fn divider() -> impl Bundle {
+    (
+        Name::new("Divider"),
+        Node {
+            width: percent(100),
+            height: px(1),
+            ..default()
+        },
+        BackgroundColor(BUTTON_TEXT.with_alpha(0.3)),
+    )
+}
+
+/// Create a slider control with label
+fn slider_control(label: &str, slider_type: SliderType, min: f32, max: f32) -> impl Bundle {
+    (
+        Name::new(format!("Slider: {}", label)),
+        Node {
+            width: percent(100),
+            flex_direction: FlexDirection::Column,
+            row_gap: px(5),
+            ..default()
+        },
+        children![
+            // Label and value display
+            (
+                Node {
+                    width: percent(100),
+                    justify_content: JustifyContent::SpaceBetween,
+                    ..default()
+                },
+                children![
+                    widget::label(label),
+                    (
+                        Text::new("0.0"),
+                        TextFont::from_font_size(18.0),
+                        TextColor(BUTTON_TEXT),
+                        SliderValueLabel(slider_type),
+                    ),
+                ],
+            ),
+            // Slider bar (simplified for now - will make interactive later)
+            (
+                Node {
+                    width: percent(100),
+                    height: px(20),
+                    padding: UiRect::all(px(2)),
+                    ..default()
+                },
+                BackgroundColor(NODE_BACKGROUND),
+                BorderRadius::all(px(10)),
+                children![
+                    (
+                        Node {
+                            width: percent(50),
+                            height: percent(100),
+                            ..default()
+                        },
+                        BackgroundColor(BUTTON_BACKGROUND),
+                        BorderRadius::all(px(8)),
+                    ),
+                ],
+            ),
+        ],
+    )
+}
+
+/// Placeholder for animation selector (will be replaced with dropdown)
+fn animation_selector_placeholder(anim_type: AnimationType) -> impl Bundle {
+    (
+        Node {
+            width: percent(100),
+            padding: UiRect::all(px(8)),
+            margin: UiRect::bottom(px(5)),
+            ..default()
+        },
+        BackgroundColor(NODE_BACKGROUND),
+        BorderRadius::all(px(4)),
+        children![
+            widget::label("Click GLTF file to load animations"),
         ],
     )
 }
@@ -304,6 +518,21 @@ fn back_to_menu(_: On<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>
 fn create_new_config(_: On<Pointer<Click>>) {
     info!("Create new config button clicked");
     // TODO: Implement new config creation
+}
+
+fn toggle_playback(_: On<Pointer<Click>>, mut editor_state: ResMut<EditorState>) {
+    editor_state.is_playing = !editor_state.is_playing;
+    info!("Animation playback: {}", if editor_state.is_playing { "playing" } else { "paused" });
+}
+
+fn save_configuration(_: On<Pointer<Click>>, editor_state: Res<EditorState>) {
+    info!("Save configuration clicked");
+    info!("Current config: idle_threshold={}, walk_speed={}, run_speed={}",
+        editor_state.idle_threshold,
+        editor_state.walk_speed,
+        editor_state.run_speed
+    );
+    // TODO: Implement actual file saving
 }
 
 /// System to handle file selection events
