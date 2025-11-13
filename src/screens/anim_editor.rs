@@ -2,13 +2,40 @@
 
 use std::{fs, path::PathBuf};
 
-use bevy::{gltf::Gltf, prelude::*};
+use bevy::{gltf::Gltf, prelude::*, ui::RelativeCursorPosition};
 
 use crate::{
     game::configs::assets::{AnimationBlendingConfig, SpeedThresholds},
     screens::Screen,
     theme::{palette::*, widget},
 };
+
+// UI Size Constants - reduced to 50% of original sizes for better layout
+const FONT_SIZE_HEADER: f32 = 12.0;  // Was 24.0
+const FONT_SIZE_NORMAL: f32 = 9.0;   // Was 18.0
+const FONT_SIZE_SMALL: f32 = 8.0;    // Was 16.0
+const FONT_SIZE_TITLE: f32 = 16.0;   // Was 32.0
+
+const PADDING_LARGE: f32 = 10.0;     // Was 20.0
+const PADDING_MEDIUM: f32 = 7.5;     // Was 15.0
+const PADDING_SMALL: f32 = 5.0;      // Was 10.0
+const PADDING_TINY: f32 = 4.0;       // Was 8.0
+const PADDING_MINI: f32 = 2.0;       // Was 4.0
+
+const GAP_LARGE: f32 = 10.0;         // Was 20.0
+const GAP_MEDIUM: f32 = 7.5;         // Was 15.0
+const GAP_SMALL: f32 = 5.0;          // Was 10.0
+const GAP_TINY: f32 = 4.0;           // Was 8.0
+
+const BUTTON_HEIGHT: f32 = 20.0;     // Was 40.0
+const SLIDER_HEIGHT: f32 = 10.0;     // Was 20.0
+const TOP_BAR_HEIGHT: f32 = 40.0;    // Was 80.0
+
+const PANEL_WIDTH_LEFT: f32 = 150.0; // Was 300.0
+const PANEL_WIDTH_RIGHT: f32 = 200.0; // Was 400.0
+
+const BORDER_RADIUS: f32 = 4.0;      // Was 8.0
+const BORDER_RADIUS_SMALL: f32 = 2.0; // Was 4.0
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<EditorState>();
@@ -167,6 +194,30 @@ struct FileSelectedEvent {
     is_gltf: bool,
 }
 
+/// Helper function to recursively scan a directory for files with a specific extension
+fn scan_directory_recursive(dir: &str, extension: &str, files: &mut Vec<PathBuf>) {
+    use std::fs;
+
+    if let Ok(entries) = fs::read_dir(dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if let Ok(file_type) = entry.file_type() {
+                if file_type.is_dir() {
+                    // Recursively scan subdirectories
+                    if let Some(path_str) = path.to_str() {
+                        scan_directory_recursive(path_str, extension, files);
+                    }
+                } else if file_type.is_file() {
+                    // Check if file has the desired extension
+                    if path.extension().and_then(|s| s.to_str()) == Some(extension) {
+                        files.push(path);
+                    }
+                }
+            }
+        }
+    }
+}
+
 /// System to scan the assets folder for GLTF and config files
 fn scan_asset_files(mut editor_state: ResMut<EditorState>) {
     use std::fs;
@@ -174,19 +225,8 @@ fn scan_asset_files(mut editor_state: ResMut<EditorState>) {
     editor_state.gltf_files.clear();
     editor_state.config_files.clear();
 
-    // Scan for .glb files in assets/models
-    if let Ok(entries) = fs::read_dir("assets/models") {
-        for entry in entries.flatten() {
-            if let Ok(file_type) = entry.file_type() {
-                if file_type.is_file() {
-                    let path = entry.path();
-                    if path.extension().and_then(|s| s.to_str()) == Some("glb") {
-                        editor_state.gltf_files.push(path);
-                    }
-                }
-            }
-        }
-    }
+    // Scan for .glb files in assets/models (recursively)
+    scan_directory_recursive("assets/models", "glb", &mut editor_state.gltf_files);
 
     // Scan for .ron files in assets/config
     if let Ok(entries) = fs::read_dir("assets/config") {
@@ -238,8 +278,8 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
             Name::new("Top Bar"),
             Node {
                 width: percent(100),
-                height: px(80),
-                padding: UiRect::all(px(20)),
+                height: px(TOP_BAR_HEIGHT),
+                padding: UiRect::all(px(PADDING_LARGE)),
                 justify_content: JustifyContent::SpaceBetween,
                 align_items: AlignItems::Center,
                 border: UiRect::bottom(px(2)),
@@ -258,8 +298,8 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 width: percent(100),
                 flex_grow: 1.0,
                 flex_direction: FlexDirection::Row,
-                column_gap: px(10),
-                padding: UiRect::all(px(10)),
+                column_gap: px(GAP_SMALL),
+                padding: UiRect::all(px(PADDING_SMALL)),
                 ..default()
             },
         )).with_children(|panels| {
@@ -267,16 +307,16 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
             panels.spawn((
                 Name::new("Left Panel - File Browser"),
                 Node {
-                    width: px(300),
+                    width: px(PANEL_WIDTH_LEFT),
                     height: percent(100),
                     flex_direction: FlexDirection::Column,
-                    padding: UiRect::all(px(15)),
-                    row_gap: px(10),
+                    padding: UiRect::all(px(PADDING_MEDIUM)),
+                    row_gap: px(GAP_SMALL),
                     overflow: Overflow::scroll_y(),
                     ..default()
                 },
                 BackgroundColor(PANEL_BACKGROUND),
-                BorderRadius::all(px(8)),
+                BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
                 parent.spawn(widget::header("GLTF Models"));
 
@@ -293,17 +333,17 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                                     Button,
                                     Node {
                                         width: percent(100),
-                                        padding: UiRect::all(px(8)),
+                                        padding: UiRect::all(px(PADDING_TINY)),
                                         justify_content: JustifyContent::Start,
                                         ..default()
                                     },
                                     BackgroundColor(BUTTON_BACKGROUND),
-                                    BorderRadius::all(px(4)),
+                                    BorderRadius::all(px(BORDER_RADIUS_SMALL)),
                                 ))
                                 .with_children(|btn| {
                                     btn.spawn((
                                         Text::new(filename),
-                                        TextFont::from_font_size(18.0),
+                                        TextFont::from_font_size(FONT_SIZE_NORMAL),
                                         TextColor(BUTTON_TEXT),
                                     ));
                                 })
@@ -336,17 +376,17 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                                     Button,
                                     Node {
                                         width: percent(100),
-                                        padding: UiRect::all(px(8)),
+                                        padding: UiRect::all(px(PADDING_TINY)),
                                         justify_content: JustifyContent::Start,
                                         ..default()
                                     },
                                     BackgroundColor(BUTTON_BACKGROUND),
-                                    BorderRadius::all(px(4)),
+                                    BorderRadius::all(px(BORDER_RADIUS_SMALL)),
                                 ))
                                 .with_children(|btn| {
                                     btn.spawn((
                                         Text::new(filename),
-                                        TextFont::from_font_size(18.0),
+                                        TextFont::from_font_size(FONT_SIZE_NORMAL),
                                         TextColor(BUTTON_TEXT),
                                     ));
                                 })
@@ -374,21 +414,21 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     flex_grow: 1.0,
                     height: percent(100),
                     flex_direction: FlexDirection::Column,
-                    padding: UiRect::all(px(15)),
+                    padding: UiRect::all(px(PADDING_MEDIUM)),
                     ..default()
                 },
                 BackgroundColor(PANEL_BACKGROUND.with_alpha(0.3)), // Semi-transparent to see 3D scene
-                BorderRadius::all(px(8)),
+                BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
                 // Info overlay at the top
                 parent.spawn((
                     Node {
                         width: percent(100),
-                        padding: UiRect::all(px(10)),
+                        padding: UiRect::all(px(PADDING_SMALL)),
                         ..default()
                     },
                     BackgroundColor(NODE_BACKGROUND.with_alpha(0.8)),
-                    BorderRadius::all(px(4)),
+                    BorderRadius::all(px(BORDER_RADIUS_SMALL)),
                 )).with_children(|info| {
                     info.spawn(widget::header("3D Preview"));
                 });
@@ -397,13 +437,13 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                 parent.spawn((
                     Node {
                         position_type: PositionType::Absolute,
-                        bottom: px(10),
-                        left: px(10),
-                        padding: UiRect::all(px(10)),
+                        bottom: px(PADDING_SMALL),
+                        left: px(PADDING_SMALL),
+                        padding: UiRect::all(px(PADDING_SMALL)),
                         ..default()
                     },
                     BackgroundColor(NODE_BACKGROUND.with_alpha(0.8)),
-                    BorderRadius::all(px(4)),
+                    BorderRadius::all(px(BORDER_RADIUS_SMALL)),
                 )).with_children(|info| {
                     info.spawn(widget::label("Load a GLTF file to see the character"));
                 });
@@ -413,16 +453,16 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
             panels.spawn((
                 Name::new("Right Panel - Controls"),
                 Node {
-                    width: px(400),
+                    width: px(PANEL_WIDTH_RIGHT),
                     height: percent(100),
                     flex_direction: FlexDirection::Column,
-                    padding: UiRect::all(px(15)),
-                    row_gap: px(15),
+                    padding: UiRect::all(px(PADDING_MEDIUM)),
+                    row_gap: px(GAP_MEDIUM),
                     overflow: Overflow::scroll_y(),
                     ..default()
                 },
                 BackgroundColor(PANEL_BACKGROUND),
-                BorderRadius::all(px(8)),
+                BorderRadius::all(px(BORDER_RADIUS)),
             )).with_children(|parent| {
                 // Header
                 parent.spawn(widget::header("Blend Controls"));
@@ -432,13 +472,13 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                     Node {
                         width: percent(100),
                         flex_direction: FlexDirection::Column,
-                        row_gap: px(8),
+                        row_gap: px(GAP_TINY),
                         ..default()
                     },
                 )).with_children(|section| {
                     section.spawn((
                         Text::new("Preview Speed"),
-                        TextFont::from_font_size(20.0),
+                        TextFont::from_font_size(FONT_SIZE_HEADER),
                         TextColor(HEADER_TEXT),
                     ));
 
@@ -448,7 +488,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                         Node {
                             width: percent(100),
                             flex_direction: FlexDirection::Column,
-                            row_gap: px(5),
+                            row_gap: px(GAP_TINY / 2.0),
                             ..default()
                         },
                     )).with_children(|parent| {
@@ -463,7 +503,7 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                             row.spawn(widget::label("Speed"));
                             row.spawn((
                                 Text::new("0.0"),
-                                TextFont::from_font_size(18.0),
+                                TextFont::from_font_size(FONT_SIZE_NORMAL),
                                 TextColor(BUTTON_TEXT),
                                 SliderValueLabel(SliderType::Speed),
                             ));
@@ -478,14 +518,15 @@ fn spawn_anim_editor(mut commands: Commands, editor_state: Res<EditorState>) {
                                 max: 10.0,
                             },
                             Button, // Make it clickable
+                            RelativeCursorPosition::default(), // Track cursor position for click-based value setting
                             Node {
                                 width: percent(100),
-                                height: px(20),
-                                padding: UiRect::all(px(2)),
+                                height: px(SLIDER_HEIGHT),
+                                padding: UiRect::all(px(PADDING_MINI)),
                                 ..default()
                             },
                             BackgroundColor(NODE_BACKGROUND),
-                            BorderRadius::all(px(10)),
+                            BorderRadius::all(px(GAP_SMALL)),
                         )).with_children(|bar| {
                             // Slider handle (filled portion)
                             bar.spawn((
@@ -532,9 +573,54 @@ fn back_to_menu(_: On<Pointer<Click>>, mut next_screen: ResMut<NextState<Screen>
     next_screen.set(Screen::Title);
 }
 
-fn create_new_config(_: On<Pointer<Click>>) {
+fn create_new_config(_: On<Pointer<Click>>, mut editor_state: ResMut<EditorState>) {
     info!("Create new config button clicked");
-    // TODO: Implement new config creation
+
+    // Generate a timestamped filename
+    use std::time::SystemTime;
+    let timestamp = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
+    let filename = format!("anim_config_{}.ron", timestamp);
+
+    // Create a new configuration with current editor settings
+    let config = AnimationBlendingConfig {
+        speed_thresholds: SpeedThresholds {
+            idle_threshold: editor_state.idle_threshold,
+            walk_speed: editor_state.walk_speed,
+            run_speed: editor_state.run_speed,
+        },
+    };
+
+    // Serialize to RON format
+    match ron::ser::to_string_pretty(&config, ron::ser::PrettyConfig::default()) {
+        Ok(ron_string) => {
+            let path = std::path::PathBuf::from(format!("assets/config/{}", filename));
+
+            // Ensure directory exists
+            if let Some(parent) = path.parent() {
+                let _ = std::fs::create_dir_all(parent);
+            }
+
+            // Write to file
+            match std::fs::write(&path, ron_string) {
+                Ok(_) => {
+                    info!("✓ Created new config file: {}", filename);
+                    editor_state.config_filename = filename.replace(".ron", "");
+                    editor_state.selected_config = Some(path.clone());
+                    editor_state.config_files.push(path);
+                    editor_state.config_files.sort();
+                }
+                Err(e) => {
+                    error!("Failed to write config file: {}", e);
+                }
+            }
+        }
+        Err(e) => {
+            error!("Failed to serialize config: {}", e);
+        }
+    }
 }
 
 fn toggle_playback(_: On<Pointer<Click>>, mut editor_state: ResMut<EditorState>) {
@@ -676,18 +762,19 @@ fn load_gltf_animations(mut editor_state: ResMut<EditorState>, gltf_assets: Res<
 /// System to handle slider interactions (click and drag)
 fn handle_slider_interaction(
     mut editor_state: ResMut<EditorState>,
-    slider_query: Query<(&Slider, &Interaction), Changed<Interaction>>,
+    slider_query: Query<(&Slider, &Interaction, &RelativeCursorPosition), Changed<Interaction>>,
 ) {
-    for (slider, interaction) in &slider_query {
+    for (slider, interaction, cursor_pos) in &slider_query {
         if *interaction == Interaction::Pressed {
-            // TODO: For now, just increment the value on click
-            // In a full implementation, we'd calculate based on mouse position
-            let current_value = get_slider_value(&editor_state, slider.slider_type);
-            let range = slider.max - slider.min;
-            let new_value = (current_value + range * 0.1).min(slider.max);
+            // Calculate value based on click position
+            if let Some(pos) = cursor_pos.normalized {
+                // pos.x is 0.0 (left) to 1.0 (right)
+                let normalized = pos.x.clamp(0.0, 1.0);
+                let new_value = slider.min + (slider.max - slider.min) * normalized;
 
-            set_slider_value(&mut editor_state, slider.slider_type, new_value);
-            info!("Slider {:?} updated to: {:.2}", slider.slider_type, new_value);
+                set_slider_value(&mut editor_state, slider.slider_type, new_value);
+                info!("Slider {:?} updated to: {:.2}", slider.slider_type, new_value);
+            }
         }
     }
 }
