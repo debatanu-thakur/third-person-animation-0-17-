@@ -939,15 +939,49 @@ fn set_slider_value(state: &mut EditorState, slider_type: SliderType, value: f32
 fn setup_preview_scene(mut commands: Commands) {
     info!("Setting up preview scene");
 
-    // Spawn directional light
+    // Spawn ambient light for overall illumination
+    commands.spawn((
+        AnimEditorUi, // Mark for cleanup
+        AmbientLight {
+            color: Color::WHITE,
+            brightness: 500.0,
+            affects_lightmapped_meshes: true,
+        },
+    ));
+
+    // Spawn main directional light (key light from above-front)
     commands.spawn((
         AnimEditorUi, // Mark for cleanup
         DirectionalLight {
-            illuminance: 10000.0,
+            illuminance: 15000.0,
+            shadows_enabled: true,
+            ..default()
+        },
+        Transform::from_xyz(2.0, 5.0, 3.0).looking_at(Vec3::new(0.0, 1.0, 0.0), Vec3::Y),
+    ));
+
+    // Spawn fill light (from the side)
+    commands.spawn((
+        AnimEditorUi, // Mark for cleanup
+        PointLight {
+            intensity: 500000.0,
+            color: Color::srgb(0.9, 0.9, 1.0),
             shadows_enabled: false,
             ..default()
         },
-        Transform::from_xyz(4.0, 8.0, 4.0).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(-3.0, 2.0, 2.0),
+    ));
+
+    // Spawn back light (rim light)
+    commands.spawn((
+        AnimEditorUi, // Mark for cleanup
+        PointLight {
+            intensity: 300000.0,
+            color: Color::srgb(1.0, 0.95, 0.9),
+            shadows_enabled: false,
+            ..default()
+        },
+        Transform::from_xyz(0.0, 2.0, -3.0),
     ));
 
     // Spawn preview camera with unique order to avoid conflicts
@@ -964,7 +998,7 @@ fn setup_preview_scene(mut commands: Commands) {
         },
     ));
 
-    info!("Preview scene setup complete");
+    info!("Preview scene setup complete with 3-point lighting");
 }
 
 /// System to handle orbit camera controls
@@ -975,6 +1009,17 @@ fn orbit_camera_controls(
     time: Res<Time>,
 ) {
     if let Ok(mut transform) = camera_query.single_mut() {
+        let orbit_point = Vec3::new(0.0, 1.0, 0.0);
+
+        // F key to focus on character (2 units away)
+        if keyboard.just_pressed(KeyCode::KeyF) {
+            info!("Focusing camera on character");
+            // Position camera 2 units in front of character at eye level
+            transform.translation = Vec3::new(0.0, 1.0, 2.0);
+            transform.look_at(orbit_point, Vec3::Y);
+            return; // Skip other controls this frame
+        }
+
         let mut rotation_delta = Vec2::ZERO;
         let mut zoom_delta = 0.0;
 
@@ -999,8 +1044,6 @@ fn orbit_camera_controls(
 
         // Apply rotation
         if rotation_delta != Vec2::ZERO {
-            let orbit_point = Vec3::new(0.0, 1.0, 0.0);
-
             // Horizontal rotation (around Y axis)
             let rotation_y = Quat::from_rotation_y(rotation_delta.x.to_radians());
             let offset = transform.translation - orbit_point;
@@ -1012,17 +1055,17 @@ fn orbit_camera_controls(
 
         // Apply zoom
         if zoom_delta != 0.0 {
-            let direction = (transform.translation - Vec3::new(0.0, 1.0, 0.0)).normalize();
+            let direction = (transform.translation - orbit_point).normalize();
             transform.translation -= direction * zoom_delta;
 
             // Clamp distance
             let min_dist = 1.0;
             let max_dist = 10.0;
-            let current_dist = (transform.translation - Vec3::new(0.0, 1.0, 0.0)).length();
+            let current_dist = (transform.translation - orbit_point).length();
             if current_dist < min_dist {
-                transform.translation = Vec3::new(0.0, 1.0, 0.0) + direction * min_dist;
+                transform.translation = orbit_point + direction * min_dist;
             } else if current_dist > max_dist {
-                transform.translation = Vec3::new(0.0, 1.0, 0.0) + direction * max_dist;
+                transform.translation = orbit_point + direction * max_dist;
             }
         }
     }
