@@ -1,10 +1,14 @@
 //! Animation Editor screen for creating and editing animation blend configurations.
 
-use std::path::PathBuf;
+use std::{fs, path::PathBuf};
 
 use bevy::{gltf::Gltf, prelude::*};
 
-use crate::{screens::Screen, theme::{palette::*, widget}};
+use crate::{
+    game::configs::assets::{AnimationBlendingConfig, SpeedThresholds},
+    screens::Screen,
+    theme::{palette::*, widget},
+};
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<EditorState>();
@@ -25,6 +29,7 @@ pub(super) fn plugin(app: &mut App) {
             handle_slider_interaction,
             update_slider_visuals,
             update_slider_labels,
+            update_filename_label,
         ).run_if(in_state(Screen::AnimEditor)),
     );
 
@@ -82,6 +87,10 @@ enum AnimationType {
     Jump,
 }
 
+/// Marker component for the filename input label
+#[derive(Component)]
+struct FilenameLabel;
+
 /// Resource holding the editor state
 #[derive(Resource)]
 struct EditorState {
@@ -121,6 +130,8 @@ struct EditorState {
     playback_speed: f32,
     /// Is animation playing
     is_playing: bool,
+    /// Filename for saving configuration (without .ron extension)
+    config_filename: String,
 }
 
 impl Default for EditorState {
@@ -143,6 +154,7 @@ impl Default for EditorState {
             selected_jump_anim: None,
             playback_speed: 1.0,
             is_playing: true,
+            config_filename: String::from("my_blend_config"),
         }
     }
 }
@@ -456,6 +468,28 @@ fn right_panel() -> impl Bundle {
             // Divider
             divider(),
 
+            // Filename section
+            control_section("Save Configuration", vec![
+                (
+                    Node {
+                        width: percent(100),
+                        padding: UiRect::all(px(10)),
+                        ..default()
+                    },
+                    BackgroundColor(NODE_BACKGROUND),
+                    BorderRadius::all(px(4)),
+                    children![
+                        (
+                            Text::new("Filename: my_blend_config.ron"),
+                            TextFont::from_font_size(18.0),
+                            TextColor(BUTTON_TEXT),
+                            FilenameLabel,
+                        ),
+                    ],
+                ),
+                widget::label("Click a .ron file to load, or save with current name"),
+            ]),
+
             // Save button
             widget::button("💾 Save Configuration", save_configuration),
         ],
@@ -592,12 +626,47 @@ fn toggle_playback(_: On<Pointer<Click>>, mut editor_state: ResMut<EditorState>)
 
 fn save_configuration(_: On<Pointer<Click>>, editor_state: Res<EditorState>) {
     info!("Save configuration clicked");
-    info!("Current config: idle_threshold={}, walk_speed={}, run_speed={}",
-        editor_state.idle_threshold,
-        editor_state.walk_speed,
-        editor_state.run_speed
-    );
-    // TODO: Implement actual file saving
+
+    // Create the configuration structure
+    let config = AnimationBlendingConfig {
+        speed_thresholds: SpeedThresholds {
+            idle_threshold: editor_state.idle_threshold,
+            walk_speed: editor_state.walk_speed,
+            run_speed: editor_state.run_speed,
+        },
+    };
+
+    // Serialize to RON format with pretty printing
+    let ron_string = match ron::ser::to_string_pretty(&config, ron::ser::PrettyConfig::default()) {
+        Ok(s) => s,
+        Err(e) => {
+            error!("Failed to serialize configuration: {}", e);
+            return;
+        }
+    };
+
+    // Create the filename with .ron extension
+    let filename = format!("{}.ron", editor_state.config_filename);
+    let filepath = PathBuf::from("assets/config").join(&filename);
+
+    // Ensure the config directory exists
+    if let Err(e) = fs::create_dir_all("assets/config") {
+        error!("Failed to create config directory: {}", e);
+        return;
+    }
+
+    // Write the file
+    match fs::write(&filepath, ron_string) {
+        Ok(_) => {
+            info!("✓ Configuration saved to: {:?}", filepath);
+            info!("  idle_threshold: {}", editor_state.idle_threshold);
+            info!("  walk_speed: {}", editor_state.walk_speed);
+            info!("  run_speed: {}", editor_state.run_speed);
+        }
+        Err(e) => {
+            error!("Failed to write configuration file: {}", e);
+        }
+    }
 }
 
 /// System to handle file selection events
@@ -626,7 +695,36 @@ fn handle_file_selection(
         } else {
             info!("Loading config file: {:?}", event.path);
             editor_state.selected_config = Some(event.path.clone());
-            // TODO: Load and parse the RON config file
+
+            // Load and parse the RON config file
+            match fs::read_to_string(&event.path) {
+                Ok(contents) => {
+                    match ron::de::from_str::<AnimationBlendingConfig>(&contents) {
+                        Ok(config) => {
+                            // Update editor state with loaded values
+                            editor_state.idle_threshold = config.speed_thresholds.idle_threshold;
+                            editor_state.walk_speed = config.speed_thresholds.walk_speed;
+                            editor_state.run_speed = config.speed_thresholds.run_speed;
+
+                            // Update filename (remove .ron extension and path)
+                            if let Some(filename) = event.path.file_stem().and_then(|s| s.to_str()) {
+                                editor_state.config_filename = filename.to_string();
+                            }
+
+                            info!("✓ Configuration loaded successfully:");
+                            info!("  idle_threshold: {}", editor_state.idle_threshold);
+                            info!("  walk_speed: {}", editor_state.walk_speed);
+                            info!("  run_speed: {}", editor_state.run_speed);
+                        }
+                        Err(e) => {
+                            error!("Failed to parse RON config: {}", e);
+                        }
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to read config file: {}", e);
+                }
+            }
         }
     }
 }
@@ -862,6 +960,20 @@ fn find_animation_player(entity: Entity, children_query: &Query<&Children>) -> O
         }
     }
     None
+}
+
+/// System to update the filename label
+fn update_filename_label(
+    editor_state: Res<EditorState>,
+    mut label_query: Query<&mut Text, With<FilenameLabel>>,
+) {
+    if !editor_state.is_changed() {
+        return;
+    }
+
+    for mut text in &mut label_query {
+        **text = format!("Filename: {}.ron", editor_state.config_filename);
+    }
 }
 
 fn cleanup_anim_editor(
