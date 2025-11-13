@@ -938,6 +938,8 @@ fn set_slider_value(state: &mut EditorState, slider_type: SliderType, value: f32
 /// System to setup the 3D preview scene with camera and lighting
 fn setup_preview_scene(
     mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
     mut camera_query: Query<(Entity, &mut Camera, &mut Transform), (With<Camera3d>, Without<PreviewCamera>)>,
 ) {
     info!("Setting up preview scene");
@@ -961,15 +963,12 @@ fn setup_preview_scene(
         warn!("No suitable camera found to reuse, or camera already has PreviewCamera component");
     }
 
-    // Spawn ambient light for overall illumination
-    commands.spawn((
-        AnimEditorUi, // Mark for cleanup
-        AmbientLight {
-            color: Color::WHITE,
-            brightness: 500.0,
+
+    commands.insert_resource(AmbientLight {
+        color: Color::WHITE,
+        brightness: 500.0,
             affects_lightmapped_meshes: true,
-        },
-    ));
+    });
 
     // Spawn main directional light (key light from above-front)
     commands.spawn((
@@ -1004,6 +1003,19 @@ fn setup_preview_scene(
             ..default()
         },
         Transform::from_xyz(0.0, 2.0, -3.0),
+    ));
+
+     // circular base
+    commands.spawn((
+        Mesh3d(meshes.add(Circle::new(4.0))),
+        MeshMaterial3d(materials.add(Color::WHITE)),
+        Transform::from_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2)),
+    ));
+    // cube
+    commands.spawn((
+        Mesh3d(meshes.add(Cuboid::new(1.0, 1.0, 1.0))),
+        MeshMaterial3d(materials.add(Color::srgb_u8(124, 144, 255))),
+        Transform::from_xyz(0.0, 0.5, 0.0),
     ));
 
     info!("Preview scene setup complete with 3-point lighting");
