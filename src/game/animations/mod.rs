@@ -13,6 +13,7 @@ use self::{
     blending::{
         setup_animation_graph,
         update_animation_state,
+        PreviousAnimationState,
     },
     animation_controller::{
         determine_animation_state,
@@ -26,6 +27,9 @@ pub(super) fn plugin(app: &mut App) {
         TnuaControllerPlugin::new(FixedUpdate),
         TnuaAvian3dPlugin::new(FixedUpdate),
     ));
+
+    // Initialize animation state tracking
+    app.init_resource::<PreviousAnimationState>();
 
     // Animation systems - multi-stage loading:
     // 1. PlayerGltfAsset is loaded (handled in player module)
