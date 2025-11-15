@@ -25,3 +25,4 @@ assets/models/animations/Braced[[:space:]]Hang.glb filter=lfs diff=lfs merge=lfs
 assets/models/animations/Running[[:space:]]Slide.glb filter=lfs diff=lfs merge=lfs -text
 assets/models/animations/Standing[[:space:]]Jumping.glb filter=lfs diff=lfs merge=lfs -text
 assets/models/animations/vault_over_rining.glb filter=lfs diff=lfs merge=lfs -text
+assets/models/animations/vault.glb filter=lfs diff=lfs merge=lfs -text

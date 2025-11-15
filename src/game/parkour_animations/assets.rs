@@ -10,7 +10,7 @@ pub struct VaultGltfAsset {
 
 impl VaultGltfAsset {
     /// Path to the vault animation GLB file
-    pub const PATH: &'static str = "models/animations/vault_over_rining.glb";
+    pub const PATH: &'static str = "models/animations/vault.glb";
 }
 
 impl FromWorld for VaultGltfAsset {
