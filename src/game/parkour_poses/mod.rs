@@ -96,7 +96,6 @@ pub fn handle_debug_animation_keys(
     mut state: ResMut<DebugAnimationState>,
     player_assets: Option<Res<crate::game::player::PlayerAssets>>,
     mut animation_player_query: Query<&mut AnimationPlayer>,
-    mut transitions_query: Query<&mut AnimationTransitions>,
     time: Res<Time>,
 ) {
     let Some(assets) = player_assets else {
@@ -104,10 +103,6 @@ pub fn handle_debug_animation_keys(
     };
 
     let Ok(mut player) = animation_player_query.single_mut() else {
-        return;
-    };
-
-    let Ok(mut transitions) = transitions_query.single_mut() else {
         return;
     };
 
@@ -129,7 +124,8 @@ pub fn handle_debug_animation_keys(
         if keyboard.just_pressed(key) {
             if let Some(handle) = animation_handle {
                 info!("▶ Playing debug animation slot {}: {}", slot_num, anim_name);
-                transitions.play(&mut player, handle.clone(), Duration::from_millis(200));
+                // Play animation directly for bone extraction
+                player.start(handle.clone()).repeat();
                 state.current_slot = Some(slot_num);
                 state.animation_name = anim_name.to_string();
                 state.animation_start_time = time.elapsed_secs();
@@ -144,7 +140,7 @@ pub fn handle_debug_animation_keys(
 pub fn extract_bone_poses(
     keyboard: Res<ButtonInput<KeyCode>>,
     state: Res<DebugAnimationState>,
-    bone_query: Query<(&Name, &GlobalTransform), With<AnimationTarget>>,
+    bone_query: Query<(&Name, &GlobalTransform)>,
     time: Res<Time>,
 ) {
     if !keyboard.just_pressed(KeyCode::F12) {
@@ -279,7 +275,7 @@ fn find_surrounding_poses<'a>(
 pub fn apply_pose_animation(
     mut player_query: Query<&ActivePoseAnimation>,
     pose_assets: Res<Assets<ParkourPoseAnimation>>,
-    mut bone_query: Query<(&Name, &mut Transform), With<AnimationTarget>>,
+    mut bone_query: Query<(&Name, &mut Transform)>,
     time: Res<Time>,
 ) {
     let Ok(active_pose) = player_query.single_mut() else {
@@ -359,9 +355,6 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<DebugAnimationState>();
     app.init_asset::<ParkourPoseAnimation>();
     app.register_asset_reflect::<ParkourPoseAnimation>();
-
-    // Register RON asset loader for ParkourPoseAnimation
-    app.init_asset_loader::<bevy::asset::io::embedded::EmbeddedAssetLoader>();
 
     // Add debug systems (only run during gameplay)
     app.add_systems(
