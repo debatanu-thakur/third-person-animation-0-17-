@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tnua::prelude::*;
+use bevy_tnua::{builtins::TnuaBuiltinDash, prelude::*};
 use bevy_hotpatching_experiments::hot;
 use crate::{game::player::{MovementController, Player}};
 
@@ -74,16 +74,25 @@ pub fn apply_controls(
         ..Default::default()
     });
 
-    // Feed the jump action every frame as long as the player holds the jump button. If the player
-    // stops holding the jump button, simply stop feeding the action.
+
     if keyboard.pressed(KeyCode::Space) {
-        controller.action(TnuaBuiltinJump {
-            // The height is the only mandatory field of the jump button.
-            height: movement_controller.jump_height,
-            input_buffer_time: 0.5,
-            // `TnuaBuiltinJump` also has customization fields with sensible defaults.
-            ..Default::default()
-        });
+        // Disabling jump for now
+        // space button will trigger parkour actions based on environment detection
+        // controller.action(TnuaBuiltinJump {
+        //     // The height is the only mandatory field of the jump button.
+        //     height: movement_controller.jump_height,
+        //     input_buffer_time: 0.5,
+        //     // `TnuaBuiltinJump` also has customization fields with sensible defaults.
+        //     ..Default::default()
+        // });
+        // controller.named_action("jump",
+        //     TnuaBuiltinDash {
+        //         displacement: direction.normalize_or_zero() * 4.0,
+        //         desired_forward: Dir3::new(direction.normalize_or_zero()).ok(),
+        //         speed: 1.0,
+        //         ..default()
+        //     }
+        // );
     }
 
 }

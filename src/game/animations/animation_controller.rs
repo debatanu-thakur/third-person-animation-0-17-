@@ -115,12 +115,15 @@ pub fn determine_animation_state(controller: &TnuaController) -> AnimationState 
             // don't need to check the jump state or handle falling separately
             AnimationState::Jumping
         }
+        Some("jump") => {
+            AnimationState::Jumping
+        }
         // Tnua should only have the `action_name` of the actions you feed to it. If it has
         // anything else - consider it a bug.
         Some(other) => {
             warn!("Unknown action {other}");
             AnimationState::Idle
-        },
+        }
         // No action name means that no action is currently being performed - which means the
         // animation should be decided by the basis.
         None => {
@@ -167,19 +170,19 @@ fn apply_animation_state(
 
      match animating_directive {
         TnuaAnimatingStateDirective::Maintain { state } => {
-            info!("Maintained");
+            // info!("Maintained");
             // `Maintain` means that we did not switch to a different variant, so there is no need
             // to change animations.
 
             // For the Moving state, even when the state variant remains the same, the speed can
             // change. We need to update the blend weights to smoothly transition between walk and run.
-            
+
         }
         TnuaAnimatingStateDirective::Alter {
             old_state,
             state,
         } => {
-            info!("Altered");
+            // info!("Altered");
             // `Alter` means that we have switched to a different variant and need to play a
             // different animation.
 
@@ -220,7 +223,7 @@ fn apply_animation_state(
                         .set_speed(1.2);
                 },
                 AnimationState::Jumping => {
-                    info!("Jumping");
+                    // info!("Jumping");
                     match old_state.unwrap() {
                         AnimationState::Walking |
                         AnimationState::Running(_) => {
@@ -228,7 +231,7 @@ fn apply_animation_state(
                         .play(
                             animation_player,
                         animation_nodes.running_jump,
-                        Duration::from_millis(500))
+                        Duration::from_millis(50))
                             .set_speed(1.2);
                         }
                         _ => {
