@@ -47,7 +47,7 @@ impl FromWorld for ParkourAnimationLibrary {
         // Load animation clips directly from GLB files using GltfAssetLabel
         // Animation index 0 means the first animation in the GLB file
         let vault_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/vault_over_rining.glb")
+            GltfAssetLabel::Animation(0).from_asset("models/animations/vault.glb")
         );
         let climb_clip = asset_server.load(
             GltfAssetLabel::Animation(0).from_asset("models/animations/Freehang Climb.glb")
