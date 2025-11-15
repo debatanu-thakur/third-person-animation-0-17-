@@ -439,7 +439,7 @@ pub fn trigger_parkour_actions(
         }
 
         // Manual parkour actions (require key press)
-        if keyboard.just_pressed(KeyCode::KeyE) && detection.in_interaction_range {
+        if keyboard.just_pressed(KeyCode::Space) && detection.in_interaction_range {
             match detection.obstacle_type {
                 ObstacleType::MediumObstacle if parkour.can_vault => {
                     parkour.state = ParkourState::Vaulting;

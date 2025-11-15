@@ -75,7 +75,7 @@ pub fn apply_controls(
     });
 
 
-    if keyboard.pressed(KeyCode::Space) {
+    // if keyboard.pressed(KeyCode::Space) {
         // Disabling jump for now
         // space button will trigger parkour actions based on environment detection
         // controller.action(TnuaBuiltinJump {
@@ -85,15 +85,15 @@ pub fn apply_controls(
         //     // `TnuaBuiltinJump` also has customization fields with sensible defaults.
         //     ..Default::default()
         // });
-        controller.named_action("jump",
-            TnuaBuiltinJump {
-            // The height is the only mandatory field of the jump button.
-            height: movement_controller.jump_height,
-            input_buffer_time: 0.5,
-            // `TnuaBuiltinJump` also has customization fields with sensible defaults.
-            ..Default::default()
-        }
-        );
-    }
+        // controller.named_action("jump",
+        //     TnuaBuiltinJump {
+        //     // The height is the only mandatory field of the jump button.
+        //     height: movement_controller.jump_height,
+        //     input_buffer_time: 0.5,
+        //     // `TnuaBuiltinJump` also has customization fields with sensible defaults.
+        //     ..Default::default()
+        // }
+        // );
+    // }
 
 }
