@@ -1,5 +1,5 @@
 use crate::{
-    game::obstacle_detection::{ClimbableWall, VaultableObstacle, SlideableObstacle},
+    game::obstacle_detection::detection::{ClimbableWall, VaultableObstacle, SlideableObstacle},
     screens::Screen,
 };
 use avian3d::prelude::*;

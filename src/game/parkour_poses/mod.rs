@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 /// A single bone's pose data (position and rotation relative to parent)
 #[derive(Debug, Clone, Serialize, Deserialize, Reflect)]

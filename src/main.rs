@@ -14,6 +14,7 @@ mod game;
 mod menus;
 mod screens;
 mod theme;
+mod ik;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
 
@@ -59,6 +60,7 @@ impl Plugin for AppPlugin {
             screens::plugin,
             theme::plugin,
             game::plugin,
+            ik::InverseKinematicsPlugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:

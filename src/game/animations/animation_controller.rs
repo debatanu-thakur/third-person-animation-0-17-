@@ -5,7 +5,7 @@ use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaB
 
 use crate::game::{
     player::{self, MovementController, Player, PlayerAssets},
-    obstacle_detection::{ParkourController, ParkourState},
+    obstacle_detection::detection::{ParkourController, ParkourState},
 };
 
 use super::models::{AnimationState, CharacterAnimationController, MovementTimer};

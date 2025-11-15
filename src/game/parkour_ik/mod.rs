@@ -1,11 +1,9 @@
 use bevy::prelude::*;
-use bevy_mod_inverse_kinematics::*;
 use crate::{
     game::{
-        obstacle_detection::{ObstacleDetectionResult, ParkourController, ParkourState},
+        obstacle_detection::detection::{ObstacleDetectionResult, ParkourController, ParkourState},
         player::Player,
-    },
-    screens::Screen,
+    }, ik::*, screens::Screen
 };
 
 // ============================================================================
@@ -390,6 +388,7 @@ pub fn visualize_ik_targets(
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<IkConfig>();
+    app.add_plugins(InverseKinematicsPlugin);
 
     // IK setup happens once after player model loads
     app.add_systems(

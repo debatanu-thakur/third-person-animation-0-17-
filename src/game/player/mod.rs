@@ -3,7 +3,7 @@ use crate::{
     asset_tracking::LoadResource,
     game::{
         animations::models::{AnimationState, MovementTimer},
-        obstacle_detection::{ObstacleDetectionResult, ParkourController},
+        obstacle_detection::detection::{ObstacleDetectionResult, ParkourController},
         third_person_camera::ThirdPersonCameraTarget,
     },
     screens::Screen,
