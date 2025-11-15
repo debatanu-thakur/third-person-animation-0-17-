@@ -5,7 +5,7 @@ use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaB
 
 use crate::game::player::{self, MovementController, Player, PlayerAssets};
 
-use super::models::{AnimationState, CharacterAnimationController};
+use super::models::{AnimationState, CharacterAnimationController, MovementTimer};
 
 /// Stores the indices of animation nodes in the animation graph
 #[derive(Resource)]
@@ -86,11 +86,16 @@ pub fn setup_animation_graph(
 /// Updates animation state based on Tnua controller state
 pub fn update_animation_state(
     mut player_query: Query<
-        (&TnuaController, &mut TnuaAnimatingState<AnimationState>),
+        (
+            &TnuaController,
+            &mut TnuaAnimatingState<AnimationState>,
+            &mut MovementTimer,
+        ),
         With<Player>,
     >,
     mut animation_player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions)>,
     animation_nodes: Option<Res<AnimationNodes>>,
+    time: Res<Time>,
 ) {
     let Ok((mut animation_player, mut transitions)) = animation_player_query.single_mut() else {
         return;
@@ -99,29 +104,40 @@ pub fn update_animation_state(
         return;
     };
 
-    for (controller, mut animating_state) in player_query.iter_mut() {
-        let new_state = determine_animation_state(controller);
-        apply_animation_state(&mut animating_state, new_state, &mut animation_player, &mut transitions, &animation_nodes);
-
+    for (controller, mut animating_state, mut movement_timer) in player_query.iter_mut() {
+        let new_state = determine_animation_state(controller, &mut movement_timer, &time);
+        apply_animation_state(
+            &mut animating_state,
+            new_state,
+            &mut animation_player,
+            &mut transitions,
+            &animation_nodes,
+        );
     }
 }
 
-/// Determines which animation state to use based on Tnua controller
-pub fn determine_animation_state(controller: &TnuaController) -> AnimationState {
+/// Determines which animation state to use based on Tnua controller with timed transitions
+pub fn determine_animation_state(
+    controller: &TnuaController,
+    movement_timer: &mut MovementTimer,
+    time: &Time,
+) -> AnimationState {
+    const IDLE_THRESHOLD: f32 = 0.1; // Below this = idle
+    const WALK_TO_RUN_DURATION: Duration = Duration::from_secs(1); // Walk for 1 second before transitioning to run
+
     let current_status_for_animating = match controller.action_name() {
-        Some(TnuaBuiltinJump::NAME) => {
-            // Jump action is active - play the full jump animation sequence
-            // The standing_jump animation includes the full jump and landing, so we
-            // don't need to check the jump state or handle falling separately
-            AnimationState::Jumping
-        }
-        Some("jump") => {
+        Some(TnuaBuiltinJump::NAME) | Some("jump") => {
+            // Jump action is active - reset timer since we're not walking/running
+            movement_timer.time_in_state = Duration::ZERO;
+            movement_timer.is_transitioning = false;
             AnimationState::Jumping
         }
         // Tnua should only have the `action_name` of the actions you feed to it. If it has
         // anything else - consider it a bug.
         Some(other) => {
             warn!("Unknown action {other}");
+            movement_timer.time_in_state = Duration::ZERO;
+            movement_timer.is_transitioning = false;
             AnimationState::Idle
         }
         // No action name means that no action is currently being performed - which means the
@@ -133,29 +149,32 @@ pub fn determine_animation_state(controller: &TnuaController) -> AnimationState 
                 // Since we only use the walk basis in this example, if we can't get get this
                 // basis' state it probably means the system ran before any basis was set, so we
                 // just skip this frame.
+                movement_timer.time_in_state = Duration::ZERO;
+                movement_timer.is_transitioning = false;
                 return AnimationState::Idle;
             };
 
-            // Speed threshold for idle
-            const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
-
-            const WALK_THRESHOLD: f32 = 2.0;  // Below this = idle
-
             let speed = basis_state.running_velocity.length();
+
             if speed < IDLE_THRESHOLD {
+                // Player stopped moving - reset timer
+                movement_timer.time_in_state = Duration::ZERO;
+                movement_timer.is_transitioning = false;
                 AnimationState::Idle
-            } else if speed <= WALK_THRESHOLD {
-                AnimationState::Walking
-            }
-            else {
-                // Any movement uses the Moving state with the actual speed
-                // The blend between walk and run animations will be handled automatically
-                AnimationState::Running(speed)
+            } else {
+                // Player is moving - increment timer
+                movement_timer.time_in_state += time.delta();
+
+                // After 1 second of walking, transition to running
+                if movement_timer.time_in_state >= WALK_TO_RUN_DURATION {
+                    AnimationState::Running
+                } else {
+                    AnimationState::Walking
+                }
             }
         }
     };
     current_status_for_animating
-
 }
 
 /// Applies the current animation state to the animation player with blending
@@ -194,65 +213,65 @@ fn apply_animation_state(
             // Depending on the new state, we choose the animation to run and its parameters
             match state {
                 AnimationState::Idle => {
-                    transitions.play(
-                        animation_player,
-                        animation_nodes.idle,
-                         Duration::from_millis(200)).repeat();
-                },
+                    // Transition from Walking → Idle: 200ms
+                    // Transition from Running → Idle happens via Walking first
+                    let transition_duration = match old_state.unwrap() {
+                        AnimationState::Walking => Duration::from_millis(200),
+                        AnimationState::Running => Duration::from_millis(200),
+                        _ => Duration::ZERO,
+                    };
+                    transitions
+                        .play(animation_player, animation_nodes.idle, transition_duration)
+                        .repeat();
+                }
                 AnimationState::Walking => {
+                    // Idle → Walking: immediate transition
+                    // Running → Walking: 500ms transition (when slowing down)
+                    let transition_duration = match old_state.unwrap() {
+                        AnimationState::Idle => Duration::ZERO,
+                        AnimationState::Running => Duration::from_millis(500),
+                        _ => Duration::from_millis(200),
+                    };
                     transitions
-                    .play(
-                        animation_player,
-                        animation_nodes.walk,
-                        Duration::from_millis(200)).repeat();
-                },
-                AnimationState::Moving(_) => {
+                        .play(animation_player, animation_nodes.walk, transition_duration)
+                        .repeat();
+                }
+                AnimationState::Running => {
+                    // Walking → Running: 500ms transition (after 1 second of walking)
                     transitions
-                    .play(
-                        animation_player,
-                        animation_nodes.run,
-                        Duration::from_millis(500)).repeat();
-                },
-                AnimationState::Running(_) => {
-                    transitions
-                    .play(
-                        animation_player,
-                        animation_nodes.run,
-                        Duration::from_millis(500))
-                        .repeat()
-                        .set_speed(1.2);
+                        .play(animation_player, animation_nodes.run, Duration::from_millis(500))
+                        .repeat();
                 },
                 AnimationState::Jumping => {
                     // Play appropriate jump animation based on previous state
                     match old_state.unwrap() {
-                        AnimationState::Walking |
-                        AnimationState::Moving(_) |
-                        AnimationState::Running(_) => {
+                        AnimationState::Walking | AnimationState::Running => {
                             // Running jump when jumping while moving
                             transitions
                                 .play(
                                     animation_player,
                                     animation_nodes.running_jump,
-                                    Duration::from_millis(50))
+                                    Duration::from_millis(50),
+                                )
                                 .set_speed(1.2);
                             info!("Playing running jump (one-shot)");
                         }
                         AnimationState::Idle => {
                             // Standing jump when jumping from idle
-                            transitions
-                                .play(
-                                    animation_player,
-                                    animation_nodes.jump,
-                                    Duration::from_millis(50));
+                            transitions.play(
+                                animation_player,
+                                animation_nodes.jump,
+                                Duration::from_millis(50),
+                            );
                             info!("Playing standing jump (one-shot)");
                         }
                         _ => {
                             // Default to standing jump for any other state
-                            transitions
-                                .play(
-                                    animation_player,
-                                    animation_nodes.jump,
-                                    Duration::from_millis(50));
+                            transitions.play(
+                                animation_player,
+                                animation_nodes.jump,
+                                Duration::from_millis(50),
+                            );
                         }
                     }
                 }

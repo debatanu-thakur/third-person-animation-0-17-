@@ -2,6 +2,7 @@ mod assets;
 use crate::{
     asset_tracking::LoadResource,
     game::{
+        animations::models::{AnimationState, MovementTimer},
         obstacle_detection::{ObstacleDetectionResult, ParkourController},
         third_person_camera::ThirdPersonCameraTarget,
     },
@@ -21,9 +22,7 @@ pub struct Player;
 // Movement state
 #[derive(Component)]
 pub struct MovementController {
-    pub walk_speed: f32,
-    pub run_speed: f32,
-    pub sprint_multiplier: f32,
+    pub run_speed: f32,  // Always running when moving
     pub jump_velocity: f32,
     pub jump_height: f32,
     pub double_jump_available: bool,
@@ -33,11 +32,9 @@ pub struct MovementController {
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            walk_speed: 2.0,  // Walking speed (default movement)
-            run_speed: 8.0,   // Running speed (when Shift is held)
-            sprint_multiplier: 1.5,
-            jump_velocity: 22.0, // Increased from 8.0 for more responsive jumping
-            jump_height: 4.0, // Increased from 8.0 for more responsive jumping
+            run_speed: 8.0,  // Always running speed (no walk/sprint distinction in movement)
+            jump_velocity: 22.0,
+            jump_height: 4.0,
             double_jump_available: false,
             is_grounded: false,
         }
@@ -79,6 +76,12 @@ fn spawn_player(
             TnuaController::default(),
             LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
             TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
+            // Animation state tracking
+            TnuaAnimatingState::<AnimationState>::default(),
+            MovementTimer::default(),
+            // Obstacle detection and parkour components
+            ObstacleDetectionResult::default(),
+            ParkourController::default(),
         ))
         .with_children(|parent| {
             parent.spawn((
