@@ -1,8 +1,8 @@
 (
   character_bones: [
     // Player Entity: 186v0
-    // AnimationPlayer active: true
-    // AnimationPlayer paused: true
+    // AnimationPlayer active: false
+    // AnimationPlayer paused: false
     (
       entity: "186v0",
       name: "brian",

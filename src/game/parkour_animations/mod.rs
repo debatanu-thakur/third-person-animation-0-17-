@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 use crate::{game::animations::animation_controller::AnimationNodes, screens::Screen};
-use crate::game::player::parkour::{ParkourController, ParkourState};
+use crate::game::obstacle_detection::detection::{ParkourController, ParkourState};
 
 mod assets;
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
@@ -313,14 +313,14 @@ pub fn test_trigger_vault_animation(
         return;
     }
 
-    let Ok(mut parkour) = player_query.get_single_mut() else {
+    let Ok(mut parkour) = player_query.single_mut() else {
         warn!("❌ No player with ParkourController found!");
         return;
     };
 
     // Toggle between Vaulting and None
     if matches!(parkour.state, ParkourState::Vaulting) {
-        parkour.state = ParkourState::None;
+        parkour.state = ParkourState::Idle;
         info!("🛑 Vault animation stopped (state = None)");
     } else {
         parkour.state = ParkourState::Vaulting;
