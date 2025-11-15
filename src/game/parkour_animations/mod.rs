@@ -121,7 +121,7 @@ pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
     animation_nodes: Option<Res<crate::game::animations::animation_controller::AnimationNodes>>,
-    mut player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions), With<crate::game::player::Player>>,
+    mut player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions)>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyO) {
         return;
@@ -147,7 +147,7 @@ pub fn test_parkour_animation_playback(
     // Use the vault node that's already in the animation graph
     transitions
         .play(&mut player, nodes.vault, std::time::Duration::from_millis(100))
-        .set_speed(1.0);
+        .set_speed(1.0).repeat();
 
     info!("✅ Playing vault animation!");
     info!("   If the character animates → Retargeting works! ✅");
