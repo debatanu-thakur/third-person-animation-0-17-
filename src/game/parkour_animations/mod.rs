@@ -34,13 +34,13 @@ impl FromWorld for ParkourAnimationLibrary {
         let asset_server = world.resource::<AssetServer>();
 
         Self {
-            // Load animation-only GLB files
-            vault_gltf: asset_server.load("parkour_animations/vault.glb"),
-            climb_gltf: asset_server.load("parkour_animations/climb.glb"),
-            slide_gltf: asset_server.load("parkour_animations/slide.glb"),
-            wall_run_left_gltf: asset_server.load("parkour_animations/wall_run_left.glb"),
-            wall_run_right_gltf: asset_server.load("parkour_animations/wall_run_right.glb"),
-            roll_gltf: asset_server.load("parkour_animations/roll.glb"),
+            // Load animation GLB files from assets/models/animations/
+            vault_gltf: asset_server.load("models/animations/vault_over_rining.glb"),
+            climb_gltf: asset_server.load("models/animations/Freehang Climb.glb"),
+            slide_gltf: asset_server.load("models/animations/Running Slide.glb"),
+            wall_run_left_gltf: asset_server.load("models/animations/Over Obstacle Jumping.glb"),
+            wall_run_right_gltf: asset_server.load("models/animations/Over Obstacle Jumping.glb"), // Same for now
+            roll_gltf: asset_server.load("models/animations/Falling To Roll.glb"),
 
             vault: None,
             climb: None,
