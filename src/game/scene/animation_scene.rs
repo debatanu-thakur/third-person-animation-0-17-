@@ -1,4 +1,7 @@
-use crate::screens::Screen;
+use crate::{
+    game::obstacle_detection::{ClimbableWall, VaultableObstacle, SlideableObstacle},
+    screens::Screen,
+};
 use avian3d::prelude::*;
 use bevy::prelude::*;
 /// Marker component for animation test scene entities
@@ -56,8 +59,8 @@ pub fn spawn_animation_test_scene(
     let wall_thickness = 0.5;
     let wall_length = 5.0;
 
-    // Low wall (waist-high) - 1m
-    spawn_obstacle(
+    // Low wall (waist-high) - 1m - Vaultable
+    let low_wall = spawn_obstacle(
         &mut commands,
         &mut meshes,
         wall_material.clone(),
@@ -66,9 +69,10 @@ pub fn spawn_animation_test_scene(
         Vec3::new(wall_length, 1.0, wall_thickness),
         "Low Wall (1m)",
     );
+    commands.entity(low_wall).insert(VaultableObstacle);
 
-    // Mid wall (shoulder-high) - 1.5m
-    spawn_obstacle(
+    // Mid wall (shoulder-high) - 1.5m - Vaultable/Climbable
+    let mid_wall = spawn_obstacle(
         &mut commands,
         &mut meshes,
         wall_material.clone(),
@@ -77,9 +81,10 @@ pub fn spawn_animation_test_scene(
         Vec3::new(wall_length, 1.5, wall_thickness),
         "Mid Wall (1.5m)",
     );
+    commands.entity(mid_wall).insert((VaultableObstacle, ClimbableWall));
 
-    // Tall wall (head-height) - 2m
-    spawn_obstacle(
+    // Tall wall (head-height) - 2m - Climbable
+    let tall_wall = spawn_obstacle(
         &mut commands,
         &mut meshes,
         wall_material.clone(),
@@ -88,9 +93,10 @@ pub fn spawn_animation_test_scene(
         Vec3::new(wall_length, 2.0, wall_thickness),
         "Tall Wall (2m)",
     );
+    commands.entity(tall_wall).insert(ClimbableWall);
 
-    // Very tall wall (climbing) - 3m
-    spawn_obstacle(
+    // Very tall wall (climbing) - 3m - Climbable
+    let climb_wall = spawn_obstacle(
         &mut commands,
         &mut meshes,
         wall_material.clone(),
@@ -99,6 +105,7 @@ pub fn spawn_animation_test_scene(
         Vec3::new(wall_length, 3.0, wall_thickness),
         "Climb Wall (3m)",
     );
+    commands.entity(climb_wall).insert(ClimbableWall);
 
     // ===== PLATFORMS AT DIFFERENT HEIGHTS =====
     let platform_size = 3.0;
@@ -218,8 +225,8 @@ pub fn spawn_animation_test_scene(
     );
 
     // ===== RAMPS/SLOPES =====
-    // Small ramp (15 degrees)
-    spawn_ramp(
+    // Small ramp (15 degrees) - Slideable
+    let small_ramp = spawn_ramp(
         &mut commands,
         &mut meshes,
         ramp_material.clone(),
@@ -228,9 +235,10 @@ pub fn spawn_animation_test_scene(
         15.0,
         "Ramp (15°)",
     );
+    commands.entity(small_ramp).insert(SlideableObstacle);
 
-    // Medium ramp (30 degrees)
-    spawn_ramp(
+    // Medium ramp (30 degrees) - Slideable
+    let medium_ramp = spawn_ramp(
         &mut commands,
         &mut meshes,
         ramp_material.clone(),
@@ -239,9 +247,10 @@ pub fn spawn_animation_test_scene(
         30.0,
         "Ramp (30°)",
     );
+    commands.entity(medium_ramp).insert(SlideableObstacle);
 
-    // Steep ramp (45 degrees)
-    spawn_ramp(
+    // Steep ramp (45 degrees) - Slideable
+    let steep_ramp = spawn_ramp(
         &mut commands,
         &mut meshes,
         ramp_material.clone(),
@@ -250,6 +259,7 @@ pub fn spawn_animation_test_scene(
         45.0,
         "Ramp (45°)",
     );
+    commands.entity(steep_ramp).insert(SlideableObstacle);
 
     // ===== LIGHTING =====
     // Directional light
@@ -282,10 +292,10 @@ fn spawn_obstacle(
     size: Vec3,
     collider_size: Vec3,
     label: &str,
-) {
+) -> Entity {
     let mesh = Mesh::from(Cuboid::new(size.x, size.y, size.z));
 
-    commands.spawn((
+    let entity = commands.spawn((
         DespawnOnExit(Screen::Gameplay),
         AnimationTestSceneEntity,
         Mesh3d(meshes.add(mesh)),
@@ -295,10 +305,11 @@ fn spawn_obstacle(
         // Collider::cuboid takes half-extents
         Collider::cuboid(collider_size.x, collider_size.y, collider_size.z),
         Name::new(label.to_string()),
-    ));
+    )).id();
 
     // TODO: Add text label above the obstacle (optional, requires text rendering setup)
     info!("Spawned obstacle: {} at {}", label, position);
+    entity
 }
 
 /// Helper function to spawn a ramp/slope
@@ -310,11 +321,11 @@ fn spawn_ramp(
     size: Vec3,
     angle_degrees: f32,
     label: &str,
-) {
+) -> Entity {
     let mesh = Mesh::from(Cuboid::new(size.x, size.y, size.z));
     let angle_radians = angle_degrees.to_radians();
 
-    commands.spawn((
+    let entity = commands.spawn((
         DespawnOnExit(Screen::Gameplay),
         AnimationTestSceneEntity,
         Mesh3d(meshes.add(mesh)),
@@ -324,27 +335,11 @@ fn spawn_ramp(
         // Collider::cuboid takes half-extents
         Collider::cuboid(size.x / 2.0, size.y / 2.0, size.z / 2.0),
         Name::new(label.to_string()),
-    ));
+    )).id();
 
     info!(
         "Spawned ramp: {} at {} with angle {}°",
         label, position, angle_degrees
     );
-    let animation_files = vec![
-        "animation_models/Jump To Hang.glb",
-        "animation_models/Freehang Climb.glb",
-        "animation_models/Standard Run.glb",
-        "animation_models/Jump To Freehang.glb",
-        "animation_models/Running Slide.glb",
-        "animation_models/Over Obstacle Jumping.glb",
-        "animation_models/Braced Hang To Crouch.glb",
-        "animation_models/Braced Hang Drop.glb",
-        "animation_models/Breathing Idle.glb",
-        "animation_models/Standing Jumping.glb",
-        "animation_models/Braced Hang.glb",
-        "animation_models/Hard Landing.glb",
-        "animation_models/Free Hang To Braced.glb",
-        "animation_models/Falling To Roll.glb",
-        "animation_models/Stand To Freehang.glb",
-    ];
+    entity
 }

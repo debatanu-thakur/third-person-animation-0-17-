@@ -1,7 +1,10 @@
 mod assets;
 use crate::{
     asset_tracking::LoadResource,
-    game::{animations::models::AnimationState, third_person_camera::ThirdPersonCameraTarget},
+    game::{
+        obstacle_detection::{ObstacleDetectionResult, ParkourController},
+        third_person_camera::ThirdPersonCameraTarget,
+    },
     screens::Screen,
 };
 use avian3d::prelude::*;
@@ -76,7 +79,6 @@ fn spawn_player(
             TnuaController::default(),
             LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
             TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
-            TnuaAnimatingState::<AnimationState>::default(),
         ))
         .with_children(|parent| {
             parent.spawn((
