@@ -56,6 +56,7 @@ pub fn setup_animation_graph(
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
     let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
+
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
 

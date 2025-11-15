@@ -79,7 +79,7 @@ pub struct DebugAnimationSlot {
     pub animation_name: String,
 }
 
-use crate::screens::Screen;
+use crate::{game::animations::animation_controller::AnimationNodes, screens::Screen};
 use std::fs;
 
 /// Resource to track which debug animation is currently playing
@@ -95,6 +95,7 @@ pub fn handle_debug_animation_keys(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut state: ResMut<DebugAnimationState>,
     player_assets: Option<Res<crate::game::player::PlayerAssets>>,
+    animation_nodes: Option<Res<AnimationNodes>>,
     mut animation_player_query: Query<&mut AnimationPlayer>,
     time: Res<Time>,
 ) {
@@ -103,6 +104,9 @@ pub fn handle_debug_animation_keys(
     };
 
     let Ok(mut player) = animation_player_query.single_mut() else {
+        return;
+    };
+    let Some(animation_nodes) = animation_nodes else {
         return;
     };
 
