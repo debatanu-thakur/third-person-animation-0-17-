@@ -76,6 +76,8 @@ fn spawn_player(
             TnuaController::default(),
             LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
             TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
+        ))
+        .insert((
             // Animation state tracking
             TnuaAnimatingState::<AnimationState>::default(),
             MovementTimer::default(),
