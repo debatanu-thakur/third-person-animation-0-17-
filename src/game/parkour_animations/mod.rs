@@ -120,8 +120,8 @@ pub struct AnimationSampler {
 pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
-    mut player_query: Query<(&mut AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
-    mut animation_graphs: ResMut<Assets<AnimationGraph>>,
+    animation_nodes: Option<Res<crate::game::animations::animation_controller::AnimationNodes>>,
+    mut player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions), With<crate::game::player::Player>>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyO) {
         return;
@@ -132,28 +132,27 @@ pub fn test_parkour_animation_playback(
         return;
     };
 
-    let Ok((mut player, current_graph_handle)) = player_query.single_mut() else {
+    let Some(nodes) = animation_nodes else {
+        warn!("Animation nodes not initialized yet!");
+        return;
+    };
+
+    let Ok((mut player, mut transitions)) = player_query.single_mut() else {
         warn!("No player with AnimationPlayer found!");
         return;
     };
 
     info!("🧪 Testing vault animation playback on character...");
 
-    // Get the current animation graph
-    if let Some(graph) = animation_graphs.get_mut(current_graph_handle) {
-        // Add the vault animation to the current graph
-        let vault_node = graph.add_clip(library.vault_clip.clone(), 1.0, graph.root);
+    // Use the vault node that's already in the animation graph
+    transitions
+        .play(&mut player, nodes.vault, std::time::Duration::from_millis(100))
+        .set_speed(1.0);
 
-        // Play the vault animation
-        player.play(vault_node).repeat();
-
-        info!("✅ Playing vault animation!");
-        info!("   If the character animates → Retargeting works! ✅");
-        info!("   If nothing happens → Bone names don't match ❌");
-        info!("   Press '1' to return to normal walk/run animation");
-    } else {
-        warn!("Could not access animation graph!");
-    }
+    info!("✅ Playing vault animation!");
+    info!("   If the character animates → Retargeting works! ✅");
+    info!("   If nothing happens → Bone names don't match ❌");
+    info!("   Press 'P' to see animation library info");
 }
 
 // ============================================================================
