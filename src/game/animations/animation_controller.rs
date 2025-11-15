@@ -49,11 +49,6 @@ pub fn setup_animation_graph(
         return;
     };
 
-    // Wait for parkour animations to load
-    if !parkour_animations.loaded {
-        return;
-    }
-
     // This needs to be all players
     let Ok((animation_player_entity, mut animation_player)) = animation_player_query.single_mut() else {
         return;

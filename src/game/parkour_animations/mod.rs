@@ -1,110 +1,51 @@
 use bevy::prelude::*;
-use bevy::gltf::GltfAssetLabel;
 use std::collections::HashMap;
 use crate::screens::Screen;
+
+mod assets;
+pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
 
 // ============================================================================
 // PARKOUR ANIMATION LIBRARY
 // ============================================================================
 
-/// Resource holding animation graphs for parkour animations
+/// Converts ParkourAnimations into ParkourAnimationLibrary
+/// This runs once after animations are extracted from GLTF
+pub fn create_parkour_library(
+    mut commands: Commands,
+    parkour_animations: Option<Res<ParkourAnimations>>,
+    library: Option<Res<ParkourAnimationLibrary>>,
+) {
+    // Only run once
+    if library.is_some() {
+        return;
+    }
+
+    let Some(animations) = parkour_animations else {
+        return;
+    };
+
+    info!("🎨 Creating parkour animation library from extracted animations");
+
+    commands.insert_resource(ParkourAnimationLibrary {
+        vault_clip: animations.vault.clone(),
+        climb_clip: animations.climb.clone(),
+        slide_clip: animations.slide.clone(),
+        wall_run_left_clip: animations.wall_run_left.clone(),
+        wall_run_right_clip: animations.wall_run_right.clone(),
+        roll_clip: animations.roll.clone(),
+    });
+}
+
+/// Resource holding animation library
 #[derive(Resource)]
 pub struct ParkourAnimationLibrary {
-    /// Animation clip handles loaded from GLB files
     pub vault_clip: Handle<AnimationClip>,
     pub climb_clip: Handle<AnimationClip>,
     pub slide_clip: Handle<AnimationClip>,
     pub wall_run_left_clip: Handle<AnimationClip>,
     pub wall_run_right_clip: Handle<AnimationClip>,
     pub roll_clip: Handle<AnimationClip>,
-
-    /// Animation graphs (created from clips)
-    pub vault_graph: Handle<AnimationGraph>,
-    pub climb_graph: Handle<AnimationGraph>,
-    pub slide_graph: Handle<AnimationGraph>,
-    pub wall_run_left_graph: Handle<AnimationGraph>,
-    pub wall_run_right_graph: Handle<AnimationGraph>,
-    pub roll_graph: Handle<AnimationGraph>,
-
-    /// Animation node indices (for playing)
-    pub vault_node: AnimationNodeIndex,
-    pub climb_node: AnimationNodeIndex,
-    pub slide_node: AnimationNodeIndex,
-    pub wall_run_left_node: AnimationNodeIndex,
-    pub wall_run_right_node: AnimationNodeIndex,
-    pub roll_node: AnimationNodeIndex,
-
-    /// Loaded flag
-    pub loaded: bool,
-}
-
-impl FromWorld for ParkourAnimationLibrary {
-    fn from_world(world: &mut World) -> Self {
-        let asset_server = world.resource::<AssetServer>();
-
-        // Load animation clips directly from GLB files using GltfAssetLabel
-        // Animation index 0 means the first animation in the GLB file
-        let vault_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/vault.glb")
-        );
-        let climb_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/Freehang Climb.glb")
-        );
-        let slide_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/Running Slide.glb")
-        );
-        let wall_run_left_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/Over Obstacle Jumping.glb")
-        );
-        let wall_run_right_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/Over Obstacle Jumping.glb")
-        );
-        let roll_clip = asset_server.load(
-            GltfAssetLabel::Animation(0).from_asset("models/animations/Falling To Roll.glb")
-        );
-
-        // Create AnimationGraphs from clips
-        let (vault_graph, vault_node) = AnimationGraph::from_clip(vault_clip.clone());
-        let (climb_graph, climb_node) = AnimationGraph::from_clip(climb_clip.clone());
-        let (slide_graph, slide_node) = AnimationGraph::from_clip(slide_clip.clone());
-        let (wall_run_left_graph, wall_run_left_node) = AnimationGraph::from_clip(wall_run_left_clip.clone());
-        let (wall_run_right_graph, wall_run_right_node) = AnimationGraph::from_clip(wall_run_right_clip.clone());
-        let (roll_graph, roll_node) = AnimationGraph::from_clip(roll_clip.clone());
-
-        // Add graphs to assets
-        let mut animation_graphs = world.resource_mut::<Assets<AnimationGraph>>();
-        let vault_graph = animation_graphs.add(vault_graph);
-        let climb_graph = animation_graphs.add(climb_graph);
-        let slide_graph = animation_graphs.add(slide_graph);
-        let wall_run_left_graph = animation_graphs.add(wall_run_left_graph);
-        let wall_run_right_graph = animation_graphs.add(wall_run_right_graph);
-        let roll_graph = animation_graphs.add(roll_graph);
-
-        Self {
-            vault_clip,
-            climb_clip,
-            slide_clip,
-            wall_run_left_clip,
-            wall_run_right_clip,
-            roll_clip,
-
-            vault_graph,
-            climb_graph,
-            slide_graph,
-            wall_run_left_graph,
-            wall_run_right_graph,
-            roll_graph,
-
-            vault_node,
-            climb_node,
-            slide_node,
-            wall_run_left_node,
-            wall_run_right_node,
-            roll_node,
-
-            loaded: false,
-        }
-    }
 }
 
 // ============================================================================
@@ -125,129 +66,6 @@ pub struct SampledBoneTransform {
 pub struct AnimationKeyframe {
     pub time: f32,
     pub bones: Vec<SampledBoneTransform>,
-}
-
-// ============================================================================
-// ANIMATION LOADING CHECK SYSTEM
-// ============================================================================
-
-/// Checks if animation clips have loaded
-pub fn check_parkour_animations_loaded(
-    mut library: ResMut<ParkourAnimationLibrary>,
-    animation_clips: Res<Assets<AnimationClip>>,
-) {
-    if library.loaded {
-        return;
-    }
-
-    // Check if all animation clips are loaded
-    let vault_loaded = animation_clips.get(&library.vault_clip).is_some();
-    let climb_loaded = animation_clips.get(&library.climb_clip).is_some();
-    let slide_loaded = animation_clips.get(&library.slide_clip).is_some();
-    let wall_run_left_loaded = animation_clips.get(&library.wall_run_left_clip).is_some();
-    let wall_run_right_loaded = animation_clips.get(&library.wall_run_right_clip).is_some();
-    let roll_loaded = animation_clips.get(&library.roll_clip).is_some();
-
-    if vault_loaded && climb_loaded && slide_loaded
-        && wall_run_left_loaded && wall_run_right_loaded && roll_loaded
-    {
-        library.loaded = true;
-        info!("🎉 All parkour animations loaded successfully!");
-        info!("   - vault: {}", if vault_loaded { "✅" } else { "❌" });
-        info!("   - climb: {}", if climb_loaded { "✅" } else { "❌" });
-        info!("   - slide: {}", if slide_loaded { "✅" } else { "❌" });
-        info!("   - wall_run_left: {}", if wall_run_left_loaded { "✅" } else { "❌" });
-        info!("   - wall_run_right: {}", if wall_run_right_loaded { "✅" } else { "❌" });
-        info!("   - roll: {}", if roll_loaded { "✅" } else { "❌" });
-    }
-}
-
-// ============================================================================
-// BONE NAME COLLECTION SYSTEM
-// ============================================================================
-
-/// Collects bone names from character rig for verification
-pub fn collect_character_bone_names(
-    mut bone_names: ResMut<AnimationBoneNames>,
-    bone_query: Query<&Name, Added<Name>>,
-) {
-    if bone_names.verified {
-        return;
-    }
-
-    for name in bone_query.iter() {
-        let bone_name = name.as_str();
-
-        // Only collect Mixamo rig bones
-        if bone_name.starts_with("mixamorig12:") {
-            if !bone_names.character_bones.contains(&bone_name.to_string()) {
-                bone_names.character_bones.push(bone_name.to_string());
-            }
-        }
-    }
-
-    // Log when we have a good collection
-    if bone_names.character_bones.len() > 20 && !bone_names.verified {
-        info!("📋 Collected {} character bones:", bone_names.character_bones.len());
-        info!("   Sample bones: {:?}", &bone_names.character_bones[..5.min(bone_names.character_bones.len())]);
-    }
-}
-
-/// Collects bone names from animation clips
-pub fn collect_animation_bone_names(
-    library: Res<ParkourAnimationLibrary>,
-    animation_clips: Res<Assets<AnimationClip>>,
-    mut bone_names: ResMut<AnimationBoneNames>,
-) {
-    if !library.loaded || bone_names.verified {
-        return;
-    }
-
-    // Check vault animation bones
-    if let Some(clip) = animation_clips.get(&library.vault_clip) {
-        if !bone_names.animation_bones.contains_key("vault") {
-            let bones = extract_bone_names_from_clip(clip);
-            bone_names.animation_bones.insert("vault".to_string(), bones);
-            info!("📋 Collected bone names from vault animation");
-        }
-    }
-
-    // Verify bone matching
-    if !bone_names.animation_bones.is_empty() && !bone_names.character_bones.is_empty() {
-        verify_bone_matching(&bone_names);
-        bone_names.verified = true;
-    }
-}
-
-/// Verify that animation bones match character bones
-fn verify_bone_matching(bone_names: &AnimationBoneNames) {
-    info!("🔍 Verifying bone name matching...");
-
-    for (anim_name, anim_bones) in &bone_names.animation_bones {
-        let mut matched = 0;
-        let mut missing = Vec::new();
-
-        for anim_bone in anim_bones {
-            if bone_names.character_bones.contains(anim_bone) {
-                matched += 1;
-            } else {
-                missing.push(anim_bone.clone());
-            }
-        }
-
-        let match_percent = (matched as f32 / anim_bones.len() as f32) * 100.0;
-
-        if match_percent > 90.0 {
-            info!("✅ {}: {}/{} bones matched ({:.1}%)",
-                anim_name, matched, anim_bones.len(), match_percent);
-        } else {
-            warn!("⚠️  {}: Only {}/{} bones matched ({:.1}%)",
-                anim_name, matched, anim_bones.len(), match_percent);
-            if !missing.is_empty() {
-                warn!("   Missing bones: {:?}", &missing[..5.min(missing.len())]);
-            }
-        }
-    }
 }
 
 // ============================================================================
@@ -294,97 +112,6 @@ pub struct AnimationSampler {
     pub samples_collected: Vec<(f32, Vec<(String, Vec3, Quat)>)>,
 }
 
-/// Extract bone names from an animation clip
-fn extract_bone_names_from_clip(clip: &AnimationClip) -> Vec<String> {
-    let mut bone_names = Vec::new();
-
-    for (target_id, _curves) in clip.curves() {
-        let bone_name = format!("{:?}", target_id);
-        if !bone_names.contains(&bone_name) {
-            bone_names.push(bone_name);
-        }
-    }
-
-    bone_names
-}
-
-// ============================================================================
-// DEBUG: INSPECT ANIMATION RIG BONES
-// ============================================================================
-
-/// System to inspect bone names from animation GLB files
-/// Press 'L' to inspect the vault animation bone info
-pub fn inspect_animation_rig_bones(
-    keyboard: Res<ButtonInput<KeyCode>>,
-    vault_info: Option<Res<VaultAnimationInfo>>,
-    bone_names: Res<AnimationBoneNames>,
-) {
-    if !keyboard.just_pressed(KeyCode::KeyL) {
-        return;
-    }
-
-    info!("🔍 Inspecting animation rig bones...");
-    info!("");
-
-    // Show vault animation info
-    let Some(vault_detail) = vault_info  else {
-        warn!("❌ Vault animation info not loaded yet. Wait a moment and press 'L' again.");
-        return;
-    };
-
-    info!("✅ Vault Animation GLB Info:");
-    info!("   Total bones/nodes: {}", vault_detail.bone_names.len());
-    info!("   Has 'mixamorig:' prefix: {}", vault_detail.has_mixamorig);
-    info!("   Has 'mixamorig12:' prefix: {}", vault_detail.has_mixamorig12);
-    info!("");
-
-    info!("   First 10 bones in vault animation:");
-    for (i, bone_name) in vault_detail.bone_names.iter().take(10).enumerate() {
-        info!("     {}: {}", i + 1, bone_name);
-    }
-    info!("");
-    // Show character bone info
-    if !bone_names.character_bones.is_empty() {
-        info!("✅ Character Rig Info:");
-        info!("   Total bones: {}", bone_names.character_bones.len());
-        info!("");
-
-        info!("   First 10 bones in character:");
-        for (i, bone_name) in bone_names.character_bones.iter().take(10).enumerate() {
-            info!("     {}: {}", i + 1, bone_name);
-        }
-        info!("");
-    }
-
-    // Compare prefixes
-    let char_has_mixamorig12 = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig12:"));
-    let char_has_mixamorig = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig:"));
-
-    info!("🔍 Bone Name Analysis:");
-        info!("   Character uses 'mixamorig:' → {}", char_has_mixamorig);
-        info!("   Character uses 'mixamorig12:' → {}", char_has_mixamorig12);
-        info!("   Animation uses 'mixamorig:' → {}", vault_detail.has_mixamorig);
-        info!("   Animation uses 'mixamorig12:' → {}", vault_detail.has_mixamorig12);
-        info!("");
-
-        if char_has_mixamorig12 && vault_detail.has_mixamorig {
-            warn!("⚠️  MISMATCH DETECTED!");
-            warn!("   Character has 'mixamorig12:' but animation has 'mixamorig:'");
-            warn!("   This is why the animation isn't playing!");
-            warn!("   Solution: Rename bones in either the character or animation files");
-        } else if char_has_mixamorig && vault_detail.has_mixamorig12 {
-            warn!("⚠️  MISMATCH DETECTED!");
-            warn!("   Character has 'mixamorig:' but animation has 'mixamorig12:'");
-            warn!("   This is why the animation isn't playing!");
-            warn!("   Solution: Rename bones in either the character or animation files");
-        } else if (char_has_mixamorig && vault_detail.has_mixamorig) ||
-                  (char_has_mixamorig12 && vault_detail.has_mixamorig12) {
-            info!("✅ BONE PREFIXES MATCH!");
-            info!("   Both use the same naming convention.");
-            info!("   If animation still not playing, check individual bone names.");
-        }
-}
-
 // ============================================================================
 // DEBUG: TEST ANIMATION PLAYBACK
 // ============================================================================
@@ -392,7 +119,7 @@ pub fn inspect_animation_rig_bones(
 /// Test system to play parkour animation on character (press 'O' to test)
 pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
-    library: Res<ParkourAnimationLibrary>,
+    library: Option<Res<ParkourAnimationLibrary>>,
     mut player_query: Query<(&mut AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
     mut animation_graphs: ResMut<Assets<AnimationGraph>>,
 ) {
@@ -400,10 +127,10 @@ pub fn test_parkour_animation_playback(
         return;
     }
 
-    if !library.loaded {
+    let Some(library) = library else {
         warn!("Parkour animations not loaded yet!");
         return;
-    }
+    };
 
     let Ok((mut player, current_graph_handle)) = player_query.single_mut() else {
         warn!("No player with AnimationPlayer found!");
@@ -433,66 +160,26 @@ pub fn test_parkour_animation_playback(
 // DEBUG: SAMPLE AND PRINT
 // ============================================================================
 
-/// Debug system to sample animation on key press
-/// Note: This is a simplified version. For full sampling, we would need to:
-/// 1. Spawn temporary entity with AnimationPlayer
-/// 2. Attach animation graph
-/// 3. Play animation and seek to desired time
-/// 4. Read bone GlobalTransforms
+/// Debug system to print animation library info (press 'P')
 pub fn debug_sample_animation(
     keyboard: Res<ButtonInput<KeyCode>>,
-    library: Res<ParkourAnimationLibrary>,
-    bone_names: Res<AnimationBoneNames>,
+    library: Option<Res<ParkourAnimationLibrary>>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyP) {
         return;
     }
 
-    if !library.loaded {
+    let Some(library) = library else {
         warn!("Parkour animations not loaded yet!");
         return;
-    }
+    };
 
     info!("📊 Parkour animation library ready:");
-    info!("   Vault graph: {:?}", library.vault_graph);
-    info!("   Vault node: {:?}", library.vault_node);
-    info!("   Climb graph: {:?}", library.climb_graph);
-    info!("   Climb node: {:?}", library.climb_node);
+    info!("   Vault clip: {:?}", library.vault_clip);
+    info!("   Climb clip: {:?}", library.climb_clip);
+    info!("   Slide clip: {:?}", library.slide_clip);
     info!("");
-
-    // Show bone name verification status
-    info!("🦴 Bone name verification:");
-    info!("   Character bones collected: {}", bone_names.character_bones.len());
-    info!("   Animation bones collected: {}", bone_names.animation_bones.len());
-    info!("   Verification complete: {}", bone_names.verified);
-
-    if !bone_names.character_bones.is_empty() {
-        info!("   Sample character bones: {:?}", &bone_names.character_bones[..5.min(bone_names.character_bones.len())]);
-    }
-
-    if let Some(vault_bones) = bone_names.animation_bones.get("vault") {
-        info!("   Vault animation has {} bones", vault_bones.len());
-        info!("   Sample vault bones: {:?}", &vault_bones[..5.min(vault_bones.len())]);
-
-        // Manual verification
-        if !bone_names.character_bones.is_empty() {
-            let mut matched = 0;
-            for anim_bone in vault_bones {
-                if bone_names.character_bones.contains(anim_bone) {
-                    matched += 1;
-                }
-            }
-            let match_percent = (matched as f32 / vault_bones.len() as f32) * 100.0;
-            info!("   ✅ Bone matching: {}/{} ({:.1}%)", matched, vault_bones.len(), match_percent);
-        }
-    }
-
-    info!("");
-    info!("💡 To sample animations at runtime:");
-    info!("   1. Play animation with AnimationPlayer");
-    info!("   2. Use player.seek_to(time) to jump to specific time");
-    info!("   3. Read bone GlobalTransform components");
-    info!("   4. Store transforms for IK targets");
+    info!("💡 Press 'O' to test vault animation playback on character");
 }
 
 // ============================================================================
@@ -500,24 +187,17 @@ pub fn debug_sample_animation(
 // ============================================================================
 
 pub(super) fn plugin(app: &mut App) {
-    app.init_resource::<ParkourAnimationLibrary>();
-    app.init_resource::<AnimationBoneNames>();
+    app.init_resource::<ParkourGltfAssets>();
     app.init_resource::<SampledParkourPoses>();
-    app.init_resource::<VaultGltfAsset>();
 
     app.add_systems(
         Update,
         (
-            // Asset extraction (runs once when GLTFs load)
-            extract_vault_bone_info,
+            // Asset loading (runs once when GLTF loads)
+            extract_parkour_animation_clips,
+            create_parkour_library,
 
-            // Animation loading
-            check_parkour_animations_loaded,
-            collect_character_bone_names,
-            collect_animation_bone_names,
-
-            // Debug tools
-            inspect_animation_rig_bones,
+            // Debug systems
             test_parkour_animation_playback,
             debug_sample_animation,
         )
