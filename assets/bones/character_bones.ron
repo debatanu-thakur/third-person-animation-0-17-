@@ -1,6 +1,399 @@
 (
   character_bones: [
+    // Player Entity: 186v0
+    // AnimationPlayer active: true
+    // AnimationPlayer paused: true
+    (
+      entity: "186v0",
+      name: "brian",
+      depth: 0,
+    ),
+        (
+          entity: "130v0",
+          name: "Ch01_Body",
+          depth: 1,
+        ),
+            (
+              entity: "189v0",
+              name: "Mesh.Ch01_body",
+              depth: 2,
+            ),
+        (
+          entity: "131v0",
+          name: "Ch01_Eyelashes",
+          depth: 1,
+        ),
+            (
+              entity: "188v0",
+              name: "Mesh.002.Ch01_hair",
+              depth: 2,
+            ),
+        (
+          entity: "132v0",
+          name: "Ch01_Pants",
+          depth: 1,
+        ),
+            (
+              entity: "187v0",
+              name: "Mesh.004.Ch01_body",
+              depth: 2,
+            ),
+        (
+          entity: "133v0",
+          name: "Ch01_Shirt",
+          depth: 1,
+        ),
+            (
+              entity: "191v0",
+              name: "Mesh.001.Ch01_body",
+              depth: 2,
+            ),
+        (
+          entity: "134v0",
+          name: "Ch01_Sneakers",
+          depth: 1,
+        ),
+            (
+              entity: "190v0",
+              name: "Mesh.003.Ch01_body",
+              depth: 2,
+            ),
+        (
+          entity: "135v0",
+          name: "mixamorig12:Hips",
+          depth: 1,
+        ),
+            (
+              entity: "136v0",
+              name: "mixamorig12:Spine",
+              depth: 2,
+            ),
+                (
+                  entity: "137v0",
+                  name: "mixamorig12:Spine1",
+                  depth: 3,
+                ),
+                    (
+                      entity: "138v0",
+                      name: "mixamorig12:Spine2",
+                      depth: 4,
+                    ),
+                        (
+                          entity: "139v0",
+                          name: "mixamorig12:Neck",
+                          depth: 5,
+                        ),
+                            (
+                              entity: "140v0",
+                              name: "mixamorig12:Head",
+                              depth: 6,
+                            ),
+                                (
+                                  entity: "116v0",
+                                  name: "mixamorig12:HeadTop_End",
+                                  depth: 7,
+                                ),
+                        (
+                          entity: "141v0",
+                          name: "mixamorig12:LeftShoulder",
+                          depth: 5,
+                        ),
+                            (
+                              entity: "142v0",
+                              name: "mixamorig12:LeftArm",
+                              depth: 6,
+                            ),
+                                (
+                                  entity: "143v0",
+                                  name: "mixamorig12:LeftForeArm",
+                                  depth: 7,
+                                ),
+                                    (
+                                      entity: "144v0",
+                                      name: "mixamorig12:LeftHand",
+                                      depth: 8,
+                                    ),
+                                        (
+                                          entity: "145v0",
+                                          name: "mixamorig12:LeftHandThumb1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "146v0",
+                                              name: "mixamorig12:LeftHandThumb2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "147v0",
+                                                  name: "mixamorig12:LeftHandThumb3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "117v0",
+                                                      name: "mixamorig12:LeftHandThumb4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "148v0",
+                                          name: "mixamorig12:LeftHandIndex1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "149v0",
+                                              name: "mixamorig12:LeftHandIndex2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "150v0",
+                                                  name: "mixamorig12:LeftHandIndex3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "118v0",
+                                                      name: "mixamorig12:LeftHandIndex4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "151v0",
+                                          name: "mixamorig12:LeftHandMiddle1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "152v0",
+                                              name: "mixamorig12:LeftHandMiddle2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "153v0",
+                                                  name: "mixamorig12:LeftHandMiddle3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "119v0",
+                                                      name: "mixamorig12:LeftHandMiddle4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "154v0",
+                                          name: "mixamorig12:LeftHandRing1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "155v0",
+                                              name: "mixamorig12:LeftHandRing2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "156v0",
+                                                  name: "mixamorig12:LeftHandRing3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "120v0",
+                                                      name: "mixamorig12:LeftHandRing4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "157v0",
+                                          name: "mixamorig12:LeftHandPinky1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "158v0",
+                                              name: "mixamorig12:LeftHandPinky2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "159v0",
+                                                  name: "mixamorig12:LeftHandPinky3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "121v0",
+                                                      name: "mixamorig12:LeftHandPinky4",
+                                                      depth: 12,
+                                                    ),
+                        (
+                          entity: "160v0",
+                          name: "mixamorig12:RightShoulder",
+                          depth: 5,
+                        ),
+                            (
+                              entity: "161v0",
+                              name: "mixamorig12:RightArm",
+                              depth: 6,
+                            ),
+                                (
+                                  entity: "162v0",
+                                  name: "mixamorig12:RightForeArm",
+                                  depth: 7,
+                                ),
+                                    (
+                                      entity: "163v0",
+                                      name: "mixamorig12:RightHand",
+                                      depth: 8,
+                                    ),
+                                        (
+                                          entity: "164v0",
+                                          name: "mixamorig12:RightHandThumb1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "165v0",
+                                              name: "mixamorig12:RightHandThumb2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "166v0",
+                                                  name: "mixamorig12:RightHandThumb3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "122v0",
+                                                      name: "mixamorig12:RightHandThumb4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "167v0",
+                                          name: "mixamorig12:RightHandIndex1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "168v0",
+                                              name: "mixamorig12:RightHandIndex2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "169v0",
+                                                  name: "mixamorig12:RightHandIndex3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "123v0",
+                                                      name: "mixamorig12:RightHandIndex4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "170v0",
+                                          name: "mixamorig12:RightHandMiddle1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "171v0",
+                                              name: "mixamorig12:RightHandMiddle2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "172v0",
+                                                  name: "mixamorig12:RightHandMiddle3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "124v0",
+                                                      name: "mixamorig12:RightHandMiddle4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "173v0",
+                                          name: "mixamorig12:RightHandRing1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "174v0",
+                                              name: "mixamorig12:RightHandRing2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "175v0",
+                                                  name: "mixamorig12:RightHandRing3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "125v0",
+                                                      name: "mixamorig12:RightHandRing4",
+                                                      depth: 12,
+                                                    ),
+                                        (
+                                          entity: "176v0",
+                                          name: "mixamorig12:RightHandPinky1",
+                                          depth: 9,
+                                        ),
+                                            (
+                                              entity: "177v0",
+                                              name: "mixamorig12:RightHandPinky2",
+                                              depth: 10,
+                                            ),
+                                                (
+                                                  entity: "178v0",
+                                                  name: "mixamorig12:RightHandPinky3",
+                                                  depth: 11,
+                                                ),
+                                                    (
+                                                      entity: "126v0",
+                                                      name: "mixamorig12:RightHandPinky4",
+                                                      depth: 12,
+                                                    ),
+            (
+              entity: "179v0",
+              name: "mixamorig12:LeftUpLeg",
+              depth: 2,
+            ),
+                (
+                  entity: "180v0",
+                  name: "mixamorig12:LeftLeg",
+                  depth: 3,
+                ),
+                    (
+                      entity: "181v0",
+                      name: "mixamorig12:LeftFoot",
+                      depth: 4,
+                    ),
+                        (
+                          entity: "182v0",
+                          name: "mixamorig12:LeftToeBase",
+                          depth: 5,
+                        ),
+                            (
+                              entity: "127v0",
+                              name: "mixamorig12:LeftToe_End",
+                              depth: 6,
+                            ),
+            (
+              entity: "183v0",
+              name: "mixamorig12:RightUpLeg",
+              depth: 2,
+            ),
+                (
+                  entity: "184v0",
+                  name: "mixamorig12:RightLeg",
+                  depth: 3,
+                ),
+                    (
+                      entity: "185v0",
+                      name: "mixamorig12:RightFoot",
+                      depth: 4,
+                    ),
+                        (
+                          entity: "129v0",
+                          name: "mixamorig12:RightToeBase",
+                          depth: 5,
+                        ),
+                            (
+                              entity: "128v0",
+                              name: "mixamorig12:RightToe_End",
+                              depth: 6,
+                            ),
   ],
   animation_graph: (
+    root_node: NodeIndex(0),
+    node_count: 11,
+    registered_nodes: (
+      idle: NodeIndex(1),
+      walk: NodeIndex(2),
+      run: NodeIndex(3),
+      vault: NodeIndex(7),
+      climb: NodeIndex(8),
+      slide: NodeIndex(9),
+    ),
   ),
 )

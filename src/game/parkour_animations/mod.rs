@@ -121,7 +121,7 @@ pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
     animation_nodes: Option<Res<AnimationNodes>>,
-    player_query: Query<(Entity, &AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
+    player_query: Query<(Entity, &AnimationPlayer, &AnimationGraphHandle)>,
     animation_graphs: Res<Assets<AnimationGraph>>,
     animation_clips: Res<Assets<AnimationClip>>,
     gltf_assets: Res<Assets<Gltf>>,
@@ -151,9 +151,10 @@ pub fn test_parkour_animation_playback(
     character_data.push_str("(\n  character_bones: [\n");
 
     if let Ok((player_entity, animation_player, graph_handle)) = player_query.single() {
+        let anim = if let Some(_) = animation_player.animation(animation_nodes.vault) {true} else {false};
         character_data.push_str(&format!("    // Player Entity: {:?}\n", player_entity));
         character_data.push_str(&format!("    // AnimationPlayer active: {}\n", animation_player.is_playing_animation(animation_nodes.vault)));
-        character_data.push_str(&format!("    // AnimationPlayer paused: {}\n", animation_player.animation(animation_nodes.vault).unwrap().is_paused()));
+        character_data.push_str(&format!("    // AnimationPlayer paused: {}\n", anim));
 
         // Recursively walk children to find all bones
         fn collect_bones(
@@ -210,7 +211,7 @@ pub fn test_parkour_animation_playback(
     character_data.push_str("  ),\n");
     character_data.push_str(")\n");
 
-    std::fs::write("character_bones.ron", character_data)
+    std::fs::write("assets/bones/character_bones.ron", character_data)
         .expect("Failed to write character_bones.ron");
 
     // ========================================
@@ -262,7 +263,7 @@ pub fn test_parkour_animation_playback(
     vault_data.push_str("  ],\n");
     vault_data.push_str(")\n");
 
-    std::fs::write("vault_animation_bones.ron", vault_data)
+    std::fs::write("assets/bones/vault_animation_bones.ron", vault_data)
         .expect("Failed to write vault_animation_bones.ron");
 
     info!("✅ Dumped bone data to:");
