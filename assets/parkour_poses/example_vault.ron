@@ -1,0 +1,66 @@
+// Example parkour animation defined by key poses
+// This file shows the expected structure after you've extracted poses
+
+(
+    name: "standing_vault",
+    duration: 1.5,
+    root_motion: Some((0.0, 0.0, 2.0)), // Optional: move 2m forward during vault
+    key_poses: [
+        // Start pose - crouch before vault
+        (
+            time: 0.0,
+            description: Some("Vault start - crouch"),
+            bones: [
+                (
+                    bone_name: "mixamorig:LeftHand",
+                    position: (0.2, 0.8, 0.1),
+                    rotation: (0.0, 0.0, 0.0, 1.0),
+                ),
+                (
+                    bone_name: "mixamorig:RightHand",
+                    position: (-0.2, 0.8, 0.1),
+                    rotation: (0.0, 0.0, 0.0, 1.0),
+                ),
+                // ... more bones would be here after extraction
+            ]
+        ),
+
+        // Mid pose - hands on obstacle
+        (
+            time: 0.5,
+            description: Some("Hands on obstacle"),
+            bones: [
+                (
+                    bone_name: "mixamorig:LeftHand",
+                    position: (0.3, 1.2, 0.0),  // IK target position
+                    rotation: (0.0, 0.707, 0.0, 0.707),
+                ),
+                (
+                    bone_name: "mixamorig:RightHand",
+                    position: (-0.3, 1.2, 0.0),
+                    rotation: (0.0, 0.707, 0.0, 0.707),
+                ),
+                // ... more bones
+            ]
+        ),
+
+        // Landing pose
+        (
+            time: 1.2,
+            description: Some("Landing"),
+            bones: [
+                (
+                    bone_name: "mixamorig:LeftHand",
+                    position: (0.1, 0.6, -0.2),
+                    rotation: (0.0, 0.0, 0.0, 1.0),
+                ),
+                (
+                    bone_name: "mixamorig:RightHand",
+                    position: (-0.1, 0.6, -0.2),
+                    rotation: (0.0, 0.0, 0.0, 1.0),
+                ),
+                // ... more bones
+            ]
+        ),
+    ]
+)
