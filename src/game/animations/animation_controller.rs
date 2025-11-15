@@ -223,19 +223,36 @@ fn apply_animation_state(
                         .set_speed(1.2);
                 },
                 AnimationState::Jumping => {
-                    // info!("Jumping");
+                    // Play appropriate jump animation based on previous state
                     match old_state.unwrap() {
                         AnimationState::Walking |
+                        AnimationState::Moving(_) |
                         AnimationState::Running(_) => {
-                        transitions
-                        .play(
-                            animation_player,
-                        animation_nodes.running_jump,
-                        Duration::from_millis(50))
-                            .set_speed(1.2);
+                            // Running jump when jumping while moving
+                            transitions
+                                .play(
+                                    animation_player,
+                                    animation_nodes.running_jump,
+                                    Duration::from_millis(50))
+                                .set_speed(1.2);
+                            info!("Playing running jump (one-shot)");
+                        }
+                        AnimationState::Idle => {
+                            // Standing jump when jumping from idle
+                            transitions
+                                .play(
+                                    animation_player,
+                                    animation_nodes.jump,
+                                    Duration::from_millis(50));
+                            info!("Playing standing jump (one-shot)");
                         }
                         _ => {
-
+                            // Default to standing jump for any other state
+                            transitions
+                                .play(
+                                    animation_player,
+                                    animation_nodes.jump,
+                                    Duration::from_millis(50));
                         }
                     }
                 }
