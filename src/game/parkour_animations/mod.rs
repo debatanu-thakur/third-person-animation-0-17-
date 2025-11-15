@@ -335,7 +335,7 @@ pub fn test_parkour_animation_playback(
         return;
     }
 
-    let Ok((mut player, current_graph_handle)) = player_query.get_single_mut() else {
+    let Ok((mut player, current_graph_handle)) = player_query.single_mut() else {
         warn!("No player with AnimationPlayer found!");
         return;
     };
