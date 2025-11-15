@@ -260,15 +260,3 @@ fn apply_animation_state(
         }
     }
 }
-
-
-fn update_moving_speed(
-    animation_player: &mut AnimationPlayer,
-    speed: f32,
-) {
-    let Some((&animation_index, _)) = animation_player.playing_animations().next() else {
-        return;
-    };
-    let animation = animation_player.animation_mut(animation_index).unwrap();
-    animation.set_speed(speed);
-}

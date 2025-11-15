@@ -85,14 +85,15 @@ pub fn apply_controls(
         //     // `TnuaBuiltinJump` also has customization fields with sensible defaults.
         //     ..Default::default()
         // });
-        // controller.named_action("jump",
-        //     TnuaBuiltinDash {
-        //         displacement: direction.normalize_or_zero() * 4.0,
-        //         desired_forward: Dir3::new(direction.normalize_or_zero()).ok(),
-        //         speed: 1.0,
-        //         ..default()
-        //     }
-        // );
+        controller.named_action("jump",
+            TnuaBuiltinJump {
+            // The height is the only mandatory field of the jump button.
+            height: movement_controller.jump_height,
+            input_buffer_time: 0.5,
+            // `TnuaBuiltinJump` also has customization fields with sensible defaults.
+            ..Default::default()
+        }
+        );
     }
 
 }
