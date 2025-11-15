@@ -34,7 +34,7 @@ impl Default for MovementController {
             run_speed: 8.0,   // Running speed (when Shift is held)
             sprint_multiplier: 1.5,
             jump_velocity: 22.0, // Increased from 8.0 for more responsive jumping
-            jump_height: 2.0, // Increased from 8.0 for more responsive jumping
+            jump_height: 4.0, // Increased from 8.0 for more responsive jumping
             double_jump_available: false,
             is_grounded: false,
         }

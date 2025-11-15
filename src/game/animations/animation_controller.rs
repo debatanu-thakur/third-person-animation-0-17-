@@ -167,19 +167,19 @@ fn apply_animation_state(
 
      match animating_directive {
         TnuaAnimatingStateDirective::Maintain { state } => {
+            info!("Maintained");
             // `Maintain` means that we did not switch to a different variant, so there is no need
             // to change animations.
 
             // For the Moving state, even when the state variant remains the same, the speed can
             // change. We need to update the blend weights to smoothly transition between walk and run.
-            if let AnimationState::Running(speed) = state {
-                // update_moving_speed(animation_player, 0.9*speed);
-            }
+            
         }
         TnuaAnimatingStateDirective::Alter {
             old_state,
             state,
         } => {
+            info!("Altered");
             // `Alter` means that we have switched to a different variant and need to play a
             // different animation.
 
@@ -220,6 +220,7 @@ fn apply_animation_state(
                         .set_speed(1.2);
                 },
                 AnimationState::Jumping => {
+                    info!("Jumping");
                     match old_state.unwrap() {
                         AnimationState::Walking |
                         AnimationState::Running(_) => {
@@ -234,11 +235,6 @@ fn apply_animation_state(
 
                         }
                     }
-                    // Play full jump animation (includes landing sequence)
-                    // animation_player
-                    //     .start(animation_nodes.jump)
-                    //     .set_speed(1.0);
-                    info!("Jump called");
                 }
             }
         }
