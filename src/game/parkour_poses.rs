@@ -219,11 +219,149 @@ pub fn extract_bone_poses(
     }
 }
 
+// ============================================================================
+// POSE INTERPOLATION SYSTEM
+// ============================================================================
+
+/// Component attached to player to track active procedural pose animation
+#[derive(Component)]
+pub struct ActivePoseAnimation {
+    pub animation: Handle<ParkourPoseAnimation>,
+    pub start_time: f32,
+    pub looping: bool,
+}
+
+/// Interpolate between two bone poses
+fn interpolate_bone_pose(a: &BonePose, b: &BonePose, t: f32) -> BonePose {
+    BonePose {
+        bone_name: a.bone_name.clone(),
+        position: a.position.lerp(b.position, t),
+        rotation: a.rotation.slerp(b.rotation, t),
+    }
+}
+
+/// Find the two key poses to interpolate between for a given time
+fn find_surrounding_poses<'a>(
+    animation: &'a ParkourPoseAnimation,
+    time: f32,
+) -> Option<(&'a KeyPose, &'a KeyPose, f32)> {
+    if animation.key_poses.is_empty() {
+        return None;
+    }
+
+    // Find the poses before and after the current time
+    let mut before_pose = &animation.key_poses[0];
+    let mut after_pose = &animation.key_poses[0];
+
+    for i in 0..animation.key_poses.len() {
+        let pose = &animation.key_poses[i];
+        if pose.time <= time {
+            before_pose = pose;
+        }
+        if pose.time >= time {
+            after_pose = pose;
+            break;
+        }
+    }
+
+    // Calculate interpolation factor
+    let time_range = after_pose.time - before_pose.time;
+    let t = if time_range > 0.0 {
+        (time - before_pose.time) / time_range
+    } else {
+        0.0
+    };
+
+    Some((before_pose, after_pose, t))
+}
+
+/// System to apply procedural pose animations
+pub fn apply_pose_animation(
+    mut player_query: Query<&ActivePoseAnimation>,
+    pose_assets: Res<Assets<ParkourPoseAnimation>>,
+    mut bone_query: Query<(&Name, &mut Transform), With<AnimationTarget>>,
+    time: Res<Time>,
+) {
+    let Ok(active_pose) = player_query.single_mut() else {
+        return;
+    };
+
+    let Some(animation) = pose_assets.get(&active_pose.animation) else {
+        return;
+    };
+
+    // Calculate current time in animation
+    let elapsed = time.elapsed_secs() - active_pose.start_time;
+    let current_time = if active_pose.looping {
+        elapsed % animation.duration
+    } else {
+        elapsed.min(animation.duration)
+    };
+
+    // Find surrounding poses
+    let Some((before_pose, after_pose, t)) = find_surrounding_poses(animation, current_time) else {
+        return;
+    };
+
+    // Apply interpolated bone transforms
+    for before_bone in &before_pose.bones {
+        // Find corresponding bone in after_pose
+        let Some(after_bone) = after_pose.bones.iter()
+            .find(|b| b.bone_name == before_bone.bone_name) else {
+            continue;
+        };
+
+        // Interpolate between the two poses
+        let interpolated = interpolate_bone_pose(before_bone, after_bone, t);
+
+        // Find the actual bone entity and apply transform
+        for (bone_name, mut bone_transform) in bone_query.iter_mut() {
+            if bone_name.as_str() == interpolated.bone_name {
+                bone_transform.translation = interpolated.position;
+                bone_transform.rotation = interpolated.rotation;
+            }
+        }
+    }
+}
+
+// ============================================================================
+// POSE ANIMATION LOADER
+// ============================================================================
+
+/// Example system to load a pose animation from assets
+/// You can trigger this when starting a parkour action
+pub fn load_pose_animation_example(
+    mut commands: Commands,
+    keyboard: Res<ButtonInput<KeyCode>>,
+    asset_server: Res<AssetServer>,
+    player_query: Query<Entity, With<crate::game::player::Player>>,
+) {
+    // Example: Press P to load and play a vault animation
+    if keyboard.just_pressed(KeyCode::KeyP) {
+        if let Ok(player_entity) = player_query.single() {
+            // Load a pose animation from assets
+            let pose_animation: Handle<ParkourPoseAnimation> =
+                asset_server.load("parkour_poses/standing_vault.ron");
+
+            commands.entity(player_entity).insert(ActivePoseAnimation {
+                animation: pose_animation,
+                start_time: 0.0, // Will be set by time system
+                looping: false,
+            });
+
+            info!("Loading procedural vault animation from RON file");
+        }
+    }
+}
+
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ParkourPoseLibrary>();
     app.init_resource::<DebugAnimationState>();
     app.init_asset::<ParkourPoseAnimation>();
     app.register_asset_reflect::<ParkourPoseAnimation>();
+
+    // Register RON asset loader for ParkourPoseAnimation
+    app.init_asset_loader::<bevy::asset::io::embedded::EmbeddedAssetLoader>();
 
     // Add debug systems (only run during gameplay)
     app.add_systems(
@@ -231,6 +369,10 @@ pub(super) fn plugin(app: &mut App) {
         (
             handle_debug_animation_keys,
             extract_bone_poses,
+            // Pose interpolation system (will be active when you have pose animations)
+            // Commented out for now - enable when you have RON files ready
+            // apply_pose_animation,
+            // load_pose_animation_example,
         )
             .chain()
             .run_if(in_state(Screen::Gameplay)),

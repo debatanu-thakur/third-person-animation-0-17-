@@ -8,6 +8,7 @@ pub mod third_person_camera;
 mod animations;
 mod obstacle_detection;
 mod parkour_poses;
+mod parkour_ik;
 
 use bevy::prelude::*;
 
@@ -20,5 +21,6 @@ pub(super) fn plugin(app: &mut App) {
         animations::plugin,
         obstacle_detection::plugin,
         parkour_poses::plugin,
+        parkour_ik::plugin,
     ));
 }

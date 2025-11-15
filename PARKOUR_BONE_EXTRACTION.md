@@ -212,4 +212,40 @@ If you don't have animations yet, you can manually create pose files:
 
 ---
 
+## 🤖 How Poses Work With IK
+
+The extracted poses will be used in a **hybrid system**:
+
+### Pose Data (from RON files)
+- Body lean and spine rotations
+- Overall movement timing
+- Limb positioning (approximate)
+- Animation flow and rhythm
+
+### IK System (automatic)
+- **Hands** - Dynamically reach detected obstacles
+- **Feet** - Adjust for terrain height
+- **Real-time** - Adapts to any obstacle size
+
+### How They Combine
+
+```
+1. Pose animation plays (spine bend, body lean)
+   ↓
+2. IK targets set from obstacle detection
+   ↓
+3. IK solver adjusts arms to reach obstacle
+   ↓
+4. Result: Natural-looking parkour that adapts!
+```
+
+**Example: Vaulting**
+- **Pose** → Body leans forward, spine rotates
+- **IK** → Hands precisely touch the obstacle top
+- **Together** → Perfect vault regardless of wall height!
+
+See `PARKOUR_IK_SYSTEM.md` for full IK documentation.
+
+---
+
 **Ready to start?** Download your Mixamo animations and let's extract some poses! 🚀
