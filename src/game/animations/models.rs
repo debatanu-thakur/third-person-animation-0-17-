@@ -8,6 +8,11 @@ pub enum AnimationState {
     Walking,
     Running,
     Jumping,
+    // Parkour actions
+    Vaulting,
+    Climbing,
+    Sliding,
+    WallRunning,
 }
 
 impl Default for AnimationState {

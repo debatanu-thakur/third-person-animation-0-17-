@@ -3,7 +3,10 @@ use std::time::Duration;
 use bevy::{animation, prelude::*};
 use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaBuiltinJumpState, prelude::*};
 
-use crate::game::player::{self, MovementController, Player, PlayerAssets};
+use crate::game::{
+    player::{self, MovementController, Player, PlayerAssets},
+    obstacle_detection::{ParkourController, ParkourState},
+};
 
 use super::models::{AnimationState, CharacterAnimationController, MovementTimer};
 
@@ -83,13 +86,14 @@ pub fn setup_animation_graph(
 }
 
 
-/// Updates animation state based on Tnua controller state
+/// Updates animation state based on Tnua controller state and parkour actions
 pub fn update_animation_state(
     mut player_query: Query<
         (
             &TnuaController,
             &mut TnuaAnimatingState<AnimationState>,
             &mut MovementTimer,
+            &ParkourController,
         ),
         With<Player>,
     >,
@@ -104,8 +108,8 @@ pub fn update_animation_state(
         return;
     };
 
-    for (controller, mut animating_state, mut movement_timer) in player_query.iter_mut() {
-        let new_state = determine_animation_state(controller, &mut movement_timer, &time);
+    for (controller, mut animating_state, mut movement_timer, parkour) in player_query.iter_mut() {
+        let new_state = determine_animation_state(controller, &mut movement_timer, &time, parkour);
         apply_animation_state(
             &mut animating_state,
             new_state,
@@ -116,12 +120,30 @@ pub fn update_animation_state(
     }
 }
 
-/// Determines which animation state to use based on Tnua controller with timed transitions
+/// Determines which animation state to use based on parkour state and Tnua controller
 pub fn determine_animation_state(
     controller: &TnuaController,
     movement_timer: &mut MovementTimer,
     time: &Time,
+    parkour: &ParkourController,
 ) -> AnimationState {
+    // Parkour actions override normal movement animations
+    let parkour_animation = match parkour.state {
+        ParkourState::Vaulting => Some(AnimationState::Vaulting),
+        ParkourState::Climbing => Some(AnimationState::Climbing),
+        ParkourState::Sliding => Some(AnimationState::Sliding),
+        ParkourState::WallRunning => Some(AnimationState::WallRunning),
+        // Not performing parkour action, check normal movement
+        _ => None,
+    };
+
+    // If performing parkour action, return that state
+    if let Some(parkour_state) = parkour_animation {
+        movement_timer.time_in_state = Duration::ZERO;
+        return parkour_state;
+    }
+
+    // Otherwise, determine state from Tnua controller
     const IDLE_THRESHOLD: f32 = 0.1; // Below this = idle
     const WALK_TO_RUN_DURATION: Duration = Duration::from_secs(1); // Walk for 1 second before transitioning to run
 
@@ -274,6 +296,41 @@ fn apply_animation_state(
                             );
                         }
                     }
+                }
+                // PARKOUR ANIMATIONS (using placeholders until parkour animations are added)
+                AnimationState::Vaulting => {
+                    // TODO: Use vault animation when available
+                    // For now, use running jump as placeholder
+                    transitions
+                        .play(animation_player, animation_nodes.running_jump, Duration::from_millis(100))
+                        .set_speed(1.5);
+                    info!("Vaulting (placeholder: running jump)");
+                }
+                AnimationState::Climbing => {
+                    // TODO: Use climb animation when available
+                    // For now, use standing jump as placeholder
+                    transitions
+                        .play(animation_player, animation_nodes.jump, Duration::from_millis(100))
+                        .set_speed(0.8);
+                    info!("Climbing (placeholder: standing jump)");
+                }
+                AnimationState::Sliding => {
+                    // TODO: Use slide animation when available
+                    // For now, use running animation at reduced speed
+                    transitions
+                        .play(animation_player, animation_nodes.run, Duration::from_millis(100))
+                        .repeat()
+                        .set_speed(0.5);
+                    info!("Sliding (placeholder: running)");
+                }
+                AnimationState::WallRunning => {
+                    // TODO: Use wall run animation when available
+                    // For now, use running animation at increased speed
+                    transitions
+                        .play(animation_player, animation_nodes.run, Duration::from_millis(100))
+                        .repeat()
+                        .set_speed(1.3);
+                    info!("Wall running (placeholder: running)");
                 }
             }
         }
