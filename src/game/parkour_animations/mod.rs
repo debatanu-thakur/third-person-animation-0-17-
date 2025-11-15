@@ -1,9 +1,7 @@
-use bevy::{prelude::*, gltf::{GltfAssetLabel, Gltf}};
+use bevy::prelude::*;
+use bevy::gltf::GltfAssetLabel;
 use std::collections::HashMap;
 use crate::screens::Screen;
-
-mod assets;
-pub use assets::{VaultGltfAsset, VaultAnimationInfo, extract_vault_bone_info};
 
 // ============================================================================
 // PARKOUR ANIMATION LIBRARY
@@ -110,16 +108,8 @@ impl FromWorld for ParkourAnimationLibrary {
 }
 
 // ============================================================================
-// BONE NAME MAPPING
+// ANIMATION SAMPLING DATA STRUCTURES
 // ============================================================================
-
-/// Stores bone names found in animation files for verification
-#[derive(Resource, Default)]
-pub struct AnimationBoneNames {
-    pub character_bones: Vec<String>,
-    pub animation_bones: HashMap<String, Vec<String>>, // animation_name -> bone_names
-    pub verified: bool,
-}
 
 /// Sampled bone transform at a specific time
 #[derive(Debug, Clone)]
