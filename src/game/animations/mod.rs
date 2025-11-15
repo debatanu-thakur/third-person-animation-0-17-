@@ -10,13 +10,14 @@ use bevy_tnua_avian3d::*;
 use crate::screens::Screen;
 
 use self::{
-    blending::{
+    // blending::{
+    //     setup_animation_graph,
+    //     update_animation_state,
+    //     PreviousAnimationState,
+    // },
+    animation_controller::{
         setup_animation_graph,
         update_animation_state,
-        PreviousAnimationState,
-    },
-    animation_controller::{
-        determine_animation_state,
     },
     controls::apply_controls,
 };
@@ -29,7 +30,7 @@ pub(super) fn plugin(app: &mut App) {
     ));
 
     // Initialize animation state tracking
-    app.init_resource::<PreviousAnimationState>();
+    // app.init_resource::<PreviousAnimationState>();
 
     // Animation systems - multi-stage loading:
     // 1. PlayerGltfAsset is loaded (handled in player module)
@@ -43,6 +44,7 @@ pub(super) fn plugin(app: &mut App) {
             setup_animation_graph,
             // Attach and update animations
             update_animation_state,
+
             apply_controls.in_set(TnuaUserControlsSystems),
         ).run_if(in_state(Screen::Gameplay)),
     );

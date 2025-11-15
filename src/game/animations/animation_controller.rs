@@ -1,7 +1,9 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{animation, prelude::*};
 use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaBuiltinJumpState, prelude::*};
 
-use crate::game::player::{self, Player, PlayerAssets};
+use crate::game::player::{self, MovementController, Player, PlayerAssets};
 
 use super::models::{AnimationState, CharacterAnimationController};
 
@@ -12,6 +14,7 @@ pub struct AnimationNodes {
     pub walk: AnimationNodeIndex,
     pub run: AnimationNodeIndex,
     pub jump: AnimationNodeIndex,
+    pub running_jump: AnimationNodeIndex,
     pub fall: AnimationNodeIndex,
 }
 
@@ -21,7 +24,7 @@ pub fn setup_animation_graph(
     player_assets: Option<Res<PlayerAssets>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
     animation_nodes: Option<Res<AnimationNodes>>,
-    animation_player_query: Query<Entity, With<AnimationPlayer>>,
+    mut animation_player_query: Query<(Entity, &mut AnimationPlayer), Added<AnimationPlayer>>,
 ) {
     // If animation nodes exist, no need to process this anymore
     if let Some(_) = animation_nodes {
@@ -31,7 +34,8 @@ pub fn setup_animation_graph(
     let Some(player_assets) = player_assets else {
         return;
     };
-    let Ok(animation_player_entity) = animation_player_query.single() else {
+    // This needs to be all players
+    let Ok((animation_player_entity, mut animation_player)) = animation_player_query.single_mut() else {
         return;
     };
 
@@ -45,6 +49,7 @@ pub fn setup_animation_graph(
     let walk_node = graph.add_clip(animations.walking.clone(), 1.0, root_node);
     let run_node = graph.add_clip(animations.running.clone(), 1.0, root_node);
     let jump_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
+    let running_jump_node = graph.add_clip(animations.running_jump.clone(), 1.0, root_node);
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
     let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
@@ -57,10 +62,22 @@ pub fn setup_animation_graph(
         run: run_node,
         jump: jump_node,
         fall: fall_node,
+        running_jump: running_jump_node,
     });
+    let mut transitions = AnimationTransitions::new();
+    transitions
+        .play(
+            &mut animation_player,
+            idle_node,
+            Duration::ZERO)
+        .repeat();
 
     // Store the graph handle as a resource for easy access
-    commands.entity(animation_player_entity).insert(AnimationGraphHandle(graph_handle));
+    commands
+    .entity(animation_player_entity)
+    .insert(AnimationGraphHandle(graph_handle))
+    .insert(transitions)
+    ;
 
     info!("Animation graph successfully created with unified GLTF animations!");
 }
@@ -72,18 +89,19 @@ pub fn update_animation_state(
         (&TnuaController, &mut TnuaAnimatingState<AnimationState>),
         With<Player>,
     >,
-    mut animation_player_query: Query<&mut AnimationPlayer>,
+    mut animation_player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions)>,
     animation_nodes: Option<Res<AnimationNodes>>,
 ) {
-    let Ok(mut animation_player) = animation_player_query.single_mut() else {
+    let Ok((mut animation_player, mut transitions)) = animation_player_query.single_mut() else {
         return;
     };
     let Some(animation_nodes) = animation_nodes else {
         return;
     };
+
     for (controller, mut animating_state) in player_query.iter_mut() {
         let new_state = determine_animation_state(controller);
-        apply_animation_state(&mut animating_state, new_state, &mut animation_player, &animation_nodes);
+        apply_animation_state(&mut animating_state, new_state, &mut animation_player, &mut transitions, &animation_nodes);
 
     }
 }
@@ -118,13 +136,18 @@ pub fn determine_animation_state(controller: &TnuaController) -> AnimationState 
             // Speed threshold for idle
             const IDLE_THRESHOLD: f32 = 0.1;  // Below this = idle
 
+            const WALK_THRESHOLD: f32 = 2.0;  // Below this = idle
+
             let speed = basis_state.running_velocity.length();
             if speed < IDLE_THRESHOLD {
                 AnimationState::Idle
-            } else {
+            } else if speed <= WALK_THRESHOLD {
+                AnimationState::Walking
+            }
+            else {
                 // Any movement uses the Moving state with the actual speed
                 // The blend between walk and run animations will be handled automatically
-                AnimationState::Moving(speed)
+                AnimationState::Running(speed)
             }
         }
     };
@@ -137,9 +160,11 @@ fn apply_animation_state(
     animating_state: &mut TnuaAnimatingState<AnimationState>,
     new_state: AnimationState,
     animation_player: &mut AnimationPlayer,
+    transitions: &mut AnimationTransitions,
     animation_nodes: &AnimationNodes,
 ) {
      let animating_directive = animating_state.update_by_discriminant(new_state);
+
      match animating_directive {
         TnuaAnimatingStateDirective::Maintain { state } => {
             // `Maintain` means that we did not switch to a different variant, so there is no need
@@ -147,12 +172,12 @@ fn apply_animation_state(
 
             // For the Moving state, even when the state variant remains the same, the speed can
             // change. We need to update the blend weights to smoothly transition between walk and run.
-            if let AnimationState::Moving(speed) = state {
-                update_walk_run_blend(animation_player, animation_nodes, *speed);
+            if let AnimationState::Running(speed) = state {
+                // update_moving_speed(animation_player, 0.9*speed);
             }
         }
         TnuaAnimatingStateDirective::Alter {
-            old_state: _,
+            old_state,
             state,
         } => {
             // `Alter` means that we have switched to a different variant and need to play a
@@ -161,62 +186,73 @@ fn apply_animation_state(
             // First - stop the currently running animation. We don't check which one is running
             // here because we just assume it belongs to the old state, but more sophisticated code
             // can try to phase from the old animation to the new one.
-            animation_player.stop_all();
+            // animation_player.stop_all();
 
             // Depending on the new state, we choose the animation to run and its parameters
             match state {
                 AnimationState::Idle => {
-                    animation_player
-                        .start(animation_nodes.idle)
-                        .set_speed(1.0)
-                        .repeat();
-                }
-                AnimationState::Moving(speed) => {
-                    // Start both walk and run animations simultaneously
-                    // They will be blended based on their weights
-                    animation_player
-                        .start(animation_nodes.walk)
-                        .set_speed(1.0)
-                        .repeat();
-                    animation_player
-                        .start(animation_nodes.run)
-                        .set_speed(1.0)
-                        .repeat();
-                    // Set the initial blend weights based on speed
-                    update_walk_run_blend(animation_player, animation_nodes, *speed);
-                }
+                    transitions.play(
+                        animation_player,
+                        animation_nodes.idle,
+                         Duration::from_millis(200)).repeat();
+                },
+                AnimationState::Walking => {
+                    transitions
+                    .play(
+                        animation_player,
+                        animation_nodes.walk,
+                        Duration::from_millis(200)).repeat();
+                },
+                AnimationState::Moving(_) => {
+                    transitions
+                    .play(
+                        animation_player,
+                        animation_nodes.run,
+                        Duration::from_millis(500)).repeat();
+                },
+                AnimationState::Running(_) => {
+                    transitions
+                    .play(
+                        animation_player,
+                        animation_nodes.run,
+                        Duration::from_millis(500))
+                        .repeat()
+                        .set_speed(1.2);
+                },
                 AnimationState::Jumping => {
+                    match old_state.unwrap() {
+                        AnimationState::Walking |
+                        AnimationState::Running(_) => {
+                        transitions
+                        .play(
+                            animation_player,
+                        animation_nodes.running_jump,
+                        Duration::from_millis(500))
+                            .set_speed(1.2);
+                        }
+                        _ => {
+
+                        }
+                    }
                     // Play full jump animation (includes landing sequence)
-                    animation_player
-                        .start(animation_nodes.jump)
-                        .set_speed(1.0);
+                    // animation_player
+                    //     .start(animation_nodes.jump)
+                    //     .set_speed(1.0);
+                    info!("Jump called");
                 }
             }
         }
     }
 }
 
-/// Updates the walk-run blend weights based on current speed
-/// This provides smooth transitions between walking and running animations
-fn update_walk_run_blend(
+
+fn update_moving_speed(
     animation_player: &mut AnimationPlayer,
-    animation_nodes: &AnimationNodes,
     speed: f32,
 ) {
-    // Speed thresholds that match MovementController
-    const WALK_SPEED: f32 = 2.0;
-    const RUN_SPEED: f32 = 8.0;  // Updated to match the new run_speed
-
-    // Calculate blend factor: 0.0 = 100% walk, 1.0 = 100% run
-    // Clamp between walk and run speeds, then normalize to 0.0-1.0
-    let blend_factor = ((speed - WALK_SPEED) / (RUN_SPEED - WALK_SPEED)).clamp(0.0, 1.0);
-
-    // Set weights for walk and run animations
-    // Walk weight decreases as speed increases, run weight increases
-    let walk_weight = 1.0 - blend_factor;
-    let run_weight = blend_factor;
-
-    // Apply the weights to the playing animations
-    animation_player.animation_mut(animation_nodes.walk).map(|anim| anim.set_weight(walk_weight));
-    animation_player.animation_mut(animation_nodes.run).map(|anim| anim.set_weight(run_weight));
+    let Some((&animation_index, _)) = animation_player.playing_animations().next() else {
+        return;
+    };
+    let animation = animation_player.animation_mut(animation_index).unwrap();
+    animation.set_speed(speed);
 }

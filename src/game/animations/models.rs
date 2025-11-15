@@ -4,8 +4,10 @@ use bevy::prelude::*;
 #[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum AnimationState {
     Idle,
+    Walking,
+    Running(f32),  // Speed value - used for walk-run blending
     Moving(f32),  // Speed value - used for walk-run blending
-    Jumping,      // Includes full jump and landing sequence
+    Jumping,
 }
 
 impl Default for AnimationState {

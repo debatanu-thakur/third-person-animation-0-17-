@@ -237,6 +237,9 @@ fn apply_animation_blending(
             };
             stop_animation(animation_player, other_jump_node);
         }
+        _ => {
+            
+        }
     }
 }
 
