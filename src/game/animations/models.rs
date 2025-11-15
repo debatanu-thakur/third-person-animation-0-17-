@@ -1,16 +1,24 @@
 use bevy::prelude::*;
 
+/// Current animation state of the player
+#[derive(Component, Debug, Clone, Copy, PartialEq)]
 pub enum AnimationState {
-    Standing,
-    Running(f32),
+    Idle,
+    Walking,
+    Running(f32),  // Speed value - used for walk-run blending
+    Moving(f32),  // Speed value - used for walk-run blending
     Jumping,
-    Falling,
 }
 
-#[derive(Resource)]
-struct AnimationNodes {
-    standing: AnimationNodeIndex,
-    running: AnimationNodeIndex,
-    jumping: AnimationNodeIndex,
-    falling: AnimationNodeIndex,
+impl Default for AnimationState {
+    fn default() -> Self {
+        Self::Idle
+    }
+}
+
+/// Component that stores the animation graph and player for a character
+#[derive(Component)]
+pub struct CharacterAnimationController {
+    pub graph: Handle<AnimationGraph>,
+    pub animation_player: Entity,
 }

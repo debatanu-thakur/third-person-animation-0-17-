@@ -27,5 +27,6 @@ fn enter_gameplay_screen(mut next_screen: ResMut<NextState<Screen>>) {
 }
 
 fn all_assets_loaded(resource_handles: Res<ResourceHandles>) -> bool {
+    info!("LOOOAAADDING");
     resource_handles.is_all_done()
 }

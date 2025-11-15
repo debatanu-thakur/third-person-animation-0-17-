@@ -51,6 +51,7 @@ impl Plugin for AppPlugin {
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
+            // TODO: Re-enable audio when audio feature is restored
             audio::plugin,
             #[cfg(feature = "dev")]
             dev_tools::plugin,

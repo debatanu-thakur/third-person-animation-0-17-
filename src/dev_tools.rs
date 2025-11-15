@@ -10,6 +10,7 @@ pub(super) fn plugin(app: &mut App) {
     // Log `Screen` state transitions.
     app.add_systems(Update, log_transitions::<Screen>);
 
+    // TODO: Re-enable when bevy_ui_debug feature is restored
     // Toggle the debug overlay for UI.
     app.add_systems(
         Update,

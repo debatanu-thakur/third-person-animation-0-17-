@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_tnua::prelude::*;
+use bevy_tnua::{builtins::TnuaBuiltinDash, prelude::*};
 use bevy_hotpatching_experiments::hot;
 use crate::{game::player::{MovementController, Player}};
 
@@ -50,13 +50,20 @@ pub fn apply_controls(
         direction += cam_right;
     }
 
+    // Determine speed based on whether Shift is pressed (run) or not (walk)
+    // let is_running = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
+    // let current_speed = if is_running {
+    //     movement_controller.run_speed
+    // } else {
+    //     movement_controller.walk_speed
+    // };
 
     // Feed the basis every frame. Even if the player doesn't move - just use `desired_velocity:
     // Vec3::ZERO`. `TnuaController` starts without a basis, which will make the character collider
     // just fall.
     controller.basis(TnuaBuiltinWalk {
         // The `desired_velocity` determines how the character will move.
-        desired_velocity: direction.normalize_or_zero() * 2.0,
+        desired_velocity: direction.normalize_or_zero() * movement_controller.run_speed,
         // The `float_height` must be greater (even if by little) from the distance between the
         // character's center and the lowest point of its collider.
         float_height: FLOAT_HEIGHT,
@@ -67,23 +74,26 @@ pub fn apply_controls(
         ..Default::default()
     });
 
-    // Feed the jump action every frame as long as the player holds the jump button. If the player
-    // stops holding the jump button, simply stop feeding the action.
+
     if keyboard.pressed(KeyCode::Space) {
-        controller.action(TnuaBuiltinJump {
+        // Disabling jump for now
+        // space button will trigger parkour actions based on environment detection
+        // controller.action(TnuaBuiltinJump {
+        //     // The height is the only mandatory field of the jump button.
+        //     height: movement_controller.jump_height,
+        //     input_buffer_time: 0.5,
+        //     // `TnuaBuiltinJump` also has customization fields with sensible defaults.
+        //     ..Default::default()
+        // });
+        controller.named_action("jump",
+            TnuaBuiltinJump {
             // The height is the only mandatory field of the jump button.
             height: movement_controller.jump_height,
             input_buffer_time: 0.5,
             // `TnuaBuiltinJump` also has customization fields with sensible defaults.
             ..Default::default()
-        });
+        }
+        );
     }
 
-    // if direction.length_squared() > 0.0 {
-    //     // player_transform.rotate_y(angle);.slerp(direction, ROTATION_SPEED * time.delta_secs());
-    //     let target_rotation = Quat::from_rotation_arc(Vec3::NEG_Z, direction.normalize_or_zero());
-    //     player_transform.rotation = player_transform
-    //         .rotation
-    //         .slerp(target_rotation, ROTATION_SPEED * time.delta_secs());
-    // }
 }
