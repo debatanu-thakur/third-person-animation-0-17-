@@ -255,22 +255,25 @@ pub fn detect_obstacles(
 
             // Draw hit points
             if let Some(hit) = center_hit {
+                let hit_pos = center_origin + forward * hit.time_of_impact;
                 gizmos.sphere(
-                    center_origin + forward * hit.time_of_impact,
+                    Isometry3d::from_translation(hit_pos),
                     0.1,
                     Color::srgb(1.0, 0.0, 0.0),
                 );
             }
             if let Some(hit) = upper_hit {
+                let hit_pos = upper_origin + forward * hit.time_of_impact;
                 gizmos.sphere(
-                    upper_origin + forward * hit.time_of_impact,
+                    Isometry3d::from_translation(hit_pos),
                     0.1,
                     Color::srgb(0.0, 0.0, 1.0),
                 );
             }
             if let Some(hit) = lower_hit {
+                let hit_pos = lower_origin + forward * hit.time_of_impact;
                 gizmos.sphere(
-                    lower_origin + forward * hit.time_of_impact,
+                    Isometry3d::from_translation(hit_pos),
                     0.1,
                     Color::srgb(0.0, 1.0, 0.0),
                 );
