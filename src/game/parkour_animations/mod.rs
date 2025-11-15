@@ -316,6 +316,50 @@ fn extract_bone_names_from_clip(clip: &AnimationClip) -> Vec<String> {
 }
 
 // ============================================================================
+// DEBUG: TEST ANIMATION PLAYBACK
+// ============================================================================
+
+/// Test system to play parkour animation on character (press 'O' to test)
+pub fn test_parkour_animation_playback(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    library: Res<ParkourAnimationLibrary>,
+    mut player_query: Query<(&mut AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
+    mut animation_graphs: ResMut<Assets<AnimationGraph>>,
+) {
+    if !keyboard.just_pressed(KeyCode::KeyO) {
+        return;
+    }
+
+    if !library.loaded {
+        warn!("Parkour animations not loaded yet!");
+        return;
+    }
+
+    let Ok((mut player, current_graph_handle)) = player_query.get_single_mut() else {
+        warn!("No player with AnimationPlayer found!");
+        return;
+    };
+
+    info!("🧪 Testing vault animation playback on character...");
+
+    // Get the current animation graph
+    if let Some(graph) = animation_graphs.get_mut(current_graph_handle) {
+        // Add the vault animation to the current graph
+        let vault_node = graph.add_clip(library.vault_clip.clone(), 1.0, graph.root);
+
+        // Play the vault animation
+        player.play(vault_node).repeat();
+
+        info!("✅ Playing vault animation!");
+        info!("   If the character animates → Retargeting works! ✅");
+        info!("   If nothing happens → Bone names don't match ❌");
+        info!("   Press '1' to return to normal walk/run animation");
+    } else {
+        warn!("Could not access animation graph!");
+    }
+}
+
+// ============================================================================
 // DEBUG: SAMPLE AND PRINT
 // ============================================================================
 
@@ -396,6 +440,7 @@ pub(super) fn plugin(app: &mut App) {
             check_parkour_animations_loaded,
             collect_character_bone_names,
             collect_animation_bone_names,
+            test_parkour_animation_playback,
             debug_sample_animation,
         )
             .chain()
