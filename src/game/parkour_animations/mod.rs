@@ -1,4 +1,4 @@
-use bevy::{prelude::*, gltf::GltfAssetLabel};
+use bevy::{prelude::*, gltf::{GltfAssetLabel, Gltf}};
 use std::collections::HashMap;
 use crate::screens::Screen;
 
@@ -316,6 +316,54 @@ fn extract_bone_names_from_clip(clip: &AnimationClip) -> Vec<String> {
 }
 
 // ============================================================================
+// DEBUG: INSPECT ANIMATION RIG BONES
+// ============================================================================
+
+/// System to inspect bone names from animation GLB files
+/// Press 'L' to load and inspect the vault animation's scene
+pub fn inspect_animation_rig_bones(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    library: Res<ParkourAnimationLibrary>,
+    gltf_assets: Res<Assets<Gltf>>,
+    asset_server: Res<AssetServer>,
+) {
+    if !keyboard.just_pressed(KeyCode::KeyL) {
+        return;
+    }
+
+    info!("🔍 Inspecting animation rig bones...");
+
+    // Load the vault animation GLB file
+    let vault_gltf_handle: Handle<Gltf> = asset_server.load("models/animations/vault_over_rining.glb");
+
+    // Try to get the GLTF asset
+    if let Some(gltf) = gltf_assets.get(&vault_gltf_handle) {
+        info!("✅ Vault GLB loaded!");
+        info!("   Named nodes in GLB: {}", gltf.named_nodes.len());
+
+        // List all named nodes (these are the bones)
+        let mut bone_names: Vec<String> = gltf.named_nodes.keys().cloned().collect();
+        bone_names.sort();
+
+        info!("   First 10 bones in animation:");
+        for (i, bone_name) in bone_names.iter().take(10).enumerate() {
+            info!("     {}: {}", i + 1, bone_name);
+        }
+
+        // Check for common prefixes
+        let has_mixamorig = bone_names.iter().any(|n| n.starts_with("mixamorig:"));
+        let has_mixamorig12 = bone_names.iter().any(|n| n.starts_with("mixamorig12:"));
+
+        info!("");
+        info!("   Prefix analysis:");
+        info!("     Has 'mixamorig:' prefix: {}", has_mixamorig);
+        info!("     Has 'mixamorig12:' prefix: {}", has_mixamorig12);
+    } else {
+        warn!("❌ Vault GLB not loaded yet. Wait a moment and press 'L' again.");
+    }
+}
+
+// ============================================================================
 // DEBUG: TEST ANIMATION PLAYBACK
 // ============================================================================
 
@@ -440,6 +488,7 @@ pub(super) fn plugin(app: &mut App) {
             check_parkour_animations_loaded,
             collect_character_bone_names,
             collect_animation_bone_names,
+            inspect_animation_rig_bones,
             test_parkour_animation_playback,
             debug_sample_animation,
         )
