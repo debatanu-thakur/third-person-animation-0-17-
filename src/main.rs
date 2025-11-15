@@ -60,7 +60,6 @@ impl Plugin for AppPlugin {
             screens::plugin,
             theme::plugin,
             game::plugin,
-            ik::InverseKinematicsPlugin,
         ));
 
         // Order new `AppSystems` variants by adding them here:
