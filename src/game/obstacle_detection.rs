@@ -203,6 +203,7 @@ pub fn detect_obstacles(
 
         // Get player's forward direction
         let forward = transform.forward();
+        let forward_vec = *forward; // Convert Dir3 to Vec3
         let player_pos = transform.translation;
 
         // Define ray origins
@@ -211,7 +212,7 @@ pub fn detect_obstacles(
         let lower_origin = player_pos + Vec3::Y * config.lower_ray_height;
 
         // Ray direction and distance
-        let ray_direction = Dir3::new(forward).unwrap_or(Dir3::NEG_Z);
+        let ray_direction = forward; // Already Dir3
         let max_distance = config.detection_range;
 
         // Cast rays
@@ -220,7 +221,7 @@ pub fn detect_obstacles(
             ray_direction,
             max_distance,
             true,
-            SpatialQueryFilter::default(),
+            &SpatialQueryFilter::default(),
         );
 
         let upper_hit = spatial_query.cast_ray(
@@ -228,7 +229,7 @@ pub fn detect_obstacles(
             ray_direction,
             max_distance,
             true,
-            SpatialQueryFilter::default(),
+            &SpatialQueryFilter::default(),
         );
 
         let lower_hit = spatial_query.cast_ray(
@@ -236,26 +237,26 @@ pub fn detect_obstacles(
             ray_direction,
             max_distance,
             true,
-            SpatialQueryFilter::default(),
+            &SpatialQueryFilter::default(),
         );
 
         // Debug visualization
         if config.debug_draw_rays {
             // Center ray (yellow)
-            let center_end = center_origin + forward * max_distance;
+            let center_end = center_origin + forward_vec * max_distance;
             gizmos.line(center_origin, center_end, Color::srgb(1.0, 1.0, 0.0));
 
             // Upper ray (blue)
-            let upper_end = upper_origin + forward * max_distance;
+            let upper_end = upper_origin + forward_vec * max_distance;
             gizmos.line(upper_origin, upper_end, Color::srgb(0.0, 0.5, 1.0));
 
             // Lower ray (green)
-            let lower_end = lower_origin + forward * max_distance;
+            let lower_end = lower_origin + forward_vec * max_distance;
             gizmos.line(lower_origin, lower_end, Color::srgb(0.0, 1.0, 0.0));
 
             // Draw hit points
             if let Some(hit) = center_hit {
-                let hit_pos = center_origin + forward * hit.time_of_impact;
+                let hit_pos = center_origin + forward_vec * hit.distance;
                 gizmos.sphere(
                     Isometry3d::from_translation(hit_pos),
                     0.1,
@@ -263,7 +264,7 @@ pub fn detect_obstacles(
                 );
             }
             if let Some(hit) = upper_hit {
-                let hit_pos = upper_origin + forward * hit.time_of_impact;
+                let hit_pos = upper_origin + forward_vec * hit.distance;
                 gizmos.sphere(
                     Isometry3d::from_translation(hit_pos),
                     0.1,
@@ -271,7 +272,7 @@ pub fn detect_obstacles(
                 );
             }
             if let Some(hit) = lower_hit {
-                let hit_pos = lower_origin + forward * hit.time_of_impact;
+                let hit_pos = lower_origin + forward_vec * hit.distance;
                 gizmos.sphere(
                     Isometry3d::from_translation(hit_pos),
                     0.1,
@@ -288,7 +289,7 @@ pub fn detect_obstacles(
             center_origin,
             upper_origin,
             lower_origin,
-            forward,
+            forward_vec,
             &mut detection,
         );
 
@@ -314,10 +315,10 @@ fn classify_obstacle(
         // All three rays hit - tall wall
         (Some(center), Some(upper), Some(lower)) => {
             detection.obstacle_type = ObstacleType::TallWall;
-            detection.distance = center.time_of_impact;
-            detection.hit_point = Some(center_origin + forward * center.time_of_impact);
-            detection.ledge_point = Some(upper_origin + forward * upper.time_of_impact);
-            detection.lower_hit_point = Some(lower_origin + forward * lower.time_of_impact);
+            detection.distance = center.distance;
+            detection.hit_point = Some(center_origin + forward * center.distance);
+            detection.ledge_point = Some(upper_origin + forward * upper.distance);
+            detection.lower_hit_point = Some(lower_origin + forward * lower.distance);
 
             // Calculate approximate height
             if let (Some(ledge), Some(lower)) = (detection.ledge_point, detection.lower_hit_point) {
@@ -328,9 +329,9 @@ fn classify_obstacle(
         // Center and lower hit, no upper - medium obstacle (vault)
         (Some(center), None, Some(lower)) => {
             detection.obstacle_type = ObstacleType::MediumObstacle;
-            detection.distance = center.time_of_impact;
-            detection.hit_point = Some(center_origin + forward * center.time_of_impact);
-            detection.lower_hit_point = Some(lower_origin + forward * lower.time_of_impact);
+            detection.distance = center.distance;
+            detection.hit_point = Some(center_origin + forward * center.distance);
+            detection.lower_hit_point = Some(lower_origin + forward * lower.distance);
 
             if let (Some(hit), Some(lower)) = (detection.hit_point, detection.lower_hit_point) {
                 detection.height = hit.y - lower.y;
@@ -340,22 +341,22 @@ fn classify_obstacle(
         // Only center hit - low obstacle
         (Some(center), None, None) => {
             detection.obstacle_type = ObstacleType::LowObstacle;
-            detection.distance = center.time_of_impact;
-            detection.hit_point = Some(center_origin + forward * center.time_of_impact);
+            detection.distance = center.distance;
+            detection.hit_point = Some(center_origin + forward * center.distance);
         }
 
         // Only upper hit - ledge above
         (None, Some(upper), None) => {
             detection.obstacle_type = ObstacleType::Ledge;
-            detection.distance = upper.time_of_impact;
-            detection.ledge_point = Some(upper_origin + forward * upper.time_of_impact);
+            detection.distance = upper.distance;
+            detection.ledge_point = Some(upper_origin + forward * upper.distance);
         }
 
         // Center and upper hit, no lower - might be floating obstacle or gap edge
         (Some(center), Some(upper), None) => {
             detection.obstacle_type = ObstacleType::FloorGap;
-            detection.distance = center.time_of_impact;
-            detection.hit_point = Some(center_origin + forward * center.time_of_impact);
+            detection.distance = center.distance;
+            detection.hit_point = Some(center_origin + forward * center.distance);
         }
 
         // No hits
@@ -367,8 +368,8 @@ fn classify_obstacle(
         _ => {
             if let Some(center) = center_hit {
                 detection.obstacle_type = ObstacleType::LowObstacle;
-                detection.distance = center.time_of_impact;
-                detection.hit_point = Some(center_origin + forward * center.time_of_impact);
+                detection.distance = center.distance;
+                detection.hit_point = Some(center_origin + forward * center.distance);
             }
         }
     }

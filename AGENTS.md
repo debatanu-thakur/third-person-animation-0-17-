@@ -76,7 +76,7 @@ fn detect_obstacles(
     mut gizmos: Gizmos,
 ) {
     let origin = Vec3::new(0.0, 1.0, 0.0);
-    let direction = Dir3::new(Vec3::NEG_Z).unwrap();
+    let direction = Dir3::NEG_Z;  // Dir3 direction
     let max_distance = 5.0;
 
     // Cast a single ray
@@ -85,23 +85,28 @@ fn detect_obstacles(
         direction,
         max_distance,
         true,  // solid (hit triggers/sensors)
-        SpatialQueryFilter::default(),
+        &SpatialQueryFilter::default(),  // ⚠️ Pass by reference!
     );
 
     if let Some(ray_hit_data) = hit {
-        // ray_hit_data.time_of_impact - f32 distance
+        // ray_hit_data.distance - f32 distance (⚠️ renamed from time_of_impact in 0.4.x)
         // ray_hit_data.entity - Entity hit
-        let hit_point = origin + *direction * ray_hit_data.time_of_impact;
-        gizmos.sphere(hit_point, 0.1, Color::GREEN);
+        // ray_hit_data.normal - Vec3 surface normal
+        let hit_point = origin + *direction * ray_hit_data.distance;
+        gizmos.sphere(Isometry3d::from_translation(hit_point), 0.1, Color::GREEN);
     }
 }
 ```
 
-**Key Points**:
+**Key Points (Avian3D 0.4.x)**:
 - `SpatialQuery` is a system parameter from `avian3d::prelude::*`
 - Returns `Option<RayHitData>`
-- `RayHitData` contains: `time_of_impact`, `entity`, `normal`
+- **⚠️ API Changes in 0.4.x**:
+  - `RayHitData.time_of_impact` → `RayHitData.distance`
+  - `SpatialQueryFilter` must be passed by reference: `&SpatialQueryFilter::default()`
+- `RayHitData` fields: `distance`, `entity`, `normal`
 - Use `Dir3` for directions (typed direction vector)
+- Convert `Dir3` to `Vec3` with `*direction` for math operations
 - Filter allows excluding specific entities/layers
 
 ---
@@ -608,12 +613,46 @@ fn detect_obstacles(
 
 ---
 
+## 🚨 Avian3D 0.4.x Migration Notes
+
+### **Breaking Changes**
+
+1. **`RayHitData.time_of_impact` → `RayHitData.distance`**
+   ```rust
+   // ❌ Old (0.3.x)
+   let hit_point = origin + direction * hit.time_of_impact;
+
+   // ✅ New (0.4.x)
+   let hit_point = origin + direction * hit.distance;
+   ```
+
+2. **`SpatialQueryFilter` must be passed by reference**
+   ```rust
+   // ❌ Old (0.3.x)
+   spatial_query.cast_ray(origin, dir, max_dist, true, SpatialQueryFilter::default())
+
+   // ✅ New (0.4.x)
+   spatial_query.cast_ray(origin, dir, max_dist, true, &SpatialQueryFilter::default())
+   ```
+
+3. **`Dir3` handling**
+   - `Transform::forward()` returns `Dir3`
+   - Dereference with `*direction` to convert to `Vec3` for math operations
+   ```rust
+   let forward = transform.forward();  // Returns Dir3
+   let forward_vec = *forward;  // Convert to Vec3
+   let result = origin + forward_vec * distance;  // Vec3 math
+   ```
+
+---
+
 ## 🎯 Next Steps
 
-1. **Update `obstacle_detection.rs`** - Fix gizmo sphere API
-2. **Add IK setup system** - Create hand/foot targets
-3. **Integrate AnimationGraph** - Load and play parkour animations
-4. **Test raycasting** - Verify detection works with debug gizmos
-5. **Add sensors** - Proximity triggers for automatic actions
+1. ✅ **Update `obstacle_detection.rs`** - Fixed Avian3D 0.4.x API
+2. ✅ **Fix gizmo sphere API** - Updated to use `Isometry3d`
+3. **Add IK setup system** - Create hand/foot targets
+4. **Integrate AnimationGraph** - Load and play parkour animations
+5. **Test raycasting** - Verify detection works with debug gizmos
+6. **Add sensors** - Proximity triggers for automatic actions
 
-This summary should serve as a reference for migrating code to Bevy 0.17 patterns! 🚀
+This summary should serve as a reference for migrating code to Bevy 0.17 and Avian3D 0.4.x patterns! 🚀
