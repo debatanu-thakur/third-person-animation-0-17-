@@ -186,7 +186,7 @@ pub fn collect_character_bone_names(
         let bone_name = name.as_str();
 
         // Only collect Mixamo rig bones
-        if bone_name.starts_with("mixamorig:") {
+        if bone_name.starts_with("mixamorig12:") {
             if !bone_names.character_bones.contains(&bone_name.to_string()) {
                 bone_names.character_bones.push(bone_name.to_string());
             }
