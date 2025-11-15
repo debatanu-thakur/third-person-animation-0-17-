@@ -341,8 +341,9 @@ pub fn inspect_animation_rig_bones(
         info!("✅ Vault GLB loaded!");
         info!("   Named nodes in GLB: {}", gltf.named_nodes.len());
 
+        let get_some_details = gltf.named_nodes.keys().cloned();
         // List all named nodes (these are the bones)
-        let mut bone_names: Vec<String> = gltf.named_nodes.keys().cloned().collect();
+        let mut bone_names: Vec<String> = get_some_details.map(|k| k.to_string()).collect();
         bone_names.sort();
 
         info!("   First 10 bones in animation:");
