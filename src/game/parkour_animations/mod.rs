@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
 use crate::{game::animations::animation_controller::AnimationNodes, screens::Screen};
+use crate::game::player::parkour::{ParkourController, ParkourState};
 
 mod assets;
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
@@ -296,7 +297,48 @@ pub fn debug_sample_animation(
     info!("   Climb clip: {:?}", library.climb_clip);
     info!("   Slide clip: {:?}", library.slide_clip);
     info!("");
-    info!("💡 Press 'O' to test vault animation playback on character");
+    info!("💡 Press 'V' to test vault animation playback on character");
+}
+
+// ============================================================================
+// DEBUG: TRIGGER VAULT STATE FOR TESTING
+// ============================================================================
+
+/// Test system to trigger vault animation by setting parkour state (press 'V')
+pub fn test_trigger_vault_animation(
+    keyboard: Res<ButtonInput<KeyCode>>,
+    mut player_query: Query<&mut ParkourController, With<crate::game::player::Player>>,
+) {
+    if !keyboard.just_pressed(KeyCode::KeyV) {
+        return;
+    }
+
+    let Ok(mut parkour) = player_query.get_single_mut() else {
+        warn!("❌ No player with ParkourController found!");
+        return;
+    };
+
+    // Toggle between Vaulting and None
+    if matches!(parkour.state, ParkourState::Vaulting) {
+        parkour.state = ParkourState::None;
+        info!("🛑 Vault animation stopped (state = None)");
+    } else {
+        parkour.state = ParkourState::Vaulting;
+        info!("");
+        info!("🧪 ============================================");
+        info!("🧪 VAULT ANIMATION TEST TRIGGERED");
+        info!("🧪 ============================================");
+        info!("✅ Set parkour state to Vaulting");
+        info!("   The animation controller will now play vault animation");
+        info!("");
+        info!("   👀 WATCH YOUR CHARACTER:");
+        info!("   ✅ If character does vaulting motion → RETARGETING WORKS!");
+        info!("   ❌ If character freezes/T-poses → Bone mismatch");
+        info!("");
+        info!("   Press 'V' again to stop");
+        info!("🧪 ============================================");
+        info!("");
+    }
 }
 
 // ============================================================================
@@ -315,8 +357,9 @@ pub(super) fn plugin(app: &mut App) {
             create_parkour_library,
 
             // Debug systems
-            test_parkour_animation_playback,
-            debug_sample_animation,
+            test_parkour_animation_playback,  // 'O' key - dump bone data
+            test_trigger_vault_animation,      // 'V' key - trigger vault animation
+            debug_sample_animation,            // 'P' key - print library info
         )
             .chain()
             .run_if(in_state(Screen::Gameplay)),
