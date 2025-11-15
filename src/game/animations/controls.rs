@@ -1,17 +1,22 @@
 use bevy::prelude::*;
 use bevy_tnua::{builtins::TnuaBuiltinDash, prelude::*};
 use bevy_hotpatching_experiments::hot;
-use crate::{game::player::{MovementController, Player}};
+use crate::game::{
+    player::{MovementController, Player},
+    animations::models::MovementTimer,
+};
+use std::time::Duration;
 
 
 const FLOAT_HEIGHT: f32 = 0.9;
 const ROTATION_SPEED: f32 = 10.0;
+const WALK_TO_RUN_DURATION: f32 = 1.0; // Seconds to transition from walk to run
 
 #[hot]
 pub fn apply_controls(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut TnuaController>,
-    mut movement_query: Query<(&MovementController, &mut Transform), With<Player>>,
+    mut movement_query: Query<(&mut MovementController, &MovementTimer, &mut Transform), With<Player>>,
     camera_query: Query<&Transform, (With<Camera3d>, Without<Player>)>,
     time: Res<Time>,
 ) {
@@ -19,7 +24,7 @@ pub fn apply_controls(
         return;
     };
 
-    let Ok((movement_controller, mut player_transform)) = movement_query.single_mut() else {
+    let Ok((mut movement_controller, movement_timer, mut player_transform)) = movement_query.single_mut() else {
         return;
     };
 
@@ -50,20 +55,44 @@ pub fn apply_controls(
         direction += cam_right;
     }
 
-    // Determine speed based on whether Shift is pressed (run) or not (walk)
-    // let is_running = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
-    // let current_speed = if is_running {
-    //     movement_controller.run_speed
-    // } else {
-    //     movement_controller.walk_speed
-    // };
+    // Calculate target speed based on movement timer
+    let is_moving = direction.length_squared() > 0.0;
+    let target_speed = if !is_moving {
+        // Not moving - target is zero
+        0.0
+    } else {
+        // Moving - determine target based on how long we've been moving
+        let time_moving = movement_timer.time_in_state.as_secs_f32();
+
+        if time_moving < WALK_TO_RUN_DURATION {
+            // During the first second, accelerate from 0 to walk_speed, then walk_speed to run_speed
+            // Use a simple linear interpolation
+            let t = time_moving / WALK_TO_RUN_DURATION;
+            movement_controller.walk_speed + t * (movement_controller.run_speed - movement_controller.walk_speed)
+        } else {
+            // After 1 second, target is run speed
+            movement_controller.run_speed
+        }
+    };
+
+    // Smoothly interpolate current speed towards target speed
+    let acceleration = 15.0; // How fast we accelerate/decelerate (units per second per second)
+    let speed_delta = acceleration * time.delta_secs();
+
+    if target_speed > movement_controller.current_speed {
+        // Accelerating
+        movement_controller.current_speed = (movement_controller.current_speed + speed_delta).min(target_speed);
+    } else {
+        // Decelerating
+        movement_controller.current_speed = (movement_controller.current_speed - speed_delta).max(target_speed);
+    }
 
     // Feed the basis every frame. Even if the player doesn't move - just use `desired_velocity:
     // Vec3::ZERO`. `TnuaController` starts without a basis, which will make the character collider
     // just fall.
     controller.basis(TnuaBuiltinWalk {
         // The `desired_velocity` determines how the character will move.
-        desired_velocity: direction.normalize_or_zero() * movement_controller.run_speed,
+        desired_velocity: direction.normalize_or_zero() * movement_controller.current_speed,
         // The `float_height` must be greater (even if by little) from the distance between the
         // character's center and the lowest point of its collider.
         float_height: FLOAT_HEIGHT,

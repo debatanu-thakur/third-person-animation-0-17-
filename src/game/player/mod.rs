@@ -22,7 +22,9 @@ pub struct Player;
 // Movement state
 #[derive(Component)]
 pub struct MovementController {
-    pub run_speed: f32,  // Always running when moving
+    pub walk_speed: f32,  // Speed during walk animation
+    pub run_speed: f32,   // Speed during run animation
+    pub current_speed: f32, // Actual current speed (interpolated)
     pub jump_velocity: f32,
     pub jump_height: f32,
     pub double_jump_available: bool,
@@ -32,7 +34,9 @@ pub struct MovementController {
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            run_speed: 8.0,  // Always running speed (no walk/sprint distinction in movement)
+            walk_speed: 4.0,  // Walking speed
+            run_speed: 8.0,   // Running speed
+            current_speed: 0.0, // Start stationary
             jump_velocity: 22.0,
             jump_height: 4.0,
             double_jump_available: false,
