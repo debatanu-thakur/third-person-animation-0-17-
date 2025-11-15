@@ -145,7 +145,7 @@ pub fn determine_animation_state(
 
     // Otherwise, determine state from Tnua controller
     const IDLE_THRESHOLD: f32 = 0.1; // Below this = idle
-    const WALK_TO_RUN_DURATION: Duration = Duration::from_secs(1); // Walk for 1 second before transitioning to run
+    const WALK_TO_RUN_DURATION: Duration = Duration::from_millis(200); // Walk for 200 milli second before transitioning to run
 
     let current_status_for_animating = match controller.action_name() {
         Some(TnuaBuiltinJump::NAME) | Some("jump") => {
