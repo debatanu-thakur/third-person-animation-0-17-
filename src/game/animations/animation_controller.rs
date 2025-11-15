@@ -215,9 +215,9 @@ fn apply_animation_state(
                 AnimationState::Idle => {
                     // Transition from Walking → Idle: 200ms
                     // Transition from Running → Idle happens via Walking first
-                    let transition_duration = match old_state.unwrap() {
-                        AnimationState::Walking => Duration::from_millis(200),
-                        AnimationState::Running => Duration::from_millis(200),
+                    let transition_duration = match old_state {
+                        Some(AnimationState::Walking) => Duration::from_millis(200),
+                        Some(AnimationState::Running) => Duration::from_millis(200),
                         _ => Duration::ZERO,
                     };
                     transitions
@@ -227,9 +227,9 @@ fn apply_animation_state(
                 AnimationState::Walking => {
                     // Idle → Walking: immediate transition
                     // Running → Walking: 500ms transition (when slowing down)
-                    let transition_duration = match old_state.unwrap() {
-                        AnimationState::Idle => Duration::ZERO,
-                        AnimationState::Running => Duration::from_millis(500),
+                    let transition_duration = match old_state {
+                        Some(AnimationState::Idle) => Duration::ZERO,
+                        Some(AnimationState::Running) => Duration::from_millis(500),
                         _ => Duration::from_millis(200),
                     };
                     transitions
@@ -244,8 +244,8 @@ fn apply_animation_state(
                 },
                 AnimationState::Jumping => {
                     // Play appropriate jump animation based on previous state
-                    match old_state.unwrap() {
-                        AnimationState::Walking | AnimationState::Running => {
+                    match old_state {
+                        Some(AnimationState::Walking) | Some(AnimationState::Running) => {
                             // Running jump when jumping while moving
                             transitions
                                 .play(
@@ -256,8 +256,8 @@ fn apply_animation_state(
                                 .set_speed(1.2);
                             info!("Playing running jump (one-shot)");
                         }
-                        AnimationState::Idle => {
-                            // Standing jump when jumping from idle
+                        Some(AnimationState::Idle) | None => {
+                            // Standing jump when jumping from idle or initial state
                             transitions.play(
                                 animation_player,
                                 animation_nodes.jump,
