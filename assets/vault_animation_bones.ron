@@ -1,0 +1,400 @@
+(
+  duration: 1.0333333,
+  curves: [
+    (
+      target_id: "AnimationTargetId(a5268742-9715-5751-9b2a-102c6d80b053)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(02ef8891-d4c3-535c-8fa0-7d7a378ecfdf)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(558d9455-5593-5a25-933b-2b558d0922a1)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(01bf8205-f072-501b-892a-e23e65d7639e)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(d25a0773-08bb-52d6-bf74-0b019ba898d0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(f7d3f994-e8c4-553d-a48f-9599599d10ba)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(4d2be198-14d5-5868-955a-9a2604290ce0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(74190c94-4c8f-5c0a-8951-dfa7bdfb4383)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(417d4443-f985-54f2-b4ad-794370f87d78)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(a9404bee-3c96-56c7-8b58-c5a3ffacedc0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(1b71d24a-9f70-574c-9605-1ce904b666c0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(ed35aa04-3e08-5928-9fd3-8be2e5a39a26)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(aaa01b35-295b-5c9c-a2a6-eb4a0878c112)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(295109d5-dd1e-5156-b044-cc58257c30c7)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(eff8bfe4-fe13-55d6-b6de-1154f717d8c2)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(747b5c06-a3a2-53af-ba41-d8e8b176bd39)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(c4f3d500-142a-5918-b511-0d5213d29201)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(1c04bd14-9458-5d69-9873-fd004a5a6870)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(f3c6adb1-bf10-5faa-ae90-956ec80cdbb1)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(7623a131-75ea-5d83-bce7-9e3374a2061f)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(53da381a-2b71-505b-bfed-9fa5f29c89c5)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(af3a7252-6324-5271-ae92-ea27e0e493d7)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(17d21a28-97cd-5305-8409-1c965ea68aa3)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(4701771a-b8e1-5eed-a74e-880772a9b0c6)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(73a3a144-ffe5-5a1e-bffd-2b7fef864e32)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(dea9183d-8824-537a-a8e6-216f326f6b51)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(35e4bb80-905c-5a41-b597-04e88df5ffef)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(e9128be8-db1b-5e3e-8769-2eeabfef1e90)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(acb9b614-2f49-595a-870f-c1fd931779e9)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(c30ada8f-ce5c-547f-a4a3-a2603bfe7d4a)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(48f5fbd1-0744-52ef-ac67-f0f562a69659)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(64d4e95e-d51f-567d-9cc7-63118f47de4b)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(34ca55bb-2609-5266-8e44-12d57407165e)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(fc71b7cf-cb15-5743-9229-711c2c1883f6)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(cc76b05f-c3c1-5aa7-9297-bb0b4525861b)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(400b6abb-1e9f-551d-83c0-6b481323d7a0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(9065ba7d-8cc2-5950-81a6-2fe4dac9b510)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(d8b6cd7a-2eba-5693-8d4f-75ed1b63d1d3)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(a7056ae4-2934-5209-bd7c-c3332c6e6cc9)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(fbb69d3b-c798-5748-9d12-deaa5d722f8b)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(9deaa692-1235-5390-aada-e9bcda6faa54)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(2f7eac01-6aff-570a-b1e6-b4b46d9ed64f)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(0c4ca153-47ad-59a3-ad3c-3622ee2efe65)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(38d81074-7770-5640-a9b0-fbc047519e86)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(02154660-c07b-535a-a68a-2294d935e09f)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(15d99ac9-03f4-5bf5-b8fa-819927d79432)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(13dc9312-6368-5a69-b099-050ca7893221)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(b9fea5ca-fda3-530a-9b84-cb4dc6999848)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(868059fd-16ea-560d-b8d3-bed1bb8047c3)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(30946bf0-08a0-52a5-a46b-1caca78e076a)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(45813145-1900-5e29-b4da-821d879eedfd)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(aa83e37b-c1a3-54bd-a2c7-2a6d72e5bceb)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(cccc99c9-914d-5907-a79b-451ac03fcbd0)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(23a671db-e5d8-554f-a0d4-98bc08a7cd97)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(e8f522d4-f63e-50a4-b770-9593084f5bff)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(ee4922f0-6160-5c98-a439-500fd66d38c4)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(0144cbab-4ef3-5ed1-9c1e-fb2b2cbfbc0f)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(24a23f43-4c0c-51bb-aad6-0731e7d7f9da)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(0971e46f-9800-5e59-92f7-ae723530a63d)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(4e725c4f-ca2a-5feb-9473-50261af7a003)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(f28bb2b5-1538-5e13-8eef-3423c2112c7e)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(d7503741-9d86-583b-9bb2-3be354e67554)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(47a580af-1e0c-558d-8b9e-151503f9ea62)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(62664ce4-c2e9-5c90-9bab-7bd3345033e2)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+    (
+      target_id: "AnimationTargetId(232b6bba-4132-5ecd-affc-b051aa02c1b9)",
+      curve_count: 3,
+      // GLTF has 66 named nodes
+    ),
+  ],
+  total_curve_count: 65,
+  gltf_named_nodes: [
+    "mixamorig12:RightToe_End",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 59 }), path: Some(models/animations/vault.glb#Node59) }
+    "mixamorig12:LeftHandPinky4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 19 }), path: Some(models/animations/vault.glb#Node19) }
+    "mixamorig12:LeftHandMiddle2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 13 }), path: Some(models/animations/vault.glb#Node13) }
+    "mixamorig12:LeftHandThumb1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 6 }), path: Some(models/animations/vault.glb#Node6) }
+    "mixamorig12:LeftHandMiddle3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 12 }), path: Some(models/animations/vault.glb#Node12) }
+    "mixamorig12:RightFoot",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 61 }), path: Some(models/animations/vault.glb#Node61) }
+    "mixamorig12:LeftHandPinky1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 22 }), path: Some(models/animations/vault.glb#Node22) }
+    "mixamorig12:RightToeBase",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 60 }), path: Some(models/animations/vault.glb#Node60) }
+    "mixamorig12:LeftFoot",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 56 }), path: Some(models/animations/vault.glb#Node56) }
+    "mixamorig12:LeftUpLeg",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 58 }), path: Some(models/animations/vault.glb#Node58) }
+    "mixamorig12:RightLeg",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 62 }), path: Some(models/animations/vault.glb#Node62) }
+    "mixamorig12:Spine",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 53 }), path: Some(models/animations/vault.glb#Node53) }
+    "mixamorig12:RightHandIndex2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 33 }), path: Some(models/animations/vault.glb#Node33) }
+    "mixamorig12:Head",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 1 }), path: Some(models/animations/vault.glb#Node1) }
+    "mixamorig12:RightHandIndex3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 32 }), path: Some(models/animations/vault.glb#Node32) }
+    "mixamorig12:LeftForeArm",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 24 }), path: Some(models/animations/vault.glb#Node24) }
+    "mixamorig12:RightHandPinky1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 46 }), path: Some(models/animations/vault.glb#Node46) }
+    "Armature",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 65 }), path: Some(models/animations/vault.glb#Node65) }
+    "mixamorig12:RightHandIndex4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 31 }), path: Some(models/animations/vault.glb#Node31) }
+    "mixamorig12:LeftHandRing2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 17 }), path: Some(models/animations/vault.glb#Node17) }
+    "mixamorig12:LeftHandPinky2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 21 }), path: Some(models/animations/vault.glb#Node21) }
+    "mixamorig12:RightHandMiddle2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 37 }), path: Some(models/animations/vault.glb#Node37) }
+    "mixamorig12:RightHandMiddle4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 35 }), path: Some(models/animations/vault.glb#Node35) }
+    "mixamorig12:LeftHandThumb2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 5 }), path: Some(models/animations/vault.glb#Node5) }
+    "mixamorig12:RightHandThumb2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 29 }), path: Some(models/animations/vault.glb#Node29) }
+    "mixamorig12:LeftHandMiddle1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 14 }), path: Some(models/animations/vault.glb#Node14) }
+    "mixamorig12:LeftToeBase",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 55 }), path: Some(models/animations/vault.glb#Node55) }
+    "mixamorig12:RightHandMiddle1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 38 }), path: Some(models/animations/vault.glb#Node38) }
+    "mixamorig12:LeftShoulder",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 26 }), path: Some(models/animations/vault.glb#Node26) }
+    "mixamorig12:RightHandRing4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 39 }), path: Some(models/animations/vault.glb#Node39) }
+    "mixamorig12:Hips",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 64 }), path: Some(models/animations/vault.glb#Node64) }
+    "mixamorig12:LeftToe_End",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 54 }), path: Some(models/animations/vault.glb#Node54) }
+    "mixamorig12:RightHandIndex1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 34 }), path: Some(models/animations/vault.glb#Node34) }
+    "mixamorig12:LeftHandThumb4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 3 }), path: Some(models/animations/vault.glb#Node3) }
+    "mixamorig12:LeftHandMiddle4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 11 }), path: Some(models/animations/vault.glb#Node11) }
+    "mixamorig12:HeadTop_End",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 0 }), path: Some(models/animations/vault.glb#Node0) }
+    "mixamorig12:LeftArm",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 25 }), path: Some(models/animations/vault.glb#Node25) }
+    "mixamorig12:RightHandRing1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 42 }), path: Some(models/animations/vault.glb#Node42) }
+    "mixamorig12:LeftHandRing4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 15 }), path: Some(models/animations/vault.glb#Node15) }
+    "mixamorig12:LeftHandIndex2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 9 }), path: Some(models/animations/vault.glb#Node9) }
+    "mixamorig12:RightHandThumb1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 30 }), path: Some(models/animations/vault.glb#Node30) }
+    "mixamorig12:LeftHand",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 23 }), path: Some(models/animations/vault.glb#Node23) }
+    "mixamorig12:RightHandRing2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 41 }), path: Some(models/animations/vault.glb#Node41) }
+    "mixamorig12:RightHandPinky4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 43 }), path: Some(models/animations/vault.glb#Node43) }
+    "mixamorig12:Spine2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 51 }), path: Some(models/animations/vault.glb#Node51) }
+    "mixamorig12:RightHandPinky3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 44 }), path: Some(models/animations/vault.glb#Node44) }
+    "mixamorig12:LeftHandIndex4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 7 }), path: Some(models/animations/vault.glb#Node7) }
+    "mixamorig12:LeftHandRing1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 18 }), path: Some(models/animations/vault.glb#Node18) }
+    "mixamorig12:RightForeArm",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 48 }), path: Some(models/animations/vault.glb#Node48) }
+    "mixamorig12:RightShoulder",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 50 }), path: Some(models/animations/vault.glb#Node50) }
+    "mixamorig12:RightUpLeg",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 63 }), path: Some(models/animations/vault.glb#Node63) }
+    "mixamorig12:LeftLeg",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 57 }), path: Some(models/animations/vault.glb#Node57) }
+    "mixamorig12:LeftHandIndex3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 8 }), path: Some(models/animations/vault.glb#Node8) }
+    "mixamorig12:RightHandThumb3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 28 }), path: Some(models/animations/vault.glb#Node28) }
+    "mixamorig12:LeftHandIndex1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 10 }), path: Some(models/animations/vault.glb#Node10) }
+    "mixamorig12:Spine1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 52 }), path: Some(models/animations/vault.glb#Node52) }
+    "mixamorig12:RightHandPinky2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 45 }), path: Some(models/animations/vault.glb#Node45) }
+    "mixamorig12:LeftHandThumb3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 4 }), path: Some(models/animations/vault.glb#Node4) }
+    "mixamorig12:LeftHandRing3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 16 }), path: Some(models/animations/vault.glb#Node16) }
+    "mixamorig12:RightHandRing3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 40 }), path: Some(models/animations/vault.glb#Node40) }
+    "mixamorig12:RightHandMiddle3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 36 }), path: Some(models/animations/vault.glb#Node36) }
+    "mixamorig12:RightArm",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 49 }), path: Some(models/animations/vault.glb#Node49) }
+    "mixamorig12:RightHand",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 47 }), path: Some(models/animations/vault.glb#Node47) }
+    "mixamorig12:LeftHandPinky3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 20 }), path: Some(models/animations/vault.glb#Node20) }
+    "mixamorig12:RightHandThumb4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 27 }), path: Some(models/animations/vault.glb#Node27) }
+    "mixamorig12:Neck",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 2 }), path: Some(models/animations/vault.glb#Node2) }
+    // Total: 66 named nodes
+  ],
+)

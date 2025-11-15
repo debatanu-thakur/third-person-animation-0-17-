@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
-use crate::screens::Screen;
+use crate::{game::animations::animation_controller::AnimationNodes, screens::Screen};
 
 mod assets;
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
@@ -120,7 +120,7 @@ pub struct AnimationSampler {
 pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
-    animation_nodes: Option<Res<crate::game::animations::animation_controller::AnimationNodes>>,
+    animation_nodes: Option<Res<AnimationNodes>>,
     player_query: Query<(Entity, &AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
     animation_graphs: Res<Assets<AnimationGraph>>,
     animation_clips: Res<Assets<AnimationClip>>,
@@ -129,6 +129,10 @@ pub fn test_parkour_animation_playback(
     children_query: Query<&Children>,
     name_query: Query<&Name>,
 ) {
+    let Some(animation_nodes) = animation_nodes else {
+        warn!("Animation nodes not ready!");
+        return;
+    };
     if !keyboard.just_pressed(KeyCode::KeyO) {
         return;
     }
@@ -146,10 +150,10 @@ pub fn test_parkour_animation_playback(
     let mut character_data = String::new();
     character_data.push_str("(\n  character_bones: [\n");
 
-    if let Ok((player_entity, animation_player, graph_handle)) = player_query.get_single() {
+    if let Ok((player_entity, animation_player, graph_handle)) = player_query.single() {
         character_data.push_str(&format!("    // Player Entity: {:?}\n", player_entity));
-        character_data.push_str(&format!("    // AnimationPlayer active: {}\n", animation_player.is_playing()));
-        character_data.push_str(&format!("    // AnimationPlayer paused: {}\n", animation_player.is_paused()));
+        character_data.push_str(&format!("    // AnimationPlayer active: {}\n", animation_player.is_playing_animation(animation_nodes.vault)));
+        character_data.push_str(&format!("    // AnimationPlayer paused: {}\n", animation_player.animation(animation_nodes.vault).unwrap().is_paused()));
 
         // Recursively walk children to find all bones
         fn collect_bones(
@@ -170,7 +174,7 @@ pub fn test_parkour_animation_playback(
 
             if let Ok(children) = children_query.get(entity) {
                 for child in children.iter() {
-                    collect_bones(*child, depth + 1, children_query, name_query, output);
+                    collect_bones(child, depth + 1, children_query, name_query, output);
                 }
             }
         }
@@ -185,21 +189,21 @@ pub fn test_parkour_animation_playback(
     // ========================================
     character_data.push_str("  animation_graph: (\n");
 
-    if let Ok((_, _, graph_handle)) = player_query.get_single() {
+    if let Ok((_, _, graph_handle)) = player_query.single() {
         if let Some(graph) = animation_graphs.get(graph_handle) {
             character_data.push_str(&format!("    root_node: {:?},\n", graph.root));
             character_data.push_str(&format!("    node_count: {},\n", graph.graph.node_count()));
 
-            if let Some(nodes) = animation_nodes {
-                character_data.push_str("    registered_nodes: (\n");
-                character_data.push_str(&format!("      idle: {:?},\n", nodes.idle));
-                character_data.push_str(&format!("      walk: {:?},\n", nodes.walk));
-                character_data.push_str(&format!("      run: {:?},\n", nodes.run));
-                character_data.push_str(&format!("      vault: {:?},\n", nodes.vault));
-                character_data.push_str(&format!("      climb: {:?},\n", nodes.climb));
-                character_data.push_str(&format!("      slide: {:?},\n", nodes.slide));
-                character_data.push_str("    ),\n");
-            }
+
+            character_data.push_str("    registered_nodes: (\n");
+            character_data.push_str(&format!("      idle: {:?},\n", animation_nodes.idle));
+            character_data.push_str(&format!("      walk: {:?},\n", animation_nodes.walk));
+            character_data.push_str(&format!("      run: {:?},\n", animation_nodes.run));
+            character_data.push_str(&format!("      vault: {:?},\n", animation_nodes.vault));
+            character_data.push_str(&format!("      climb: {:?},\n", animation_nodes.climb));
+            character_data.push_str(&format!("      slide: {:?},\n", animation_nodes.slide));
+            character_data.push_str("    ),\n");
+
         }
     }
 
@@ -240,7 +244,7 @@ pub fn test_parkour_animation_playback(
         }
 
         vault_data.push_str("  ],\n");
-        vault_data.push_str(&format!("  total_curve_count: {},\n", vault_clip.curves().count()));
+        vault_data.push_str(&format!("  total_curve_count: {},\n", vault_clip.curves().into_iter().count()));
     }
 
     // ========================================
