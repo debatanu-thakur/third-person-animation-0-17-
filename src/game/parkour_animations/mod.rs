@@ -2,6 +2,9 @@ use bevy::{prelude::*, gltf::{GltfAssetLabel, Gltf}};
 use std::collections::HashMap;
 use crate::screens::Screen;
 
+mod assets;
+pub use assets::{VaultGltfAsset, VaultAnimationInfo, extract_vault_bone_info};
+
 // ============================================================================
 // PARKOUR ANIMATION LIBRARY
 // ============================================================================
@@ -320,47 +323,78 @@ fn extract_bone_names_from_clip(clip: &AnimationClip) -> Vec<String> {
 // ============================================================================
 
 /// System to inspect bone names from animation GLB files
-/// Press 'L' to load and inspect the vault animation's scene
+/// Press 'L' to inspect the vault animation bone info
 pub fn inspect_animation_rig_bones(
     keyboard: Res<ButtonInput<KeyCode>>,
-    library: Res<ParkourAnimationLibrary>,
-    gltf_assets: Res<Assets<Gltf>>,
-    asset_server: Res<AssetServer>,
+    vault_info: Option<Res<VaultAnimationInfo>>,
+    bone_names: Res<AnimationBoneNames>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyL) {
         return;
     }
 
     info!("🔍 Inspecting animation rig bones...");
+    info!("");
 
-    // Load the vault animation GLB file
-    let vault_gltf_handle: Handle<Gltf> = asset_server.load("models/animations/vault_over_rining.glb");
+    // Show vault animation info
+    if let Some(vault_info) = vault_info {
+        info!("✅ Vault Animation GLB Info:");
+        info!("   Total bones/nodes: {}", vault_info.bone_names.len());
+        info!("   Has 'mixamorig:' prefix: {}", vault_info.has_mixamorig);
+        info!("   Has 'mixamorig12:' prefix: {}", vault_info.has_mixamorig12);
+        info!("");
 
-    // Try to get the GLTF asset
-    if let Some(gltf) = gltf_assets.get(&vault_gltf_handle) {
-        info!("✅ Vault GLB loaded!");
-        info!("   Named nodes in GLB: {}", gltf.named_nodes.len());
-
-        let get_some_details = gltf.named_nodes.keys().cloned();
-        // List all named nodes (these are the bones)
-        let mut bone_names: Vec<String> = get_some_details.map(|k| k.to_string()).collect();
-        bone_names.sort();
-
-        info!("   First 10 bones in animation:");
-        for (i, bone_name) in bone_names.iter().take(10).enumerate() {
+        info!("   First 10 bones in vault animation:");
+        for (i, bone_name) in vault_info.bone_names.iter().take(10).enumerate() {
             info!("     {}: {}", i + 1, bone_name);
         }
-
-        // Check for common prefixes
-        let has_mixamorig = bone_names.iter().any(|n| n.starts_with("mixamorig:"));
-        let has_mixamorig12 = bone_names.iter().any(|n| n.starts_with("mixamorig12:"));
-
         info!("");
-        info!("   Prefix analysis:");
-        info!("     Has 'mixamorig:' prefix: {}", has_mixamorig);
-        info!("     Has 'mixamorig12:' prefix: {}", has_mixamorig12);
     } else {
-        warn!("❌ Vault GLB not loaded yet. Wait a moment and press 'L' again.");
+        warn!("❌ Vault animation info not loaded yet. Wait a moment and press 'L' again.");
+        return;
+    }
+
+    // Show character bone info
+    if !bone_names.character_bones.is_empty() {
+        info!("✅ Character Rig Info:");
+        info!("   Total bones: {}", bone_names.character_bones.len());
+        info!("");
+
+        info!("   First 10 bones in character:");
+        for (i, bone_name) in bone_names.character_bones.iter().take(10).enumerate() {
+            info!("     {}: {}", i + 1, bone_name);
+        }
+        info!("");
+    }
+
+    // Compare prefixes
+    let char_has_mixamorig12 = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig12:"));
+    let char_has_mixamorig = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig:"));
+
+    if let Some(vault_info) = vault_info {
+        info!("🔍 Bone Name Analysis:");
+        info!("   Character uses 'mixamorig:' → {}", char_has_mixamorig);
+        info!("   Character uses 'mixamorig12:' → {}", char_has_mixamorig12);
+        info!("   Animation uses 'mixamorig:' → {}", vault_info.has_mixamorig);
+        info!("   Animation uses 'mixamorig12:' → {}", vault_info.has_mixamorig12);
+        info!("");
+
+        if char_has_mixamorig12 && vault_info.has_mixamorig {
+            warn!("⚠️  MISMATCH DETECTED!");
+            warn!("   Character has 'mixamorig12:' but animation has 'mixamorig:'");
+            warn!("   This is why the animation isn't playing!");
+            warn!("   Solution: Rename bones in either the character or animation files");
+        } else if char_has_mixamorig && vault_info.has_mixamorig12 {
+            warn!("⚠️  MISMATCH DETECTED!");
+            warn!("   Character has 'mixamorig:' but animation has 'mixamorig12:'");
+            warn!("   This is why the animation isn't playing!");
+            warn!("   Solution: Rename bones in either the character or animation files");
+        } else if (char_has_mixamorig && vault_info.has_mixamorig) ||
+                  (char_has_mixamorig12 && vault_info.has_mixamorig12) {
+            info!("✅ BONE PREFIXES MATCH!");
+            info!("   Both use the same naming convention.");
+            info!("   If animation still not playing, check individual bone names.");
+        }
     }
 }
 
@@ -482,13 +516,20 @@ pub(super) fn plugin(app: &mut App) {
     app.init_resource::<ParkourAnimationLibrary>();
     app.init_resource::<AnimationBoneNames>();
     app.init_resource::<SampledParkourPoses>();
+    app.init_resource::<VaultGltfAsset>();
 
     app.add_systems(
         Update,
         (
+            // Asset extraction (runs once when GLTFs load)
+            extract_vault_bone_info,
+
+            // Animation loading
             check_parkour_animations_loaded,
             collect_character_bone_names,
             collect_animation_bone_names,
+
+            // Debug tools
             inspect_animation_rig_bones,
             test_parkour_animation_playback,
             debug_sample_animation,
