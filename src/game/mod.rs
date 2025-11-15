@@ -9,6 +9,7 @@ mod animations;
 mod obstacle_detection;
 mod parkour_poses;
 mod parkour_ik;
+mod parkour_animations;
 
 use bevy::prelude::*;
 
@@ -22,5 +23,6 @@ pub(super) fn plugin(app: &mut App) {
         obstacle_detection::plugin,
         parkour_poses::plugin,
         parkour_ik::plugin,
+        parkour_animations::plugin,
     ));
 }
