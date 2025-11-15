@@ -337,23 +337,22 @@ pub fn inspect_animation_rig_bones(
     info!("");
 
     // Show vault animation info
-    if let Some(vault_info) = vault_info {
-        info!("✅ Vault Animation GLB Info:");
-        info!("   Total bones/nodes: {}", vault_info.bone_names.len());
-        info!("   Has 'mixamorig:' prefix: {}", vault_info.has_mixamorig);
-        info!("   Has 'mixamorig12:' prefix: {}", vault_info.has_mixamorig12);
-        info!("");
-
-        info!("   First 10 bones in vault animation:");
-        for (i, bone_name) in vault_info.bone_names.iter().take(10).enumerate() {
-            info!("     {}: {}", i + 1, bone_name);
-        }
-        info!("");
-    } else {
+    let Some(vault_detail) = vault_info  else {
         warn!("❌ Vault animation info not loaded yet. Wait a moment and press 'L' again.");
         return;
-    }
+    };
 
+    info!("✅ Vault Animation GLB Info:");
+    info!("   Total bones/nodes: {}", vault_detail.bone_names.len());
+    info!("   Has 'mixamorig:' prefix: {}", vault_detail.has_mixamorig);
+    info!("   Has 'mixamorig12:' prefix: {}", vault_detail.has_mixamorig12);
+    info!("");
+
+    info!("   First 10 bones in vault animation:");
+    for (i, bone_name) in vault_detail.bone_names.iter().take(10).enumerate() {
+        info!("     {}: {}", i + 1, bone_name);
+    }
+    info!("");
     // Show character bone info
     if !bone_names.character_bones.is_empty() {
         info!("✅ Character Rig Info:");
@@ -371,31 +370,29 @@ pub fn inspect_animation_rig_bones(
     let char_has_mixamorig12 = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig12:"));
     let char_has_mixamorig = bone_names.character_bones.iter().any(|n| n.starts_with("mixamorig:"));
 
-    if let Some(vault_info) = vault_info {
-        info!("🔍 Bone Name Analysis:");
+    info!("🔍 Bone Name Analysis:");
         info!("   Character uses 'mixamorig:' → {}", char_has_mixamorig);
         info!("   Character uses 'mixamorig12:' → {}", char_has_mixamorig12);
-        info!("   Animation uses 'mixamorig:' → {}", vault_info.has_mixamorig);
-        info!("   Animation uses 'mixamorig12:' → {}", vault_info.has_mixamorig12);
+        info!("   Animation uses 'mixamorig:' → {}", vault_detail.has_mixamorig);
+        info!("   Animation uses 'mixamorig12:' → {}", vault_detail.has_mixamorig12);
         info!("");
 
-        if char_has_mixamorig12 && vault_info.has_mixamorig {
+        if char_has_mixamorig12 && vault_detail.has_mixamorig {
             warn!("⚠️  MISMATCH DETECTED!");
             warn!("   Character has 'mixamorig12:' but animation has 'mixamorig:'");
             warn!("   This is why the animation isn't playing!");
             warn!("   Solution: Rename bones in either the character or animation files");
-        } else if char_has_mixamorig && vault_info.has_mixamorig12 {
+        } else if char_has_mixamorig && vault_detail.has_mixamorig12 {
             warn!("⚠️  MISMATCH DETECTED!");
             warn!("   Character has 'mixamorig:' but animation has 'mixamorig12:'");
             warn!("   This is why the animation isn't playing!");
             warn!("   Solution: Rename bones in either the character or animation files");
-        } else if (char_has_mixamorig && vault_info.has_mixamorig) ||
-                  (char_has_mixamorig12 && vault_info.has_mixamorig12) {
+        } else if (char_has_mixamorig && vault_detail.has_mixamorig) ||
+                  (char_has_mixamorig12 && vault_detail.has_mixamorig12) {
             info!("✅ BONE PREFIXES MATCH!");
             info!("   Both use the same naming convention.");
             info!("   If animation still not playing, check individual bone names.");
         }
-    }
 }
 
 // ============================================================================

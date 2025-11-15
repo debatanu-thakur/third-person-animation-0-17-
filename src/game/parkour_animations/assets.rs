@@ -54,7 +54,7 @@ pub fn extract_vault_bone_info(
     };
 
     // Extract bone names from named nodes
-    let mut bone_names: Vec<String> = gltf.named_nodes.keys().cloned().collect();
+    let mut bone_names: Vec<String> = gltf.named_nodes.keys().cloned().map(|k| k.as_ref().to_string()).collect();
     bone_names.sort();
 
     // Check for common prefixes
