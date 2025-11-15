@@ -6,6 +6,7 @@ use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaB
 use crate::game::{
     player::{self, MovementController, Player, PlayerAssets},
     obstacle_detection::detection::{ParkourController, ParkourState},
+    parkour_animations::ParkourAnimationLibrary,
 };
 
 use super::models::{AnimationState, CharacterAnimationController, MovementTimer};
@@ -19,12 +20,18 @@ pub struct AnimationNodes {
     pub jump: AnimationNodeIndex,
     pub running_jump: AnimationNodeIndex,
     pub fall: AnimationNodeIndex,
+    // Parkour animations
+    pub vault: AnimationNodeIndex,
+    pub climb: AnimationNodeIndex,
+    pub slide: AnimationNodeIndex,
+    pub wall_run: AnimationNodeIndex,
 }
 
 /// Creates the animation graph with all clips and transitions
 pub fn setup_animation_graph(
     mut commands: Commands,
     player_assets: Option<Res<PlayerAssets>>,
+    parkour_animations: Option<Res<ParkourAnimationLibrary>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
     animation_nodes: Option<Res<AnimationNodes>>,
     mut animation_player_query: Query<(Entity, &mut AnimationPlayer), Added<AnimationPlayer>>,
@@ -37,6 +44,16 @@ pub fn setup_animation_graph(
     let Some(player_assets) = player_assets else {
         return;
     };
+
+    let Some(parkour_animations) = parkour_animations else {
+        return;
+    };
+
+    // Wait for parkour animations to load
+    if !parkour_animations.loaded {
+        return;
+    }
+
     // This needs to be all players
     let Ok((animation_player_entity, mut animation_player)) = animation_player_query.single_mut() else {
         return;
@@ -56,6 +73,11 @@ pub fn setup_animation_graph(
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
     let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
 
+    // Add parkour animation clips
+    let vault_node = graph.add_clip(parkour_animations.vault_clip.clone(), 1.0, root_node);
+    let climb_node = graph.add_clip(parkour_animations.climb_clip.clone(), 1.0, root_node);
+    let slide_node = graph.add_clip(parkour_animations.slide_clip.clone(), 1.0, root_node);
+    let wall_run_node = graph.add_clip(parkour_animations.wall_run_left_clip.clone(), 1.0, root_node);
 
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
@@ -67,6 +89,10 @@ pub fn setup_animation_graph(
         jump: jump_node,
         fall: fall_node,
         running_jump: running_jump_node,
+        vault: vault_node,
+        climb: climb_node,
+        slide: slide_node,
+        wall_run: wall_run_node,
     });
     let mut transitions = AnimationTransitions::new();
     transitions
@@ -298,40 +324,35 @@ fn apply_animation_state(
                         }
                     }
                 }
-                // PARKOUR ANIMATIONS (using placeholders until parkour animations are added)
+                // PARKOUR ANIMATIONS
                 AnimationState::Vaulting => {
-                    // TODO: Use vault animation when available
-                    // For now, use running jump as placeholder
+                    // Use Mixamo vault animation
                     transitions
-                        .play(animation_player, animation_nodes.running_jump, Duration::from_millis(100))
-                        .set_speed(1.5);
-                    info!("Vaulting (placeholder: running jump)");
+                        .play(animation_player, animation_nodes.vault, Duration::from_millis(100))
+                        .set_speed(1.0);
+                    info!("🏃 Playing vault animation");
                 }
                 AnimationState::Climbing => {
-                    // TODO: Use climb animation when available
-                    // For now, use standing jump as placeholder
+                    // Use Mixamo climb animation
                     transitions
-                        .play(animation_player, animation_nodes.jump, Duration::from_millis(100))
-                        .set_speed(0.8);
-                    info!("Climbing (placeholder: standing jump)");
+                        .play(animation_player, animation_nodes.climb, Duration::from_millis(100))
+                        .set_speed(1.0);
+                    info!("🧗 Playing climb animation");
                 }
                 AnimationState::Sliding => {
-                    // TODO: Use slide animation when available
-                    // For now, use running animation at reduced speed
+                    // Use Mixamo slide animation
                     transitions
-                        .play(animation_player, animation_nodes.run, Duration::from_millis(100))
-                        .repeat()
-                        .set_speed(0.5);
-                    info!("Sliding (placeholder: running)");
+                        .play(animation_player, animation_nodes.slide, Duration::from_millis(100))
+                        .set_speed(1.0);
+                    info!("🛝 Playing slide animation");
                 }
                 AnimationState::WallRunning => {
-                    // TODO: Use wall run animation when available
-                    // For now, use running animation at increased speed
+                    // Use Mixamo wall run animation
                     transitions
-                        .play(animation_player, animation_nodes.run, Duration::from_millis(100))
+                        .play(animation_player, animation_nodes.wall_run, Duration::from_millis(100))
                         .repeat()
-                        .set_speed(1.3);
-                    info!("Wall running (placeholder: running)");
+                        .set_speed(1.0);
+                    info!("🏃‍♂️ Playing wall run animation");
                 }
             }
         }
