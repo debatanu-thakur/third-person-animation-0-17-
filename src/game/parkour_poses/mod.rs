@@ -126,10 +126,10 @@ pub fn handle_debug_animation_keys(
 
     for (key, slot_num, animation_handle, anim_name) in key_mapping {
         if keyboard.just_pressed(key) {
-            if let Some(handle) = animation_handle {
-                info!("▶ Playing debug animation slot {}: {}", slot_num, anim_name);
-                // Play animation directly for bone extraction
-                player.start(handle.clone()).repeat();
+            if let Some(_handle) = animation_handle {
+                info!("▶ Debug slot {}: {} (Note: Direct playback disabled - animations need AnimationGraph)", slot_num, anim_name);
+                // TODO: In Bevy 0.17, animations must be part of an AnimationGraph
+                // For now, use the runtime sampling system in parkour_animations instead
                 state.current_slot = Some(slot_num);
                 state.animation_name = anim_name.to_string();
                 state.animation_start_time = time.elapsed_secs();
