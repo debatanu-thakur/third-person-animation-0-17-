@@ -328,6 +328,7 @@ fn extract_bone_names_from_clip(clip: &AnimationClip) -> Vec<String> {
 pub fn debug_sample_animation(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Res<ParkourAnimationLibrary>,
+    bone_names: Res<AnimationBoneNames>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyP) {
         return;
@@ -343,6 +344,35 @@ pub fn debug_sample_animation(
     info!("   Vault node: {:?}", library.vault_node);
     info!("   Climb graph: {:?}", library.climb_graph);
     info!("   Climb node: {:?}", library.climb_node);
+    info!("");
+
+    // Show bone name verification status
+    info!("🦴 Bone name verification:");
+    info!("   Character bones collected: {}", bone_names.character_bones.len());
+    info!("   Animation bones collected: {}", bone_names.animation_bones.len());
+    info!("   Verification complete: {}", bone_names.verified);
+
+    if !bone_names.character_bones.is_empty() {
+        info!("   Sample character bones: {:?}", &bone_names.character_bones[..5.min(bone_names.character_bones.len())]);
+    }
+
+    if let Some(vault_bones) = bone_names.animation_bones.get("vault") {
+        info!("   Vault animation has {} bones", vault_bones.len());
+        info!("   Sample vault bones: {:?}", &vault_bones[..5.min(vault_bones.len())]);
+
+        // Manual verification
+        if !bone_names.character_bones.is_empty() {
+            let mut matched = 0;
+            for anim_bone in vault_bones {
+                if bone_names.character_bones.contains(anim_bone) {
+                    matched += 1;
+                }
+            }
+            let match_percent = (matched as f32 / vault_bones.len() as f32) * 100.0;
+            info!("   ✅ Bone matching: {}/{} ({:.1}%)", matched, vault_bones.len(), match_percent);
+        }
+    }
+
     info!("");
     info!("💡 To sample animations at runtime:");
     info!("   1. Play animation with AnimationPlayer");
