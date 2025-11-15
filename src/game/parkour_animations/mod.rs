@@ -116,12 +116,18 @@ pub struct AnimationSampler {
 // DEBUG: TEST ANIMATION PLAYBACK
 // ============================================================================
 
-/// Test system to play parkour animation on character (press 'O' to test)
+/// Test system to dump bone data to RON files for debugging (press 'O')
 pub fn test_parkour_animation_playback(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
     animation_nodes: Option<Res<crate::game::animations::animation_controller::AnimationNodes>>,
-    mut player_query: Query<(&mut AnimationPlayer, &mut AnimationTransitions), With<crate::game::player::Player>>,
+    player_query: Query<(Entity, &AnimationPlayer, &AnimationGraphHandle), With<crate::game::player::Player>>,
+    animation_graphs: Res<Assets<AnimationGraph>>,
+    animation_clips: Res<Assets<AnimationClip>>,
+    gltf_assets: Res<Assets<Gltf>>,
+    gltf_handle: Res<ParkourGltfAssets>,
+    children_query: Query<&Children>,
+    name_query: Query<&Name>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyO) {
         return;
@@ -132,27 +138,134 @@ pub fn test_parkour_animation_playback(
         return;
     };
 
-    let Some(nodes) = animation_nodes else {
-        warn!("Animation nodes not initialized yet!");
-        return;
-    };
+    info!("🔍 Dumping bone data to RON files...");
 
-    let Ok((mut player, mut transitions)) = player_query.single_mut() else {
-        warn!("No player with AnimationPlayer found!");
-        return;
-    };
+    // ========================================
+    // 1. DUMP CHARACTER BONE HIERARCHY
+    // ========================================
+    let mut character_data = String::new();
+    character_data.push_str("(\n  character_bones: [\n");
 
-    info!("🧪 Testing vault animation playback on character...");
+    if let Ok((player_entity, animation_player, graph_handle)) = player_query.get_single() {
+        character_data.push_str(&format!("    // Player Entity: {:?}\n", player_entity));
+        character_data.push_str(&format!("    // AnimationPlayer active: {}\n", animation_player.is_playing()));
+        character_data.push_str(&format!("    // AnimationPlayer paused: {}\n", animation_player.is_paused()));
 
-    // Use the vault node that's already in the animation graph
-    transitions
-        .play(&mut player, nodes.vault, std::time::Duration::from_millis(100))
-        .set_speed(1.0);
+        // Recursively walk children to find all bones
+        fn collect_bones(
+            entity: Entity,
+            depth: usize,
+            children_query: &Query<&Children>,
+            name_query: &Query<&Name>,
+            output: &mut String,
+        ) {
+            if let Ok(name) = name_query.get(entity) {
+                let indent = "    ".repeat(depth + 1);
+                output.push_str(&format!("{}(\n", indent));
+                output.push_str(&format!("{}  entity: \"{:?}\",\n", indent, entity));
+                output.push_str(&format!("{}  name: \"{}\",\n", indent, name.as_str()));
+                output.push_str(&format!("{}  depth: {},\n", indent, depth));
+                output.push_str(&format!("{}),\n", indent));
+            }
 
-    info!("✅ Playing vault animation!");
-    info!("   If the character animates → Retargeting works! ✅");
-    info!("   If nothing happens → Bone names don't match ❌");
-    info!("   Press 'P' to see animation library info");
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    collect_bones(*child, depth + 1, children_query, name_query, output);
+                }
+            }
+        }
+
+        collect_bones(player_entity, 0, &children_query, &name_query, &mut character_data);
+    }
+
+    character_data.push_str("  ],\n");
+
+    // ========================================
+    // 2. DUMP ANIMATION GRAPH INFO
+    // ========================================
+    character_data.push_str("  animation_graph: (\n");
+
+    if let Ok((_, _, graph_handle)) = player_query.get_single() {
+        if let Some(graph) = animation_graphs.get(graph_handle) {
+            character_data.push_str(&format!("    root_node: {:?},\n", graph.root));
+            character_data.push_str(&format!("    node_count: {},\n", graph.graph.node_count()));
+
+            if let Some(nodes) = animation_nodes {
+                character_data.push_str("    registered_nodes: (\n");
+                character_data.push_str(&format!("      idle: {:?},\n", nodes.idle));
+                character_data.push_str(&format!("      walk: {:?},\n", nodes.walk));
+                character_data.push_str(&format!("      run: {:?},\n", nodes.run));
+                character_data.push_str(&format!("      vault: {:?},\n", nodes.vault));
+                character_data.push_str(&format!("      climb: {:?},\n", nodes.climb));
+                character_data.push_str(&format!("      slide: {:?},\n", nodes.slide));
+                character_data.push_str("    ),\n");
+            }
+        }
+    }
+
+    character_data.push_str("  ),\n");
+    character_data.push_str(")\n");
+
+    std::fs::write("character_bones.ron", character_data)
+        .expect("Failed to write character_bones.ron");
+
+    // ========================================
+    // 3. DUMP VAULT ANIMATION CLIP DATA
+    // ========================================
+    let mut vault_data = String::new();
+    vault_data.push_str("(\n");
+
+    if let Some(vault_clip) = animation_clips.get(&library.vault_clip) {
+        vault_data.push_str(&format!("  duration: {},\n", vault_clip.duration()));
+        vault_data.push_str("  curves: [\n");
+
+        // Get all curves in the animation
+        for (target_id, curves) in vault_clip.curves() {
+            vault_data.push_str("    (\n");
+            vault_data.push_str(&format!("      target_id: \"{:?}\",\n", target_id));
+            vault_data.push_str(&format!("      curve_count: {},\n", curves.len()));
+
+            // Try to get bone name from GLTF named_nodes
+            if let Some(gltf) = gltf_assets.get(&gltf_handle.vault_gltf) {
+                let mut bone_name = "Unknown".to_string();
+                for (name, _node_handle) in gltf.named_nodes.iter() {
+                    // We can't easily match AnimationTargetId to node, but we can list names
+                    bone_name = format!("Check named_nodes: {:?}", gltf.named_nodes.keys().collect::<Vec<_>>());
+                    break;
+                }
+                vault_data.push_str(&format!("      // GLTF has {} named nodes\n", gltf.named_nodes.len()));
+            }
+
+            vault_data.push_str("    ),\n");
+        }
+
+        vault_data.push_str("  ],\n");
+        vault_data.push_str(&format!("  total_curve_count: {},\n", vault_clip.curves().count()));
+    }
+
+    // ========================================
+    // 4. DUMP VAULT GLTF NAMED NODES
+    // ========================================
+    vault_data.push_str("  gltf_named_nodes: [\n");
+
+    if let Some(gltf) = gltf_assets.get(&gltf_handle.vault_gltf) {
+        for (name, node_handle) in gltf.named_nodes.iter() {
+            vault_data.push_str(&format!("    \"{}\",  // Node: {:?}\n", name, node_handle));
+        }
+        vault_data.push_str(&format!("    // Total: {} named nodes\n", gltf.named_nodes.len()));
+    }
+
+    vault_data.push_str("  ],\n");
+    vault_data.push_str(")\n");
+
+    std::fs::write("vault_animation_bones.ron", vault_data)
+        .expect("Failed to write vault_animation_bones.ron");
+
+    info!("✅ Dumped bone data to:");
+    info!("   📄 character_bones.ron - Character bone hierarchy and graph info");
+    info!("   📄 vault_animation_bones.ron - Vault animation curves and bone names");
+    info!("");
+    info!("💡 Push these files to GitHub and I'll analyze them!");
 }
 
 // ============================================================================
