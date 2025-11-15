@@ -1,10 +1,356 @@
-# Bevy 0.17 API Summary for Third-Person Animation Project
+# Third-Person Parkour Animation System - Project Status
 
-This document summarizes key API changes and patterns in Bevy 0.17 based on the examples, specifically for implementing obstacle detection, raycasting, IK, and animations.
+**Last Updated**: 2025-11-15
+**Bevy Version**: 0.17
+**Session**: Obstacle Detection & Animation Retargeting Complete
 
 ---
 
-## 🎯 Core API Changes
+## 📋 Project Overview
+
+Building an adaptive parkour system for Bevy 0.17 that combines:
+- Real-time obstacle detection via raycasting
+- Dynamic animation retargeting across GLTF files
+- Inverse Kinematics for procedural hand/foot placement
+- Animation sampling for adaptive movement
+
+---
+
+## ✅ COMPLETED
+
+### 1. Animation Retargeting Solution ⭐ CRITICAL FIX
+**Problem**: Animations from external GLTF files (vault.glb, climb.glb) wouldn't play on character even with matching bone names.
+
+**Root Cause**: Bevy 0.17's `AnimationTargetId` is based on **entity hierarchy paths**, not just bone names.
+- Character: `["brian", "mixamorig12:Hips"]` → UUID-A
+- Animation: `["Armature", "mixamorig12:Hips"]` → UUID-B
+- Different paths = Different UUIDs = No animation ❌
+
+**Solution**: Rename root node in animation GLTFs to match character root node.
+
+**Blender Workflow**:
+1. Open `vault.glb` in Blender
+2. Rename "Armature" → "brian" (to match character root)
+3. Re-export as GLB
+4. Animations now work! ✅
+
+**Documentation**: `ANIMATION_RETARGETING.md`
+
+### 2. Obstacle Detection System
+**Status**: Fully implemented in `src/game/obstacle_detection/`
+
+**Features**:
+- Multi-ray raycasting (upper, center, lower) for different obstacle types
+- Automatic classification: VaultableObstacle, ClimbableWall, SlideableObstacle
+- Height-based action selection (< 1.0m = vault, 1.0-1.8m = climb)
+- Debug visualization with colored gizmos
+- Parkour state machine (Idle → Vaulting → Climbing → Hanging)
+
+**Key Files**:
+- `detection.rs` - Raycasting and obstacle classification
+- `trigger.rs` - Action triggering based on detection
+- `visualization.rs` - Debug gizmos
+
+**Configuration**:
+```rust
+ObstacleDetectionConfig {
+    detection_range: 2.0,
+    center_ray_height: 1.0,
+    upper_ray_height: 1.8,
+    lower_ray_height: 0.3,
+    debug_draw_rays: true,
+}
+```
+
+### 3. Animation Loading System
+**Status**: Working with GLTF loader pattern
+
+**Implementation**: `src/game/parkour_animations/`
+- `ParkourGltfAssets` - Loads GLTF files
+- `ParkourAnimations` - Extracts animation clips from loaded GLTFs
+- `ParkourAnimationLibrary` - Stores animation handles for playback
+- Integrated into `AnimationGraph` system
+
+**Animations**:
+- ✅ `vault.glb` - Fixed and working
+- ⏳ `climb.glb` - Needs root node rename
+- ⏳ `slide.glb` - Needs root node rename
+- ⏳ `wall_run.glb` - Needs root node rename
+- ⏳ `roll.glb` - Needs root node rename
+
+### 4. Debug Systems
+**Keyboard Controls**:
+- `V` - Toggle vault animation (sets ParkourState::Vaulting)
+- `O` - Dump bone hierarchy to RON files (diagnostics)
+- `P` - Print animation library info
+
+**Visual Debug**:
+- Green rays: Obstacle detection (no hit)
+- Red rays: Obstacle detection (hit)
+- Red spheres: Obstacle hit points
+- Colored bones: Character skeleton hierarchy
+
+---
+
+## ⏳ IN PROGRESS
+
+### 1. IK System Setup
+**Location**: `src/game/parkour_ik/mod.rs` (exists but needs animation integration)
+
+**Current State**:
+- IK chains defined for hands/feet
+- Basic target positioning from obstacles
+- bevy_mod_inverse_kinematics plugin integrated
+
+**Next Steps**:
+- Integrate with animation playback
+- Blend sampled poses with IK corrections
+- Add pole targets for elbow/knee direction
+
+### 2. Animation Sampling
+**Location**: Documented in `ANIMATION_SAMPLING_STRATEGY.md`
+
+**Approach**:
+```rust
+// Instead of reading AnimationClip curves directly:
+// 1. Play animation
+player.play(vault_node);
+player.seek_to(0.5); // Seek to specific time
+
+// 2. Read bone GlobalTransforms
+let hand_transform = bone_query.get(hand_entity)?;
+let sampled_pos = hand_transform.translation();
+
+// 3. Store for IK use
+sampled_poses.vault_samples.insert("0.50".to_string(), sampled_pos);
+```
+
+**Status**: Architecture defined, implementation pending
+
+---
+
+## 📋 TO DO
+
+### Phase 1: Fix Remaining Animations (30 mins)
+Apply Blender root node rename to:
+- [ ] Freehang Climb.glb → Rename "Armature" to "brian"
+- [ ] Running Slide.glb → Rename "Armature" to "brian"
+- [ ] Over Obstacle Jumping.glb → Rename "Armature" to "brian"
+- [ ] Falling To Roll.glb → Rename "Armature" to "brian"
+
+### Phase 2: Animation Sampling System (2-3 hours)
+- [ ] Implement runtime bone transform sampling
+- [ ] Sample vault animation at key times: [0.0, 0.25, 0.5, 0.75, 1.0]
+- [ ] Extract hand/foot positions from samples
+- [ ] Store in `SampledParkourPoses` resource
+- [ ] Add progress tracking (0.0 to 1.0) for parkour actions
+
+### Phase 3: IK Integration (2-3 hours)
+- [ ] Update IK targets using sampled poses + obstacle adjustments
+- [ ] Implement blend factor (animation → IK)
+- [ ] Add pole targets for natural arm bending
+- [ ] Test with obstacles at different heights
+- [ ] Add foot IK for climbing
+
+### Phase 4: Polish & Refinement (1-2 hours)
+- [ ] Clean up debug systems
+- [ ] Add animation transitions (idle → vault → idle)
+- [ ] Implement root motion (if needed)
+- [ ] Performance optimization
+- [ ] Document final workflow
+
+---
+
+## 🏗️ System Architecture
+
+### Data Flow
+```
+Player Movement
+    ↓
+Obstacle Detection (raycasts)
+    ↓
+Classification (vault/climb/slide)
+    ↓
+State Transition (ParkourController)
+    ↓
+Animation Trigger (AnimationGraph)
+    ↓
+Sample Animation Poses (seek_to + read bones)
+    ↓
+Calculate IK Targets (sampled + obstacle adjusted)
+    ↓
+IK Solver (bevy_mod_inverse_kinematics)
+    ↓
+Final Character Pose
+```
+
+### File Structure
+```
+src/game/
+├── obstacle_detection/
+│   ├── detection.rs         ✅ Raycasting, classification
+│   ├── trigger.rs           ✅ Action triggering
+│   └── visualization.rs     ✅ Debug gizmos
+│
+├── parkour_animations/
+│   ├── mod.rs              ✅ Animation loading
+│   ├── assets.rs           ✅ GLTF loading pattern
+│   └── retarget.rs         ✅ Retargeting notes (WIP)
+│
+├── parkour_ik/
+│   └── mod.rs              ⏳ IK setup (needs sampling integration)
+│
+└── animations/
+    └── animation_controller.rs  ✅ Main animation graph
+
+assets/models/animations/
+├── vault.glb               ✅ Working (root = "brian")
+├── Freehang Climb.glb      ⏳ Needs root rename
+├── Running Slide.glb       ⏳ Needs root rename
+└── ...                     ⏳ Others pending
+```
+
+---
+
+## 🔑 Key Technical Insights
+
+### Bevy 0.17 Animation System
+**AnimationTargetId is Path-Based**:
+- NOT just bone names
+- Full entity hierarchy path matters
+- `["brian", "mixamorig12:Hips"]` != `["Armature", "mixamorig12:Hips"]`
+- Solution: Match root node names exactly
+
+**Animation Loading Pattern**:
+```rust
+// Load GLTF → Extract animations → Add to graph
+let gltf_handle = asset_server.load("vault.glb");
+let gltf = gltf_assets.get(&gltf_handle)?;
+let animation_clip = gltf.animations.first()?;
+```
+
+**Can't Sample Curves Directly**:
+- `VariableCurve` is internal API
+- Must play animation and read bone transforms
+- Use `player.seek_to(time)` + read `GlobalTransform`
+
+### IK System (bevy_mod_inverse_kinematics)
+**IkConstraint Setup**:
+```rust
+commands.entity(hand_bone).insert(IkConstraint {
+    chain_length: 2,        // hand → forearm → arm
+    iterations: 20,         // solver iterations
+    target: target_entity,  // where to reach
+    pole_target: Some(forearm_bone),  // controls bend direction
+    enabled: true,
+});
+```
+
+### Obstacle Detection (Avian3D)
+**SpatialQuery API (0.4.x)**:
+```rust
+let hit = spatial_query.cast_ray(
+    origin,
+    direction,  // Dir3
+    max_distance,
+    true,  // solid
+    &SpatialQueryFilter::default(),  // ⚠️ Pass by reference!
+);
+
+// Access hit data
+let hit_point = origin + *direction * hit.distance;  // ⚠️ .distance not .time_of_impact
+```
+
+---
+
+## 📚 Documentation Files
+
+- `AGENTS.md` ← You are here (Project status & Bevy 0.17 API)
+- `ANIMATION_RETARGETING.md` - How to fix bone path mismatches
+- `PARKOUR_SYSTEM_SUMMARY.md` - Detailed implementation summary
+- `PARKOUR_IK_SYSTEM.md` - IK system architecture
+- `ANIMATION_SAMPLING_STRATEGY.md` - Runtime sampling approach
+- `assets/parkour_animations/README.md` - Animation file guide (outdated paths)
+
+---
+
+## 🎯 Current Priority
+
+**Next Immediate Step**: Fix remaining animations in Blender (30 minutes)
+
+Then proceed to: Animation sampling system → IK integration → Polish
+
+---
+
+## 🔧 Quick Reference Commands
+
+**Test Vault Animation**:
+```bash
+cargo run
+# In game: Press 'V' to trigger vault animation
+```
+
+**Dump Bone Data** (for debugging):
+```bash
+# In game: Press 'O'
+# Check: assets/bones/character_bones.ron
+# Check: assets/bones/vault_animation_bones.ron
+```
+
+**Print Animation Library**:
+```bash
+# In game: Press 'P'
+# Shows loaded animation clips
+```
+
+---
+
+## 🐛 Known Issues & Solutions
+
+### Issue: Animation doesn't play
+**Symptom**: Character freezes, no movement
+**Cause**: Root node name mismatch (Armature vs brian)
+**Fix**: Rename root in Blender, re-export
+
+### Issue: AnimationPlayer shows paused: true
+**Symptom**: Animation loaded but not playing
+**Cause**: AnimationTransitions overrides manual plays
+**Fix**: Set ParkourState instead of calling player.play() directly
+
+### Issue: Bone names match but animation still broken
+**Symptom**: 65/65 bones match, still no animation
+**Cause**: Entity hierarchy paths don't match
+**Fix**: Check root node name (must be exactly "brian")
+
+---
+
+## 🎓 Bevy 0.17 API Summary
+
+### Animation System
+- `AnimationGraph` + `AnimationPlayer` + `AnimationTransitions`
+- Use `SceneInstanceReady` observer for scene loading
+- `AnimationTargetId` is **path-based**, not name-based
+- Load via `GltfAssetLabel::Animation(0).from_asset()`
+
+### Raycasting (Avian3D 0.4.x)
+- `SpatialQuery` system parameter
+- `RayHitData.distance` (not .time_of_impact)
+- Pass `SpatialQueryFilter` by reference: `&SpatialQueryFilter::default()`
+- Use `Dir3` for typed direction vectors
+
+### Component Bundles
+- Separate components instead of bundles
+- `Mesh3d` + `MeshMaterial3d` + `Transform` (not `PbrBundle`)
+- `Color::srgb()` instead of `Color::rgb()`
+
+### Query Patterns
+- `Single<T>` for single-entity queries (enforced at compile time)
+- `children.iter_descendants()` for hierarchy traversal
+- `.observe()` for event-based systems
+
+---
+
+**Ready to build adaptive parkour!** 🏃‍♂️💨
 
 ### 1. **Component Bundle Simplification**
 
