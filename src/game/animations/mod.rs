@@ -43,7 +43,7 @@ pub(super) fn plugin(app: &mut App) {
             // Setup animation graph once PlayerAssets is available
             setup_animation_graph,
             // Attach and update animations
-            update_animation_state,
+            // update_animation_state,
 
             apply_controls.in_set(TnuaUserControlsSystems),
         ).run_if(in_state(Screen::Gameplay)),

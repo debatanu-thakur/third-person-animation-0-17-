@@ -1,13 +1,9 @@
 (
-  time: 122.529564,
+  time: 6.920021,
   library_exists: true,
   animation_nodes_exists: true,
-  player_exists: true,
-  sampling_complete: false,
-  vault_samples_count: 0,
-  has_sampler_component: true,
-  sampler_index: 0,
-  sampler_total: 5,
-  frames_waited: 0,
-  samples_collected: 0,
+  animation_player_exists: true,
+  sampling_complete: true,
+  vault_samples_count: 5,
+  has_sampler_component: false,
 )

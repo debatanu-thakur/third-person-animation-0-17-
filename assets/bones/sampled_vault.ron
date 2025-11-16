@@ -1,0 +1,1236 @@
+(
+  animation_name: "vault",
+  sample_count: 5,
+  samples: [
+    (
+      time: 0,
+      bones: [
+        (
+          name: "mixamorig12:Hips",
+          translation: (-0.0010489023, 4.3766484, -0.26462874),
+          rotation: (0.009151093, 0.997216, 0.018664613, 0.07161264),
+        ),
+        (
+          name: "mixamorig12:Spine",
+          translation: (-0.0010650896, 4.476689, -0.249825),
+          rotation: (0.034254607, 0.99523985, 0.06620953, 0.06277322),
+        ),
+        (
+          name: "mixamorig12:Spine1",
+          translation: (0.0059986887, 4.593362, -0.23376861),
+          rotation: (0.04535128, 0.99653655, 0.049056873, 0.049514014),
+        ),
+        (
+          name: "mixamorig12:Spine2",
+          translation: (0.017531537, 4.7269974, -0.21997933),
+          rotation: (0.053815857, 0.99762917, 0.03223467, 0.028298559),
+        ),
+        (
+          name: "mixamorig12:LeftHand",
+          translation: (-0.5110991, 4.5168242, -0.2315372),
+          rotation: (0.3569186, -0.3584783, 0.79802424, 0.3275055),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb1",
+          translation: (-0.5151591, 4.479908, -0.25948322),
+          rotation: (0.22864799, -0.29967347, 0.9237139, 0.06832663),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb2",
+          translation: (-0.51865554, 4.4503508, -0.28176972),
+          rotation: (0.29788494, -0.3609531, 0.8474858, 0.25048992),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb3",
+          translation: (-0.54047185, 4.4303627, -0.29625744),
+          rotation: (0.25958648, -0.54335326, 0.77847177, 0.17709851),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb4",
+          translation: (-0.55956733, 4.42136, -0.31227526),
+          rotation: (0.25958654, -0.54335326, 0.77847177, 0.17709848),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex1",
+          translation: (-0.56860065, 4.453612, -0.2920253),
+          rotation: (0.36043644, -0.32390326, 0.8320971, 0.26978984),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex2",
+          translation: (-0.59125453, 4.4323425, -0.30328608),
+          rotation: (0.37775272, -0.27568707, 0.84481525, 0.25997424),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex3",
+          translation: (-0.6113078, 4.410141, -0.31177816),
+          rotation: (0.39191893, -0.22921583, 0.8570147, 0.24369133),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex4",
+          translation: (-0.6274549, 4.3891444, -0.3172513),
+          rotation: (0.39191893, -0.22921583, 0.8570147, 0.24369133),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle1",
+          translation: (-0.5859744, 4.4629855, -0.27603507),
+          rotation: (0.38979802, -0.25488997, 0.8430411, 0.2690171),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle2",
+          translation: (-0.6088277, 4.4376397, -0.28366968),
+          rotation: (0.42392564, -0.14415582, 0.86268735, 0.2351097),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle3",
+          translation: (-0.6259934, 4.4099417, -0.2853698),
+          rotation: (0.4508781, -0.033381198, 0.87074935, 0.19336519),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle4",
+          translation: (-0.6366791, 4.383113, -0.28196192),
+          rotation: (0.4508781, -0.0333812, 0.87074935, 0.1933652),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing1",
+          translation: (-0.5946773, 4.469119, -0.25746644),
+          rotation: (0.39788282, -0.243569, 0.84382457, 0.2651859),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing2",
+          translation: (-0.61399114, 4.446804, -0.26350084),
+          rotation: (0.43424252, -0.12076675, 0.8637223, 0.22546072),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing3",
+          translation: (-0.62829125, 4.421591, -0.2639196),
+          rotation: (0.4624412, 0.0027950455, 0.86843294, 0.17878592),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing4",
+          translation: (-0.63591236, 4.398555, -0.25967062),
+          rotation: (0.4624412, 0.0027950497, 0.86843294, 0.17878595),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky1",
+          translation: (-0.6017923, 4.4765787, -0.23492149),
+          rotation: (0.40284947, -0.2755939, 0.8320288, 0.26360643),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky2",
+          translation: (-0.6198596, 4.457227, -0.24160363),
+          rotation: (0.43329626, -0.17819586, 0.8521816, 0.23299555),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky3",
+          translation: (-0.6315881, 4.4395347, -0.2438463),
+          rotation: (0.45749646, -0.08119501, 0.8638193, 0.19473219),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky4",
+          translation: (-0.63909894, 4.422924, -0.24312605),
+          rotation: (0.45749643, -0.08119501, 0.86381924, 0.19473219),
+        ),
+        (
+          name: "mixamorig12:RightHand",
+          translation: (0.21126333, 4.6984286, -0.53607535),
+          rotation: (-0.15039633, -0.66360474, 0.541937, 0.49326897),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb1",
+          translation: (0.1754964, 4.724172, -0.5481708),
+          rotation: (0.26218385, -0.5639385, 0.60783696, 0.49372795),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb2",
+          translation: (0.1408818, 4.730526, -0.55807006),
+          rotation: (0.20807733, -0.58449644, 0.6490151, 0.44028088),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb3",
+          translation: (0.11382816, 4.7327023, -0.5779163),
+          rotation: (0.1586203, -0.6750352, 0.5619709, 0.45095012),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb4",
+          translation: (0.097927526, 4.7394185, -0.5985089),
+          rotation: (0.15862027, -0.6750352, 0.5619709, 0.45095012),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex1",
+          translation: (0.15927435, 4.7606373, -0.6044098),
+          rotation: (0.09769983, -0.3443957, 0.78013825, 0.51306003),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex2",
+          translation: (0.13093245, 4.7527213, -0.6188548),
+          rotation: (0.29142684, 0.019791106, 0.8761391, 0.38348266),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex3",
+          translation: (0.11070755, 4.731297, -0.61090964),
+          rotation: (0.43160543, 0.38659412, 0.7949469, 0.17978111),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex4",
+          translation: (0.111888446, 4.714942, -0.59100235),
+          rotation: (0.43160543, 0.38659412, 0.7949469, 0.17978114),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle1",
+          translation: (0.17495608, 4.744162, -0.61782354),
+          rotation: (0.104116954, -0.31565633, 0.8123147, 0.4792344),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle2",
+          translation: (0.14602157, 4.732338, -0.6320762),
+          rotation: (0.30690926, 0.112528056, 0.88745224, 0.32491955),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle3",
+          translation: (0.128254, 4.705936, -0.618105),
+          rotation: (0.431506, 0.5144649, 0.7348632, 0.09541767),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle4",
+          translation: (0.13739114, 4.6923494, -0.59304315),
+          rotation: (0.431506, 0.5144649, 0.7348632, 0.09541767),
+        ),
+        (
+          name: "mixamorig12:RightHandRing1",
+          translation: (0.18386677, 4.728421, -0.6314976),
+          rotation: (0.10079145, -0.3141639, 0.8134326, 0.47902992),
+        ),
+        (
+          name: "mixamorig12:RightHandRing2",
+          translation: (0.15990183, 4.718628, -0.6433023),
+          rotation: (0.30375406, 0.11379318, 0.88841265, 0.3248193),
+        ),
+        (
+          name: "mixamorig12:RightHandRing3",
+          translation: (0.14552887, 4.69727, -0.6320004),
+          rotation: (0.42803112, 0.5154577, 0.73629636, 0.09465967),
+        ),
+        (
+          name: "mixamorig12:RightHandRing4",
+          translation: (0.15269704, 4.686611, -0.61233896),
+          rotation: (0.42803112, 0.5154577, 0.73629636, 0.094659686),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky1",
+          translation: (0.19616753, 4.706461, -0.633089),
+          rotation: (0.07950994, -0.31232175, 0.81942856, 0.47399387),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky2",
+          translation: (0.17355168, 4.696609, -0.6451232),
+          rotation: (0.28058764, 0.116437346, 0.89329386, 0.33126864),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky3",
+          translation: (0.16147669, 4.6795373, -0.6360943),
+          rotation: (0.41186088, 0.5177946, 0.74134046, 0.1125783),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky4",
+          translation: (0.16642423, 4.671185, -0.6197138),
+          rotation: (0.41186082, 0.5177946, 0.74134046, 0.11257832),
+        ),
+        (
+          name: "mixamorig12:LeftFoot",
+          translation: (-0.08063717, 3.9122634, -0.11906147),
+          rotation: (0.9639757, -0.12298359, 0.060505334, 0.22795828),
+        ),
+        (
+          name: "mixamorig12:RightFoot",
+          translation: (0.030885901, 3.5997849, -0.22755945),
+          rotation: (0.8803106, 0.0393668, -0.0055288454, -0.47272924),
+        ),
+      ],
+      bone_count: 65,
+    ),
+    (
+      time: 0.25,
+      bones: [
+        (
+          name: "mixamorig12:Hips",
+          translation: (-0.008844947, 3.8305466, -1.009534),
+          rotation: (0.09097753, 0.9761511, 0.19710773, 0.0007307517),
+        ),
+        (
+          name: "mixamorig12:Spine",
+          translation: (0.008568609, 3.9173443, -0.9606454),
+          rotation: (0.07104482, 0.979678, 0.18757178, 0.00065459363),
+        ),
+        (
+          name: "mixamorig12:Spine1",
+          translation: (0.024963267, 4.025835, -0.91727304),
+          rotation: (0.027594369, 0.99802476, 0.056296267, 0.003996845),
+        ),
+        (
+          name: "mixamorig12:Spine2",
+          translation: (0.032329474, 4.159614, -0.9020914),
+          rotation: (-0.016397055, 0.9969417, -0.07606718, 0.007227877),
+        ),
+        (
+          name: "mixamorig12:LeftHand",
+          translation: (-0.4816726, 4.079234, -1.2134073),
+          rotation: (0.07511251, -0.39214525, 0.8805806, 0.25526074),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb1",
+          translation: (-0.4731053, 4.038635, -1.2343494),
+          rotation: (0.054719362, -0.18567036, 0.97127086, 0.13843815),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb2",
+          translation: (-0.47706997, 4.0043015, -1.2480626),
+          rotation: (0.10490989, -0.2873723, 0.8566786, 0.41534662),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb3",
+          translation: (-0.50317353, 3.9888797, -1.2609519),
+          rotation: (0.06635703, -0.44250494, 0.79282516, 0.41378054),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb4",
+          translation: (-0.5254325, 3.9854841, -1.2749255),
+          rotation: (0.06635709, -0.44250503, 0.79282516, 0.41378045),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex1",
+          translation: (-0.5019229, 4.008532, -1.2879205),
+          rotation: (0.10031562, -0.26722664, 0.93040043, 0.22996037),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex2",
+          translation: (-0.517981, 3.9837584, -1.3027796),
+          rotation: (0.16621314, -0.013665739, 0.95867634, 0.23049119),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex3",
+          translation: (-0.53174347, 3.9559116, -1.3012589),
+          rotation: (0.21988432, 0.24064535, 0.9220716, 0.20862581),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex4",
+          translation: (-0.53927314, 3.9343433, -1.2867795),
+          rotation: (0.21988434, 0.2406454, 0.9220716, 0.20862581),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle1",
+          translation: (-0.52425694, 4.0204153, -1.2856009),
+          rotation: (0.12640686, -0.20206323, 0.93380255, 0.26684207),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle2",
+          translation: (-0.54353416, 3.993314, -1.2964127),
+          rotation: (0.1928582, 0.030779721, 0.94579715, 0.259473),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle3",
+          translation: (-0.5590743, 3.9650838, -1.2912859),
+          rotation: (0.24794419, 0.26092112, 0.9036201, 0.23219484),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle4",
+          translation: (-0.56754124, 3.943119, -1.2742141),
+          rotation: (0.24794418, 0.26092112, 0.9036201, 0.23219484),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing1",
+          translation: (-0.5411338, 4.0293584, -1.2759392),
+          rotation: (0.1333838, -0.19404612, 0.9336134, 0.2700383),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing2",
+          translation: (-0.55787283, 4.005892, -1.2846875),
+          rotation: (0.20226884, 0.04735874, 0.94285434, 0.2605187),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing3",
+          translation: (-0.57151246, 3.9809377, -1.2790645),
+          rotation: (0.25891483, 0.28503597, 0.8933504, 0.23160875),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing4",
+          translation: (-0.5781233, 3.9629896, -1.2635422),
+          rotation: (0.25891483, 0.28503594, 0.8933504, 0.23160875),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky1",
+          translation: (-0.558763, 4.040182, -1.2622789),
+          rotation: (0.16333698, -0.20068797, 0.932278, 0.25279078),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky2",
+          translation: (-0.57346404, 4.0185866, -1.2702211),
+          rotation: (0.2277748, 0.042960316, 0.9434462, 0.23702806),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky3",
+          translation: (-0.5825262, 3.9996793, -1.2662208),
+          rotation: (0.27779043, 0.28262362, 0.8958975, 0.20080847),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky4",
+          translation: (-0.5862526, 3.9858391, -1.2549331),
+          rotation: (0.27779043, 0.28262365, 0.8958975, 0.20080847),
+        ),
+        (
+          name: "mixamorig12:RightHand",
+          translation: (0.34417665, 4.142831, -1.3817604),
+          rotation: (0.34214205, 0.7364205, -0.54849094, -0.19945304),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb1",
+          translation: (0.3237635, 4.160372, -1.4186916),
+          rotation: (-0.020476747, -0.6102526, 0.715858, 0.3387031),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb2",
+          translation: (0.30238777, 4.16263, -1.4482639),
+          rotation: (-0.06380723, -0.6069174, 0.73554593, 0.2941974),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb3",
+          translation: (0.29096463, 4.159272, -1.4797082),
+          rotation: (0.07939905, 0.70453995, -0.6434996, -0.28849167),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb4",
+          translation: (0.28875256, 4.1607456, -1.5064464),
+          rotation: (0.07939908, 0.70454, -0.6434996, -0.28849176),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex1",
+          translation: (0.3462736, 4.1841965, -1.479366),
+          rotation: (-0.2126388, -0.44525698, 0.8009387, 0.33915797),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex2",
+          translation: (0.33482856, 4.171786, -1.5074654),
+          rotation: (-0.08358317, -0.08828702, 0.9251367, 0.35964033),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex3",
+          translation: (0.3148759, 4.1497316, -1.5142969),
+          rotation: (0.06411175, 0.2888868, 0.89768857, 0.32648024),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex4",
+          translation: (0.30063903, 4.1338034, -1.4998474),
+          rotation: (0.06411174, 0.2888868, 0.89768857, 0.32648024),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle1",
+          translation: (0.3671858, 4.168397, -1.4761504),
+          rotation: (-0.21910504, -0.40404433, 0.8306736, 0.31420162),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle2",
+          translation: (0.3554314, 4.151949, -1.5039252),
+          rotation: (-0.07489562, 0.020732008, 0.9380561, 0.33765596),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle3",
+          translation: (0.33314863, 4.12528, -1.5043634),
+          rotation: (0.08559548, 0.44029886, 0.8429991, 0.29692242),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle4",
+          translation: (0.32047713, 4.112188, -1.4806104),
+          rotation: (0.08559548, 0.44029886, 0.8429991, 0.29692242),
+        ),
+        (
+          name: "mixamorig12:RightHandRing1",
+          translation: (0.38301733, 4.152217, -1.477462),
+          rotation: (-0.22263168, -0.40260765, 0.8304062, 0.31427342),
+        ),
+        (
+          name: "mixamorig12:RightHandRing2",
+          translation: (0.3732818, 4.1385937, -1.5004666),
+          rotation: (-0.07819462, 0.02191309, 0.93767077, 0.33790362),
+        ),
+        (
+          name: "mixamorig12:RightHandRing3",
+          translation: (0.35525632, 4.1170197, -1.500821),
+          rotation: (0.08183842, 0.44150147, 0.8428587, 0.2965944),
+        ),
+        (
+          name: "mixamorig12:RightHandRing4",
+          translation: (0.34531528, 4.1067486, -1.4821864),
+          rotation: (0.081838414, 0.44150144, 0.8428587, 0.2965944),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky1",
+          translation: (0.3939114, 4.132477, -1.4661599),
+          rotation: (-0.24384592, -0.39964533, 0.82913685, 0.30554003),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky2",
+          translation: (0.38544264, 4.1188326, -1.4884192),
+          rotation: (-0.103215985, 0.021912098, 0.9348601, 0.3389733),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky3",
+          translation: (0.37080422, 4.101397, -1.4891076),
+          rotation: (0.059948843, 0.4377147, 0.84239566, 0.30851516),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky4",
+          translation: (0.36191198, 4.093273, -1.4743601),
+          rotation: (0.05994883, 0.4377147, 0.84239566, 0.3085152),
+        ),
+        (
+          name: "mixamorig12:LeftFoot",
+          translation: (-0.11827177, 3.728797, -1.734044),
+          rotation: (-0.44660234, 0.11409867, 0.14269397, 0.8758803),
+        ),
+        (
+          name: "mixamorig12:RightFoot",
+          translation: (0.11043854, 3.456497, -1.0481775),
+          rotation: (0.9714508, 0.20183337, -0.12424507, -0.010477563),
+        ),
+      ],
+      bone_count: 65,
+    ),
+    (
+      time: 0.5,
+      bones: [
+        (
+          name: "mixamorig12:Hips",
+          translation: (-0.0000041964922, 2.9122012, -2.1939943),
+          rotation: (-0.083028294, 0.87463295, 0.46960965, 0.08712152),
+        ),
+        (
+          name: "mixamorig12:Spine",
+          translation: (-0.023651995, 2.9577634, -2.106862),
+          rotation: (-0.08241207, 0.90612316, 0.4083916, 0.073248856),
+        ),
+        (
+          name: "mixamorig12:Spine1",
+          translation: (-0.04833182, 3.034789, -2.0209658),
+          rotation: (-0.07318071, 0.9545304, 0.27967927, 0.07277208),
+        ),
+        (
+          name: "mixamorig12:Spine2",
+          translation: (-0.072658375, 3.1470897, -1.9504082),
+          rotation: (-0.07154312, 0.97841734, 0.18022102, 0.07142459),
+        ),
+        (
+          name: "mixamorig12:LeftHand",
+          translation: (-0.3516466, 2.7186944, -1.8711547),
+          rotation: (0.3176813, -0.62039185, 0.71697634, 0.0117281005),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb1",
+          translation: (-0.3342682, 2.7094636, -1.9132622),
+          rotation: (0.116063654, -0.61175275, 0.76491654, -0.16489527),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb2",
+          translation: (-0.32389277, 2.7049851, -1.948686),
+          rotation: (-0.27051482, 0.65914726, -0.7013472, 0.021419624),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb3",
+          translation: (-0.33557013, 2.7002811, -1.9791306),
+          rotation: (-0.24017577, 0.7894295, -0.5580113, 0.08797727),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb4",
+          translation: (-0.3478978, 2.7042704, -2.002247),
+          rotation: (-0.24017584, 0.7894295, -0.55801135, 0.08797733),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex1",
+          translation: (-0.3633012, 2.707285, -1.9745715),
+          rotation: (-0.26459026, 0.71625966, -0.6365831, -0.10828715),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex2",
+          translation: (-0.38052222, 2.7088816, -2.0027366),
+          rotation: (0.29291496, -0.6147161, 0.72744685, 0.08453329),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex3",
+          translation: (-0.39542738, 2.7017646, -2.029087),
+          rotation: (0.30856708, -0.5193488, 0.7947557, 0.058537245),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex4",
+          translation: (-0.40659901, 2.6894972, -2.050447),
+          rotation: (0.30856708, -0.51934874, 0.7947557, 0.058537245),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle1",
+          translation: (-0.38667163, 2.7022734, -1.9659626),
+          rotation: (-0.3634014, 0.6903139, -0.6194659, -0.08756762),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle2",
+          translation: (-0.4080661, 2.7011385, -1.9936026),
+          rotation: (-0.37693673, 0.6394866, -0.66654724, -0.068486534),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle3",
+          translation: (-0.42669737, 2.6955457, -2.0198004),
+          rotation: (-0.38309047, 0.5996347, -0.7007968, -0.05063447),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle4",
+          translation: (-0.44214538, 2.6875136, -2.0430906),
+          rotation: (-0.3830904, 0.59963465, -0.7007967, -0.050634462),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing1",
+          translation: (-0.4019191, 2.6938243, -1.9535415),
+          rotation: (-0.3683385, 0.6939579, -0.612448, -0.087501265),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing2",
+          translation: (-0.4205394, 2.69318, -1.9772116),
+          rotation: (-0.37846574, 0.655412, -0.64963937, -0.07188383),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing3",
+          translation: (-0.43758675, 2.6894197, -2.0003548),
+          rotation: (-0.38403583, 0.6226173, -0.6794641, -0.056503583),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing4",
+          translation: (-0.45130697, 2.684014, -2.020086),
+          rotation: (-0.38403583, 0.62261736, -0.6794641, -0.056503594),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky1",
+          translation: (-0.4173604, 2.6838481, -1.9369107),
+          rotation: (-0.4008851, 0.70766354, -0.5809426, -0.03176836),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky2",
+          translation: (-0.43389443, 2.6839197, -1.9586405),
+          rotation: (-0.40918648, 0.6703641, -0.6188223, -0.015405857),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky3",
+          translation: (-0.44595483, 2.6818142, -1.9761256),
+          rotation: (-0.4113629, 0.6404303, -0.6485585, 0.0012167465),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky4",
+          translation: (-0.45556194, 2.6785173, -1.9912808),
+          rotation: (-0.4113629, 0.6404303, -0.64855844, 0.0012167465),
+        ),
+        (
+          name: "mixamorig12:RightHand",
+          translation: (0.20678625, 2.7698684, -2.0008218),
+          rotation: (0.51483464, 0.4980761, -0.5866765, 0.37772465),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb1",
+          translation: (0.22872652, 2.7516694, -2.036539),
+          rotation: (-0.4431633, -0.48123768, 0.7486543, -0.10739304),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb2",
+          translation: (0.24623384, 2.7348235, -2.0638566),
+          rotation: (-0.38722268, -0.5593642, 0.7171821, -0.15106373),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb3",
+          translation: (0.26849818, 2.7236392, -2.0864336),
+          rotation: (0.3555719, 0.6832465, -0.60912204, 0.1889796),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb4",
+          translation: (0.29110613, 2.7223387, -2.1008968),
+          rotation: (0.35557184, 0.6832465, -0.609122, 0.18897952),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex1",
+          translation: (0.29481035, 2.7487655, -2.0560374),
+          rotation: (0.47891814, 0.5301506, -0.61841947, 0.32731512),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex2",
+          translation: (0.32480195, 2.7414117, -2.0670378),
+          rotation: (0.48187363, 0.5273656, -0.61659163, 0.33090514),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex3",
+          translation: (0.35272068, 2.7345662, -2.0772774),
+          rotation: (0.4770538, 0.53551966, -0.6106751, 0.33572972),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex4",
+          translation: (0.3764431, 2.7293916, -2.0859752),
+          rotation: (0.4770538, 0.53551966, -0.6106751, 0.33572972),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle1",
+          translation: (0.30093646, 2.7511723, -2.030465),
+          rotation: (-0.52406496, -0.47109172, 0.6285657, -0.3291407),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle2",
+          translation: (0.33214468, 2.7394996, -2.038828),
+          rotation: (-0.54383594, -0.4352958, 0.6471731, -0.309721),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle3",
+          translation: (0.36248747, 2.7245984, -2.046904),
+          rotation: (-0.5597949, -0.3997719, 0.66908425, -0.28131574),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle4",
+          translation: (0.38717097, 2.7089639, -2.05342),
+          rotation: (-0.5597949, -0.3997719, 0.66908425, -0.28131574),
+        ),
+        (
+          name: "mixamorig12:RightHandRing1",
+          translation: (0.30788285, 2.7482624, -2.0090773),
+          rotation: (-0.5269908, -0.47139806, 0.6262148, -0.32851118),
+        ),
+        (
+          name: "mixamorig12:RightHandRing2",
+          translation: (0.33373106, 2.7385945, -2.0160038),
+          rotation: (-0.54596597, -0.43655545, 0.64537126, -0.30795544),
+        ),
+        (
+          name: "mixamorig12:RightHandRing3",
+          translation: (0.35827684, 2.7265403, -2.022537),
+          rotation: (-0.5616249, -0.40165788, 0.66745555, -0.27883983),
+        ),
+        (
+          name: "mixamorig12:RightHandRing4",
+          translation: (0.3776415, 2.714275, -2.027649),
+          rotation: (-0.5616249, -0.40165788, 0.66745555, -0.27883983),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky1",
+          translation: (0.3011947, 2.746747, -1.9848067),
+          rotation: (0.53485936, 0.46319473, -0.61589247, 0.34648556),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky2",
+          translation: (0.32653248, 2.737659, -1.9901692),
+          rotation: (-0.553856, -0.43092078, 0.6318836, -0.32904994),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky3",
+          translation: (0.34685248, 2.728282, -1.9944028),
+          rotation: (-0.5699574, -0.3982778, 0.6517194, -0.30296087),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky4",
+          translation: (0.36301738, 2.7187767, -1.9977049),
+          rotation: (-0.5699574, -0.3982778, 0.6517194, -0.30296087),
+        ),
+        (
+          name: "mixamorig12:LeftFoot",
+          translation: (0.11810782, 3.1375072, -2.9473872),
+          rotation: (-0.37431416, -0.19510725, 0.11431526, 0.8993076),
+        ),
+        (
+          name: "mixamorig12:RightFoot",
+          translation: (0.03507966, 3.3729975, -2.7808235),
+          rotation: (-0.1817587, -0.2274983, 0.22360037, 0.93016726),
+        ),
+      ],
+      bone_count: 65,
+    ),
+    (
+      time: 0.75,
+      bones: [
+        (
+          name: "mixamorig12:Hips",
+          translation: (0.02356316, 1.8098834, -3.2494159),
+          rotation: (-0.08132681, 0.96983725, 0.22844091, -0.024829067),
+        ),
+        (
+          name: "mixamorig12:Spine",
+          translation: (0.009788886, 1.893734, -3.1945841),
+          rotation: (-0.07411903, 0.96380997, 0.25559765, -0.015700266),
+        ),
+        (
+          name: "mixamorig12:Spine1",
+          translation: (-0.006120974, 1.995006, -3.13618),
+          rotation: (-0.07554831, 0.9535594, 0.2913734, -0.01089138),
+        ),
+        (
+          name: "mixamorig12:Spine2",
+          translation: (-0.024692751, 2.1054106, -3.0610304),
+          rotation: (-0.0768185, 0.94225085, 0.3259179, -0.006300066),
+        ),
+        (
+          name: "mixamorig12:LeftHand",
+          translation: (-0.5334835, 1.9179275, -2.8064094),
+          rotation: (0.60063004, 0.11211295, 0.6405624, 0.46513885),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb1",
+          translation: (-0.54006714, 1.8723409, -2.8001812),
+          rotation: (0.7467204, -0.12534805, 0.5565242, 0.34201962),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb2",
+          translation: (-0.563227, 1.8441646, -2.7929516),
+          rotation: (0.719383, -0.034723874, 0.5824723, 0.37684003),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb3",
+          translation: (-0.57898116, 1.8210906, -2.775494),
+          rotation: (0.6614604, -0.18362033, 0.5677996, 0.45426565),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb4",
+          translation: (-0.59692085, 1.8092413, -2.7600017),
+          rotation: (0.6614606, -0.18362042, 0.56779957, 0.45426568),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex1",
+          translation: (-0.58249235, 1.8379725, -2.759865),
+          rotation: (0.52876544, -0.0006959216, 0.7465337, 0.40384895),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex2",
+          translation: (-0.6024642, 1.8158013, -2.7456546),
+          rotation: (0.6109135, 0.19976263, 0.709522, 0.2888911),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex3",
+          translation: (-0.60760975, 1.7922797, -2.7259715),
+          rotation: (0.65899, 0.4036257, 0.62007713, 0.13536265),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex4",
+          translation: (-0.5977602, 1.7750247, -2.7076197),
+          rotation: (0.65899, 0.4036257, 0.62007713, 0.13536265),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle1",
+          translation: (-0.58502334, 1.8565294, -2.7427),
+          rotation: (0.6056591, 0.06588381, 0.6724949, 0.4202225),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle2",
+          translation: (-0.60199124, 1.8342617, -2.7217424),
+          rotation: (0.6788376, 0.2251412, 0.630498, 0.30160135),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle3",
+          translation: (-0.6044385, 1.8107997, -2.6991975),
+          rotation: (0.7235651, 0.38246313, 0.5536161, 0.15389812),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle4",
+          translation: (-0.5932959, 1.7916307, -2.6803832),
+          rotation: (0.7235651, 0.38246313, 0.5536161, 0.15389813),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing1",
+          translation: (-0.57943195, 1.873001, -2.7302268),
+          rotation: (0.61741924, 0.06931349, 0.6715083, 0.40381396),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing2",
+          translation: (-0.5931913, 1.8529843, -2.7124104),
+          rotation: (0.6956333, 0.25584164, 0.61887026, 0.26007503),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing3",
+          translation: (-0.5922105, 1.8316718, -2.6927845),
+          rotation: (0.7302167, 0.42364347, 0.52701896, 0.09777937),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing4",
+          translation: (-0.57950276, 1.8164024, -2.6782193),
+          rotation: (0.7302167, 0.42364353, 0.52701896, 0.09777939),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky1",
+          translation: (-0.5706818, 1.8926492, -2.717901),
+          rotation: (0.69910526, 0.058935072, 0.56138563, 0.43889025),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky2",
+          translation: (-0.5818689, 1.8760818, -2.6993012),
+          rotation: (0.78771967, 0.23210761, 0.5088784, 0.25819856),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky3",
+          translation: (-0.5797045, 1.8598293, -2.6856344),
+          rotation: (0.8200219, 0.39201194, 0.4146802, 0.043942966),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky4",
+          translation: (-0.56862783, 1.8472867, -2.6783655),
+          rotation: (0.8200219, 0.39201194, 0.4146802, 0.043942958),
+        ),
+        (
+          name: "mixamorig12:RightHand",
+          translation: (0.34675545, 1.8275933, -2.9213493),
+          rotation: (-0.48797435, -0.19789101, 0.77340126, -0.35294563),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb1",
+          translation: (0.3538025, 1.7867553, -2.940608),
+          rotation: (-0.4732792, -0.27913684, 0.8327331, -0.06815383),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb2",
+          translation: (0.3640184, 1.7576238, -2.960192),
+          rotation: (-0.3938183, -0.42539033, 0.8116865, -0.0715198),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb3",
+          translation: (0.37961826, 1.7363775, -2.9810665),
+          rotation: (-0.38191855, -0.5830089, 0.7119161, -0.08610635),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb4",
+          translation: (0.39843172, 1.7265428, -2.9975383),
+          rotation: (-0.38191855, -0.5830088, 0.7119161, -0.086106315),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex1",
+          translation: (0.4091446, 1.7465258, -2.9492419),
+          rotation: (-0.46513295, -0.2444058, 0.8468472, -0.08226139),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex2",
+          translation: (0.4212923, 1.7180852, -2.9601116),
+          rotation: (-0.4773201, 0.029077686, 0.8778133, 0.027637249),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex3",
+          translation: (0.41889215, 1.6876715, -2.9594712),
+          rotation: (-0.45119295, 0.27227178, 0.8398932, 0.12989387),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex4",
+          translation: (0.40687427, 1.6665722, -2.950778),
+          rotation: (-0.45119295, 0.27227178, 0.8398932, 0.12989387),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle1",
+          translation: (0.4192519, 1.7583562, -2.9279072),
+          rotation: (-0.49731246, -0.18211249, 0.82880056, -0.18056831),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle2",
+          translation: (0.43581608, 1.7285379, -2.9319878),
+          rotation: (-0.5356303, 0.13977945, 0.83234566, -0.027615458),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle3",
+          translation: (0.43212122, 1.6951532, -2.9230564),
+          rotation: (-0.51048887, 0.41907418, 0.7403754, 0.12498829),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle4",
+          translation: (0.41380426, 1.6766851, -2.908238),
+          rotation: (-0.51048887, 0.41907418, 0.7403754, 0.12498829),
+        ),
+        (
+          name: "mixamorig12:RightHandRing1",
+          translation: (0.4272825, 1.7637477, -2.907399),
+          rotation: (-0.5034114, -0.1715919, 0.81507665, -0.22974606),
+        ),
+        (
+          name: "mixamorig12:RightHandRing2",
+          translation: (0.44286266, 1.7399783, -2.9087577),
+          rotation: (-0.5584486, 0.15472028, 0.81225985, -0.06656466),
+        ),
+        (
+          name: "mixamorig12:RightHandRing3",
+          translation: (0.44098994, 1.7134166, -2.8997328),
+          rotation: (-0.5438601, 0.4328139, 0.7122364, 0.09801835),
+        ),
+        (
+          name: "mixamorig12:RightHandRing4",
+          translation: (0.4267044, 1.699224, -2.8876474),
+          rotation: (-0.54386014, 0.43281388, 0.7122364, 0.09801835),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky1",
+          translation: (0.42406684, 1.7774767, -2.886488),
+          rotation: (-0.6189076, -0.15863411, 0.72829217, -0.2477483),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky2",
+          translation: (0.4393752, 1.7548014, -2.8842883),
+          rotation: (-0.6723969, 0.13239989, 0.72683173, -0.04547808),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky3",
+          translation: (0.43681338, 1.7328857, -2.8786414),
+          rotation: (0.64990944, -0.36503923, -0.65194076, -0.13905855),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky4",
+          translation: (0.42432708, 1.7196578, -2.8730135),
+          rotation: (0.64990944, -0.3650392, -0.6519407, -0.13905856),
+        ),
+        (
+          name: "mixamorig12:LeftFoot",
+          translation: (0.027878307, 0.9862993, -3.4143126),
+          rotation: (0.8787565, -0.1429894, -0.13014078, -0.43635356),
+        ),
+        (
+          name: "mixamorig12:RightFoot",
+          translation: (0.08158032, 1.4076557, -3.9611478),
+          rotation: (0.7118039, 0.09643879, -0.14729947, -0.6799541),
+        ),
+      ],
+      bone_count: 65,
+    ),
+    (
+      time: 1,
+      bones: [
+        (
+          name: "mixamorig12:Hips",
+          translation: (-0.0011776973, 1.0180788, -4.164421),
+          rotation: (-0.026811434, 0.9990175, -0.013437703, 0.03263102),
+        ),
+        (
+          name: "mixamorig12:Spine",
+          translation: (-0.0072031016, 1.1186993, -4.1562724),
+          rotation: (0.010626849, 0.9988638, 0.036127474, 0.029204804),
+        ),
+        (
+          name: "mixamorig12:Spine1",
+          translation: (-0.0049473466, 1.2363486, -4.1476836),
+          rotation: (0.007728857, 0.9995547, 0.028782425, 0.0015367719),
+        ),
+        (
+          name: "mixamorig12:Spine2",
+          translation: (-0.0028758978, 1.3709482, -4.1399217),
+          rotation: (0.004838462, 0.9994306, 0.021004232, -0.025959259),
+        ),
+        (
+          name: "mixamorig12:LeftHand",
+          translation: (-0.25979978, 1.2176459, -4.1596966),
+          rotation: (0.5405094, -0.3565365, 0.6378023, -0.41706046),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb1",
+          translation: (-0.23848844, 1.2324904, -4.1982417),
+          rotation: (-0.5993752, 0.34167114, -0.3999778, 0.6033473),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb2",
+          translation: (-0.23890407, 1.2372496, -4.2351155),
+          rotation: (-0.5860394, 0.32331336, -0.49631464, 0.55289984),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb3",
+          translation: (-0.23298721, 1.2303321, -4.2667775),
+          rotation: (0.6660112, -0.41291088, 0.39277244, -0.48131433),
+        ),
+        (
+          name: "mixamorig12:LeftHandThumb4",
+          translation: (-0.23539004, 1.2198672, -4.291005),
+          rotation: (0.6660113, -0.41291088, 0.39277238, -0.4813144),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex1",
+          translation: (-0.2408342, 1.2105085, -4.2624116),
+          rotation: (-0.48126137, 0.5273362, -0.55320394, 0.4292664),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex2",
+          translation: (-0.24194023, 1.2078589, -4.2953377),
+          rotation: (0.3938199, -0.380037, 0.6672594, -0.50521535),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex3",
+          translation: (-0.23025505, 1.2017608, -4.323506),
+          rotation: (0.2697976, -0.19610202, 0.753786, -0.5661801),
+        ),
+        (
+          name: "mixamorig12:LeftHandIndex4",
+          translation: (-0.21002673, 1.1941507, -4.3397684),
+          rotation: (0.2697976, -0.19610202, 0.753786, -0.5661801),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle1",
+          translation: (-0.24753083, 1.1867169, -4.256536),
+          rotation: (0.5255843, -0.41726428, 0.59226394, -0.44595388),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle2",
+          translation: (-0.2444001, 1.1777598, -4.2901955),
+          rotation: (0.44520313, -0.2874923, 0.67029625, -0.51946616),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle3",
+          translation: (-0.23002249, 1.1682395, -4.317897),
+          rotation: (0.33756518, -0.1360494, 0.7265088, -0.58285946),
+        ),
+        (
+          name: "mixamorig12:LeftHandMiddle4",
+          translation: (-0.20806956, 1.1599618, -4.3350763),
+          rotation: (0.33756515, -0.13604942, 0.7265088, -0.58285946),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing1",
+          translation: (-0.2481789, 1.1683625, -4.245543),
+          rotation: (0.5199606, -0.40947023, 0.59240705, -0.45937887),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing2",
+          translation: (-0.24461001, 1.1610651, -4.2745504),
+          rotation: (0.41915655, -0.25440985, 0.6812749, -0.543551),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing3",
+          translation: (-0.22931942, 1.1530147, -4.297826),
+          rotation: (0.29720104, -0.08799738, 0.7348234, -0.60329306),
+        ),
+        (
+          name: "mixamorig12:LeftHandRing4",
+          translation: (-0.2087743, 1.1466284, -4.3098216),
+          rotation: (0.29720104, -0.087997355, 0.7348234, -0.603293),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky1",
+          translation: (-0.24810632, 1.1488224, -4.2302876),
+          rotation: (0.6061693, -0.3108262, 0.54872984, -0.48460424),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky2",
+          translation: (-0.24386364, 1.1395727, -4.2556252),
+          rotation: (0.48388454, -0.15111738, 0.62297934, -0.59574807),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky3",
+          translation: (-0.23115678, 1.1344296, -4.2719865),
+          rotation: (-0.3220309, -0.025354434, -0.6587439, 0.67949235),
+        ),
+        (
+          name: "mixamorig12:LeftHandPinky4",
+          translation: (-0.21452183, 1.1330252, -4.279345),
+          rotation: (-0.3220309, -0.025354423, -0.6587439, 0.67949235),
+        ),
+        (
+          name: "mixamorig12:RightHand",
+          translation: (0.16500366, 1.305024, -4.5387573),
+          rotation: (-0.029353464, -0.5392259, 0.5952974, 0.59497476),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb1",
+          translation: (0.1255334, 1.3279591, -4.5366654),
+          rotation: (0.2330832, -0.29590368, 0.6304178, 0.6787389),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb2",
+          translation: (0.08992622, 1.335919, -4.5343623),
+          rotation: (0.17746079, -0.41751868, 0.5672167, 0.68735063),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb3",
+          translation: (0.05872657, 1.3453842, -4.542578),
+          rotation: (0.027457235, -0.5102233, 0.5068116, 0.6943055),
+        ),
+        (
+          name: "mixamorig12:RightHandThumb4",
+          translation: (0.039689653, 1.3543329, -4.5592966),
+          rotation: (0.027457181, -0.5102233, 0.5068116, 0.69430554),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex1",
+          translation: (0.085746214, 1.3596221, -4.5832505),
+          rotation: (0.22203025, -0.3210227, 0.574549, 0.7194028),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex2",
+          translation: (0.053944368, 1.3673706, -4.585036),
+          rotation: (0.4971608, -0.048583653, 0.69139165, 0.52196574),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex3",
+          translation: (0.030451138, 1.3537173, -4.5711503),
+          rotation: (0.66998047, 0.22679065, 0.6673671, 0.23305202),
+        ),
+        (
+          name: "mixamorig12:RightHandIndex4",
+          translation: (0.030266877, 1.3334401, -4.5552135),
+          rotation: (0.66998047, 0.22679065, 0.6673671, 0.23305202),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle1",
+          translation: (0.0960626, 1.3431301, -4.6011076),
+          rotation: (0.18287061, -0.34357637, 0.64532554, 0.65731907),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle2",
+          translation: (0.06261101, 1.3464754, -4.6081753),
+          rotation: (0.46618432, 0.012022387, 0.76500046, 0.44418687),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle3",
+          translation: (0.03934505, 1.3255885, -4.592996),
+          rotation: (0.6216856, 0.3520271, 0.68621933, 0.1367004),
+        ),
+        (
+          name: "mixamorig12:RightHandMiddle4",
+          translation: (0.046845518, 1.3041458, -4.573499),
+          rotation: (0.6216856, 0.3520271, 0.68621933, 0.1367004),
+        ),
+        (
+          name: "mixamorig12:RightHandRing1",
+          translation: (0.100019574, 1.3269936, -4.616538),
+          rotation: (0.15324567, -0.36397937, 0.6683731, 0.63032705),
+        ),
+        (
+          name: "mixamorig12:RightHandRing2",
+          translation: (0.072874814, 1.3286741, -4.624899),
+          rotation: (0.4302783, 0.014548239, 0.794979, 0.42738444),
+        ),
+        (
+          name: "mixamorig12:RightHandRing3",
+          translation: (0.054082382, 1.3109447, -4.6138086),
+          rotation: (0.5825058, 0.37341, 0.7098848, 0.13158903),
+        ),
+        (
+          name: "mixamorig12:RightHandRing4",
+          translation: (0.05994805, 1.2947426, -4.597851),
+          rotation: (0.58250576, 0.37340993, 0.7098848, 0.13158903),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky1",
+          translation: (0.112315156, 1.3056583, -4.6219893),
+          rotation: (0.07629073, -0.2754937, 0.69835395, 0.6561895),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky2",
+          translation: (0.08602233, 1.305903, -4.629862),
+          rotation: (0.37585473, 0.10274916, 0.77890223, 0.49141333),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky3",
+          translation: (0.07031473, 1.2947215, -4.6177382),
+          rotation: (0.5622369, 0.4252615, 0.669454, 0.23425147),
+        ),
+        (
+          name: "mixamorig12:RightHandPinky4",
+          translation: (0.07344985, 1.2846516, -4.601885),
+          rotation: (0.56223696, 0.42526153, 0.66945404, 0.23425153),
+        ),
+        (
+          name: "mixamorig12:LeftFoot",
+          translation: (-0.06972174, 0.43937653, -4.1232204),
+          rotation: (0.96783984, -0.14654851, 0.081903905, 0.18735373),
+        ),
+        (
+          name: "mixamorig12:RightFoot",
+          translation: (0.06925706, 0.24279779, -4.076615),
+          rotation: (0.86751896, 0.024446083, -0.050984666, -0.49417996),
+        ),
+      ],
+      bone_count: 65,
+    ),
+  ],
+)

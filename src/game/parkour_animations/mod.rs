@@ -169,7 +169,7 @@ pub fn init_animation_sampling(
     mut commands: Commands,
     library: Option<Res<ParkourAnimationLibrary>>,
     mut sampled_poses: ResMut<SampledParkourPoses>,
-    animation_player_query: Query<Entity, (With<AnimationPlayer>, With<AnimationTransitions>)>,
+    animation_player_query: Query<Entity, (With<AnimationPlayer>, With<AnimationTransitions>, Without<AnimationSampler>)>,
 ) {
     // Only run once
     if sampled_poses.sampled {
@@ -255,7 +255,7 @@ pub fn sample_animation_bones(
     // 2. Wait a few frames for animation to apply
     // 3. Read bone transforms
     // 4. Move to next sample
-
+    info!("Sampler frames waited {}" ,sampler.frames_waited);
     if sampler.frames_waited == 0 {
         // Step 1: Seek to target time
         info!("   Seeking to time: {:.2}s", target_time);

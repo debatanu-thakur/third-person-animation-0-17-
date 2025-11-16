@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 /// Writes sampling debug info to RON files for easier troubleshooting
 pub fn write_sampling_debug_info(status: &str, details: &str) {
+    
     let mut content = String::new();
     content.push_str("(\n");
     content.push_str(&format!("  status: \"{}\",\n", status));
