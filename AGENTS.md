@@ -1,8 +1,28 @@
 # Third-Person Parkour Animation System - Project Status
 
-**Last Updated**: 2025-11-15
+**Last Updated**: 2025-11-16
 **Bevy Version**: 0.17
-**Session**: Obstacle Detection & Animation Retargeting Complete
+**Session**: Architecture Cleanup & AnimationClip Direct Access
+
+---
+
+## 🎯 ARCHITECTURE DECISION (2025-11-16)
+
+**Decision**: Use `AnimationClip` curves directly instead of runtime sampling
+
+**Rationale**:
+- Animation keyframe data already exists in GLB files
+- Bevy's `AnimationClip` provides direct access to curves (rotation, translation, scale)
+- Sampling just duplicates data that's already accessible
+- Cleaner: Read curves → Calculate transforms → Apply IK
+- No need for intermediate RON files or sampling systems
+
+**Implementation Plan**:
+1. Remove sampling system code
+2. Create utility to read `AnimationClip` curves at specific times
+3. Use curve data directly for IK target calculation
+4. Keep basic locomotion (idle, walk, run) working first
+5. Layer parkour animations (vault, climb) with IK on top
 
 ---
 
@@ -12,7 +32,7 @@ Building an adaptive parkour system for Bevy 0.17 that combines:
 - Real-time obstacle detection via raycasting
 - Dynamic animation retargeting across GLTF files
 - Inverse Kinematics for procedural hand/foot placement
-- Animation sampling for adaptive movement
+- Direct AnimationClip curve access for adaptive movement
 
 ---
 
@@ -78,16 +98,7 @@ ObstacleDetectionConfig {
 - ✅ `Running Jump.glb`, `Standard Run.glb`, `Standing Jumping.glb`
 - ✅ Additional animations: Braced Hang, Jump To Freehang, etc.
 
-### 4. Animation Sampling System
-**Status**: ✅ Implemented
-
-**Features**:
-- Automatic sampling at 5 keyframes: [0.0, 0.25, 0.5, 0.75, 1.0]
-- Samples all mixamorig bones (65 bones)
-- Stores in `SampledParkourPoses` resource
-- Writes to RON file: `assets/bones/sampled_vault.ron`
-
-### 5. Debug Systems
+### 4. Debug Systems
 **Keyboard Controls**:
 - `V` - Toggle vault animation (sets ParkourState::Vaulting)
 - `O` - Dump bone hierarchy to RON files
@@ -96,8 +107,6 @@ ObstacleDetectionConfig {
 **RON Debug Files** (in `assets/bones/`):
 - `character_bones.ron` - Complete bone hierarchy (Press 'O')
 - `vault_animation_bones.ron` - Animation curve data (Press 'O')
-- `sampled_vault.ron` - Sampled bone transforms at key times (Auto-generated)
-- `animation_library_status.ron` - Current library/sampling status (Press 'P')
 
 **Visual Debug**:
 - Green rays: Obstacle detection (no hit)
@@ -108,45 +117,52 @@ ObstacleDetectionConfig {
 
 ## ⏳ IN PROGRESS
 
-### 1. IK System Integration
-**Location**: `src/game/parkour_ik/mod.rs`
+### 1. Code Cleanup (Current)
+- [x] Document architecture decision
+- [ ] Remove sampling system code
+- [ ] Delete generated RON files
+- [ ] Re-enable update_animation_state
+- [ ] Verify basic animations (idle, walk, run)
 
-**Current State**:
-- IK chains defined for hands/feet
-- Basic target positioning from obstacles
-- bevy_mod_inverse_kinematics plugin integrated
-- Sampled animation data available in `SampledParkourPoses`
+### 2. AnimationClip Curve Reader
+**Location**: `src/game/parkour_animations/` (to be refactored)
 
-**Next Steps**:
-- Integrate sampled poses with IK targets
-- Blend animation data with obstacle adjustments
-- Add pole targets for elbow/knee direction
-- Test adaptive hand placement on different obstacle heights
+**Goal**: Direct access to animation keyframe data without sampling
+
+**Approach**:
+- Access `AnimationClip` from `Assets<AnimationClip>`
+- Read `VariableCurve` for specific bones at specific times
+- Calculate world-space transforms using skeleton hierarchy
+- Use for IK target positioning
 
 ---
 
 ## 📋 TO DO
 
-### Phase 1: IK Integration with Sampled Poses (2-3 hours)
-- [ ] Update IK target calculation to use sampled hand positions
+### Phase 1: Basic Locomotion (1-2 hours)
+- [ ] Ensure idle, walk, run animations work correctly
+- [ ] Verify animation transitions are smooth
+- [ ] Test character controller integration
+
+### Phase 2: AnimationClip Curve Utilities (2-3 hours)
+- [ ] Create utility to read bone transform from AnimationClip at time t
+- [ ] Add helper to convert local → world space using hierarchy
+- [ ] Test reading hand positions from vault animation
+- [ ] Verify data matches what we saw in sampled_vault.ron
+
+### Phase 3: IK Integration with AnimationClip (3-4 hours)
+- [ ] Read hand positions from vault animation curve
+- [ ] Calculate IK targets based on obstacle position + animation data
 - [ ] Implement progress tracking (0.0 to 1.0) for parkour actions
-- [ ] Blend sampled pose with obstacle height adjustment
+- [ ] Blend animation curve data with obstacle height adjustment
 - [ ] Add pole targets for natural arm bending
-- [ ] Test with obstacles at different heights (0.5m, 1.0m, 1.5m)
-- [ ] Add foot IK for climbing/landing
+- [ ] Test with obstacles at different heights
 
-### Phase 2: Animation Integration (1-2 hours)
+### Phase 4: Parkour Animation System (2-3 hours)
 - [ ] Connect parkour state to animation playback
-- [ ] Add animation transitions (idle → vault → idle)
-- [ ] Implement progress tracking during parkour actions
 - [ ] Synchronize IK with animation timeline
-
-### Phase 3: Polish & Refinement (1-2 hours)
-- [ ] Clean up/remove temporary debug systems
+- [ ] Add foot IK for climbing/landing
 - [ ] Test full parkour flow (detect → animate → IK)
-- [ ] Implement root motion (if needed)
-- [ ] Performance optimization
-- [ ] Document final workflow
 
 ---
 
