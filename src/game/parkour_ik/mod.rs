@@ -145,13 +145,13 @@ pub(super) fn plugin(app: &mut App) {
 
     // IK setup happens once after player model loads
     app.add_systems(
-        Update,
+        FixedUpdate,
         setup_ik_chains.run_if(in_state(Screen::Gameplay)),
     );
 
     // Parkour IK update systems run every frame during gameplay
     app.add_systems(
-        Update,
+        FixedUpdate,
         (
             update_ik_targets_from_obstacles,
             toggle_ik_constraints,
@@ -163,7 +163,7 @@ pub(super) fn plugin(app: &mut App) {
 
     // Locomotion foot IK systems (for basic movement)
     app.add_systems(
-        Update,
+        FixedUpdate,
         (
             update_locomotion_foot_ik,
             visualize_locomotion_foot_ik,

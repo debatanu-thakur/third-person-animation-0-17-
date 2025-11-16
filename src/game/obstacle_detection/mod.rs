@@ -21,7 +21,7 @@ pub(super) fn plugin(app: &mut App) {
 
     // Add detection systems
     app.add_systems(
-        Update,
+        FixedUpdate,
         (
             detect_obstacles,
             update_parkour_capabilities,

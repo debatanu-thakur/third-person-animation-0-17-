@@ -33,11 +33,11 @@ pub fn setup_animation_graph(
     player_assets: Option<Res<PlayerAssets>>,
     parkour_animations: Option<Res<ParkourAnimationLibrary>>,
     mut graphs: ResMut<Assets<AnimationGraph>>,
-    mut animation_player_query: Query<(Entity, &mut AnimationPlayer), Added<AnimationPlayer>>,
-    animation_graph: Query<Entity, With<AnimationGraphHandle>>,
+    mut animation_player_query: Query<(Entity, &mut AnimationPlayer)>,
+    animation_transitions: Query<Entity, With<AnimationTransitions>>,
 ) {
-    // If animation nodes exist, no need to process this anymore
-    if let Ok(_) = animation_graph.single() {
+    // If animation graph exist, no need to process this anymore
+    if let Ok(_) = animation_transitions.single() {
         return;
     }
 

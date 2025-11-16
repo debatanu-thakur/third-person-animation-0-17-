@@ -623,7 +623,7 @@ pub fn init_root_motion_tracker(
             // Find root bone
             let mut root_bone_pos = Vec3::ZERO;
             for child in children.iter() {
-                if let Ok((bone_transform, bone_name)) = bone_query.get(*child) {
+                if let Ok((bone_transform, bone_name)) = bone_query.get(child) {
                     if bone_name.as_str() == "mixamorig12:Hips" {
                         root_bone_pos = bone_transform.translation();
                         break;
@@ -667,7 +667,7 @@ pub fn extract_and_apply_root_motion(
         let mut root_bone_pos: Option<Vec3> = None;
 
         for child in children.iter() {
-            if let Ok((bone_transform, bone_name)) = bone_query.get(*child) {
+            if let Ok((bone_transform, bone_name)) = bone_query.get(child) {
                 if bone_name.as_str() == "mixamorig12:Hips" {
                     root_bone_pos = Some(bone_transform.translation());
                     break;
