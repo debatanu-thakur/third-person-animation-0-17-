@@ -121,14 +121,14 @@ pub fn setup_ik_chains(
 
     for (entity, name) in bone_query.iter() {
         match name.as_str() {
-            "mixamorig:LeftHand" => left_hand_bone = Some(entity),
-            "mixamorig:RightHand" => right_hand_bone = Some(entity),
-            "mixamorig:LeftFoot" => left_foot_bone = Some(entity),
-            "mixamorig:RightFoot" => right_foot_bone = Some(entity),
-            "mixamorig:LeftForeArm" => left_forearm_bone = Some(entity),
-            "mixamorig:RightForeArm" => right_forearm_bone = Some(entity),
-            "mixamorig:LeftLeg" => left_leg_bone = Some(entity),
-            "mixamorig:RightLeg" => right_leg_bone = Some(entity),
+            "mixamorig12:LeftHand" => left_hand_bone = Some(entity),
+            "mixamorig12:RightHand" => right_hand_bone = Some(entity),
+            "mixamorig12:LeftFoot" => left_foot_bone = Some(entity),
+            "mixamorig12:RightFoot" => right_foot_bone = Some(entity),
+            "mixamorig12:LeftForeArm" => left_forearm_bone = Some(entity),
+            "mixamorig12:RightForeArm" => right_forearm_bone = Some(entity),
+            "mixamorig12:LeftLeg" => left_leg_bone = Some(entity),
+            "mixamorig12:RightLeg" => right_leg_bone = Some(entity),
             _ => {}
         }
     }
@@ -213,6 +213,16 @@ pub fn setup_ik_chains(
 
     // Add IK targets component to player
     commands.entity(player_entity).insert(ParkourIkTargets::default());
+
+    // Write setup status to debug file
+    let mut setup_info = String::new();
+    setup_info.push_str("(\n  ik_setup_complete: true,\n");
+    setup_info.push_str(&format!("  left_hand_found: {},\n", left_hand_bone.is_some()));
+    setup_info.push_str(&format!("  right_hand_found: {},\n", right_hand_bone.is_some()));
+    setup_info.push_str(&format!("  left_foot_found: {},\n", left_foot_bone.is_some()));
+    setup_info.push_str(&format!("  right_foot_found: {},\n", right_foot_bone.is_some()));
+    setup_info.push_str(")\n");
+    let _ = std::fs::write("assets/debug/ik_setup.ron", setup_info);
 
     info!("✅ IK chains setup complete!");
 }
