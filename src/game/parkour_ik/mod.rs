@@ -150,25 +150,25 @@ pub(super) fn plugin(app: &mut App) {
     );
 
     // Parkour IK update systems run every frame during gameplay
-    // app.add_systems(
-    //     Update,
-    //     (
-    //         update_ik_targets_from_obstacles,
-    //         toggle_ik_constraints,
-    //         visualize_ik_targets,
-    //     )
-    //         .chain()
-    //         .run_if(in_state(Screen::Gameplay)),
-    // );
+    app.add_systems(
+        Update,
+        (
+            update_ik_targets_from_obstacles,
+            toggle_ik_constraints,
+            visualize_ik_targets,
+        )
+            .chain()
+            .run_if(in_state(Screen::Gameplay)),
+    );
 
     // Locomotion foot IK systems (for basic movement)
-    // app.add_systems(
-    //     Update,
-    //     (
-    //         update_locomotion_foot_ik,
-    //         visualize_locomotion_foot_ik,
-    //         write_ik_debug_info,  // Debug logging to RON file
-    //     )
-    //         .run_if(in_state(Screen::Gameplay)),
-    // );
+    app.add_systems(
+        Update,
+        (
+            update_locomotion_foot_ik,
+            visualize_locomotion_foot_ik,
+            write_ik_debug_info,  // Debug logging to RON file
+        )
+            .run_if(in_state(Screen::Gameplay)),
+    );
 }
