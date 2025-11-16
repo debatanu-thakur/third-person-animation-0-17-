@@ -181,7 +181,7 @@ pub fn init_animation_sampling(
     };
 
     // Find the entity with AnimationPlayer and AnimationTransitions
-    let Ok(animation_entity) = animation_player_query.get_single() else {
+    let Ok(animation_entity) = animation_player_query.single() else {
         return;
     };
 
@@ -597,12 +597,12 @@ pub fn debug_sampling_state(
     status.push_str(&format!("  time: {},\n", current_time));
     status.push_str(&format!("  library_exists: {},\n", library.is_some()));
     status.push_str(&format!("  animation_nodes_exists: {},\n", animation_nodes.is_some()));
-    status.push_str(&format!("  animation_player_exists: {},\n", animation_player_query.get_single().is_ok()));
+    status.push_str(&format!("  animation_player_exists: {},\n", animation_player_query.single().is_ok()));
     status.push_str(&format!("  sampling_complete: {},\n", sampled_poses.sampled));
     status.push_str(&format!("  vault_samples_count: {},\n", sampled_poses.vault_samples.len()));
 
     // Check the animation player entity for the sampler component
-    if let Ok(animation_entity) = animation_player_query.get_single() {
+    if let Ok(animation_entity) = animation_player_query.single() {
         let has_sampler = sampler_query.get(animation_entity).is_ok();
         status.push_str(&format!("  has_sampler_component: {},\n", has_sampler));
 
