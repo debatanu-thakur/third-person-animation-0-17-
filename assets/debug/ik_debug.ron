@@ -1,0 +1,23 @@
+(
+  timestamp: 12.477668,
+  config: (
+    enabled: true,
+    max_ground_distance: 2,
+    foot_height_offset: 0.05,
+    adjustment_strength: 1,
+  ),
+  parkour_state: "Idle",
+  ik_should_be_active: true,
+  bones_found: (
+    left_foot: "Found",
+    left_foot_pos: (-1.3661858, 0.3423862, -3.2462964),
+    right_foot: "Found",
+    right_foot_pos: (-1.3942847, 0.34239003, -2.953106),
+  ),
+  ik_constraints: [
+  ],
+  ik_targets: (
+    left_foot_target: (-1.3661858, 0.3923862, -3.2462964),
+    right_foot_target: (-1.3942847, 0.39239004, -2.953106),
+  ),
+)

@@ -1,0 +1,7 @@
+(
+  ik_setup_complete: true,
+  left_hand_found: false,
+  right_hand_found: false,
+  left_foot_found: false,
+  right_foot_found: false,
+)
