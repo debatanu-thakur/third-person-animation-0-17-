@@ -38,10 +38,12 @@ pub fn setup_animation_graph(
 ) {
     // If animation nodes exist, no need to process this anymore
     if let Some(_) = animation_nodes {
+        warn!("Animation nodes exists, no need to process");
         return;
     }
 
     let Some(player_assets) = player_assets else {
+        warn!("Player assets not found");
         return;
     };
 
@@ -131,6 +133,7 @@ pub fn update_animation_state(
     };
 
     for (controller, mut animating_state, mut movement_timer, parkour) in player_query.iter_mut() {
+        info!("For player queries");
         let new_state = determine_animation_state(controller, &mut movement_timer, &time, parkour);
         apply_animation_state(
             &mut animating_state,
@@ -162,6 +165,7 @@ pub fn determine_animation_state(
     // If performing parkour action, return that state
     if let Some(parkour_state) = parkour_animation {
         movement_timer.time_in_state = Duration::ZERO;
+        info!("I am here");
         return parkour_state;
     }
 
@@ -218,6 +222,7 @@ pub fn determine_animation_state(
             }
         }
     };
+    info!("Current state is {:?}", current_status_for_animating);
     current_status_for_animating
 }
 
@@ -239,6 +244,7 @@ fn apply_animation_state(
 
             // For the Moving state, even when the state variant remains the same, the speed can
             // change. We need to update the blend weights to smoothly transition between walk and run.
+            info!("Maintain state is - {:?}", state);
 
         }
         TnuaAnimatingStateDirective::Alter {
@@ -255,6 +261,7 @@ fn apply_animation_state(
             // animation_player.stop_all();
 
             // Depending on the new state, we choose the animation to run and its parameters
+            info!("Changed state is - {:?}", state);
             match state {
                 AnimationState::Idle => {
                     // Transition from Walking → Idle: 200ms
