@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::screens::Screen;
-use crate::game::obstacle_detection::detection::{ParkourController, ParkourState};
+use crate::game::obstacle_detection::detection::{ParkourController, ParkourState, ParkourAnimationComplete};
 
 mod assets;
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
@@ -35,6 +35,70 @@ pub fn create_parkour_library(
         wall_run_right_clip: animations.wall_run_right.clone(),
         roll_clip: animations.roll.clone(),
     });
+}
+
+/// Marker to track if completion events have been added
+#[derive(Resource, Default)]
+struct AnimationEventsAdded;
+
+/// Adds completion events to parkour animation clips
+/// This runs once after clips are loaded and adds events at the end of each animation
+pub fn add_completion_events_to_clips(
+    mut commands: Commands,
+    library: Option<Res<ParkourAnimationLibrary>>,
+    events_added: Option<Res<AnimationEventsAdded>>,
+    mut animation_clips: ResMut<Assets<AnimationClip>>,
+) {
+    // Only run once
+    if events_added.is_some() {
+        return;
+    }
+
+    let Some(library) = library else {
+        return;
+    };
+
+    info!("🎬 Adding completion events to parkour animations...");
+
+    // Add completion event to vault animation
+    if let Some(vault_clip) = animation_clips.get_mut(&library.vault_clip) {
+        let duration = vault_clip.duration();
+        vault_clip.add_event(
+            duration,
+            ParkourAnimationComplete {
+                action: ParkourState::Vaulting,
+            },
+        );
+        info!("  ✅ Vault animation: added completion event at {}s", duration);
+    }
+
+    // Add completion event to climb animation
+    if let Some(climb_clip) = animation_clips.get_mut(&library.climb_clip) {
+        let duration = climb_clip.duration();
+        climb_clip.add_event(
+            duration,
+            ParkourAnimationComplete {
+                action: ParkourState::Climbing,
+            },
+        );
+        info!("  ✅ Climb animation: added completion event at {}s", duration);
+    }
+
+    // Add completion event to slide animation
+    if let Some(slide_clip) = animation_clips.get_mut(&library.slide_clip) {
+        let duration = slide_clip.duration();
+        slide_clip.add_event(
+            duration,
+            ParkourAnimationComplete {
+                action: ParkourState::Sliding,
+            },
+        );
+        info!("  ✅ Slide animation: added completion event at {}s", duration);
+    }
+
+    // Mark as complete
+    commands.insert_resource(AnimationEventsAdded);
+    info!("🎬 Animation completion events added successfully!");
 }
 
 /// Resource holding animation library
@@ -102,6 +166,7 @@ pub(super) fn plugin(app: &mut App) {
             // Asset loading (runs once when GLTF loads)
             extract_parkour_animation_clips,
             create_parkour_library,
+            add_completion_events_to_clips,  // Add completion events to animations
 
             // Debug systems
             test_trigger_vault_animation,      // 'V' key - trigger vault animation

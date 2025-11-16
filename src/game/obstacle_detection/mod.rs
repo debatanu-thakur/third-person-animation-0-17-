@@ -7,6 +7,13 @@ use crate::{game::obstacle_detection::detection::*, screens::Screen};
 // ============================================================================
 
 pub(super) fn plugin(app: &mut App) {
+    // Register reflection types for animation events
+    app.register_type::<ParkourState>();
+    app.register_type::<ParkourAnimationComplete>();
+
+    // Register observer for animation completion events
+    app.add_observer(on_parkour_animation_complete);
+
     // Insert config resource
     app.init_resource::<ObstacleDetectionConfig>();
 

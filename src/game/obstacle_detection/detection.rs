@@ -1,5 +1,6 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use bevy::animation::AnimationEvent;
 use bevy_tnua::prelude::*;
 use bevy_tnua::builtins::TnuaBuiltinWalk;
 
@@ -152,7 +153,8 @@ pub struct RightFootIKTarget {
 // ============================================================================
 
 /// Current parkour animation state
-#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[reflect(Component)]
 pub enum ParkourState {
     #[default]
     Idle,
@@ -589,6 +591,14 @@ pub fn apply_parkour_root_motion(
 // ANIMATION COMPLETION DETECTION
 // ============================================================================
 
+/// Event fired when a parkour animation completes
+/// This is embedded in animation clips and fired automatically by Bevy
+#[derive(AnimationEvent, Clone, Reflect)]
+pub struct ParkourAnimationComplete {
+    /// Which parkour action just completed
+    pub action: ParkourState,
+}
+
 /// Component to track parkour animation timing
 #[derive(Component)]
 pub struct ParkourAnimationState {
@@ -660,6 +670,24 @@ pub fn detect_parkour_animation_completion(
         if elapsed >= animation_duration {
             info!("✅ Parkour animation completed ({}s), returning to locomotion", elapsed);
             parkour.state = ParkourState::Idle;
+        }
+    }
+}
+
+/// Observer function that handles parkour animation completion events
+/// This is triggered automatically when animation clips fire ParkourAnimationComplete
+pub fn on_parkour_animation_complete(
+    trigger: Trigger<ParkourAnimationComplete>,
+    mut player_query: Query<&mut ParkourController, With<Player>>,
+) {
+    let event = trigger.event();
+    info!("🎬 Animation event received: {:?} completed", event.action);
+
+    // Return player to idle state
+    for mut parkour in player_query.iter_mut() {
+        if parkour.state == event.action {
+            parkour.state = ParkourState::Idle;
+            info!("✅ Animation event: Returning to Idle from {:?}", event.action);
         }
     }
 }
