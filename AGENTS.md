@@ -2,7 +2,100 @@
 
 **Last Updated**: 2025-11-16
 **Bevy Version**: 0.17
-**Session**: Architecture Cleanup & AnimationClip Direct Access
+**Session**: Parkour Controller Implementation
+
+---
+
+## ✅ PARKOUR CONTROLLER IMPLEMENTATION (2025-11-16)
+
+### Implementation Summary
+
+Successfully implemented the parkour animation controller with the following features:
+
+#### 1. **Tnua Control During Parkour** ✅
+- **System**: `control_tnua_during_parkour()` in `detection.rs:518-545`
+- **Function**: Disables Tnua's physics-based movement during parkour actions
+- **How**: Sets `TnuaBuiltinWalk` basis to zero velocity when in parkour state
+- **Prevents**: Fighting between animation root motion and physics movement
+- **States affected**: Vaulting, Climbing, Hanging, WallRunning, Sliding
+
+#### 2. **Animation Completion Detection** ✅
+- **Systems**:
+  - `start_parkour_animation_tracking()` - Detects parkour state changes, adds tracking component
+  - `detect_parkour_animation_completion()` - Monitors elapsed time, returns to Idle when complete
+- **Component**: `ParkourAnimationState` tracks current state and start time
+- **Durations**: Fixed for now (Vault: 1.5s, Climb: 2.0s, Slide: 1.2s)
+- **Future**: Will query `AnimationPlayer` for actual clip duration
+
+#### 3. **Simplified Root Motion** ✅
+- **System**: `apply_parkour_root_motion()` in `detection.rs:553-578`
+- **Function**: Applies forward movement during parkour animations
+- **Method**: Directly sets `LinearVelocity` in character's facing direction
+- **Speeds**: Vault: 3.0 m/s, Climb: 1.5 m/s, Slide: 4.0 m/s, WallRun: 3.5 m/s
+- **Vertical**: Preserves Y velocity for gravity/physics
+
+#### 4. **Hand IK Targeting** ✅
+- **System**: `toggle_ik_constraints()` - Fixed query to use bone names
+- **Function**: Enables hand IK when parkour state becomes active
+- **Integration**: Works with existing `update_ik_targets_from_obstacles()`
+- **Target positions**: Calculated based on obstacle hit points with hand spread
+
+### System Execution Order
+
+```
+detect_obstacles
+  ↓
+update_parkour_capabilities (set can_vault, can_climb flags)
+  ↓
+trigger_parkour_actions (Space key → set ParkourState)
+  ↓
+start_parkour_animation_tracking (add timing component)
+  ↓
+control_tnua_during_parkour (disable Tnua physics)
+  ↓
+apply_parkour_root_motion (apply forward velocity)
+  ↓
+detect_parkour_animation_completion (check if done → reset to Idle)
+  ↓
+apply_ik_targets (placeholder for future)
+```
+
+### Testing Instructions
+
+1. **Run the game**: `cargo run`
+2. **Approach an obstacle** (box, wall)
+3. **Press SPACE** when yellow detection sphere appears
+4. **Watch for**:
+   - Parkour animation plays (vault/climb)
+   - Character moves forward during animation
+   - Hand IK targets appear (cyan/magenta spheres)
+   - After ~1.5-2 seconds, returns to Idle/Walk state
+5. **Press V** to manually test vault animation
+
+### Files Modified
+
+- `src/game/obstacle_detection/detection.rs` (+150 lines)
+  - Added `control_tnua_during_parkour()`
+  - Added `apply_parkour_root_motion()`
+  - Added `ParkourAnimationState` component
+  - Added `start_parkour_animation_tracking()`
+  - Added `detect_parkour_animation_completion()`
+
+- `src/game/obstacle_detection/mod.rs` (+3 systems to plugin)
+
+- `src/game/parkour_ik/mod.rs` (fixed `toggle_ik_constraints()` query)
+
+### Animation Masking Discussion
+
+**User Question**: Should we use Bevy's animation masking for parkour?
+
+**Answer**: Not immediately necessary, but helpful later for:
+- **Phase 1** (current): Full-body parkour animations work fine without masking
+- **Phase 2** (future): Masking can separate upper/lower body
+  - Example: Apply foot IK only to legs while hands do parkour
+  - Example: Upper body parkour while maintaining foot planting
+
+**Current approach**: Switch between full Tnua locomotion → full parkour animation
 
 ---
 

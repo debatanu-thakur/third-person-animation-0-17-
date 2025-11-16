@@ -1,5 +1,7 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
+use bevy_tnua::prelude::*;
+use bevy_tnua::builtins::TnuaBuiltinWalk;
 
 use crate::{game::player::Player, screens::Screen};
 
@@ -503,6 +505,153 @@ pub fn apply_ik_targets(
                 }
             }
             _ => {}
+        }
+    }
+}
+
+// ============================================================================
+// TNUA CONTROL DURING PARKOUR
+// ============================================================================
+
+/// Disables Tnua's physics-based movement during parkour actions
+/// This prevents fighting between animation root motion and physics movement
+pub fn control_tnua_during_parkour(
+    mut player_query: Query<(&ParkourController, &mut TnuaController), With<Player>>,
+) {
+    for (parkour, mut tnua_controller) in player_query.iter_mut() {
+        // Check if we're in a parkour action (not normal locomotion)
+        let is_parkour_action = matches!(
+            parkour.state,
+            ParkourState::Vaulting
+                | ParkourState::Climbing
+                | ParkourState::Hanging
+                | ParkourState::WallRunning
+                | ParkourState::Sliding
+        );
+
+        if is_parkour_action {
+            // Disable Tnua's movement by setting basis to zero velocity
+            // This stops physics from moving the character
+            tnua_controller.basis(TnuaBuiltinWalk {
+                desired_velocity: Vec3::ZERO,
+                desired_forward: Vec3::Z, // Keep a valid forward direction
+                float_height: 1.5,
+                ..Default::default()
+            });
+        }
+        // When not in parkour, normal movement controls will set the basis
+        // (handled in animations/controls.rs apply_controls)
+    }
+}
+
+// ============================================================================
+// SIMPLIFIED ROOT MOTION - Apply forward movement during parkour
+// ============================================================================
+
+/// Applies forward movement during parkour animations (simplified root motion)
+/// This moves the character forward during vault/climb/slide animations
+pub fn apply_parkour_root_motion(
+    mut player_query: Query<(&Transform, &ParkourController, &mut LinearVelocity), With<Player>>,
+) {
+    for (transform, parkour, mut velocity) in player_query.iter_mut() {
+        // Apply forward movement based on parkour action
+        let forward_speed = match parkour.state {
+            ParkourState::Vaulting => 3.0,   // Move forward at 3 m/s during vault
+            ParkourState::Climbing => 1.5,   // Move forward slower during climb
+            ParkourState::Sliding => 4.0,    // Slide fast
+            ParkourState::WallRunning => 3.5, // Wall run speed
+            _ => {
+                // Not in parkour, don't override velocity
+                continue;
+            }
+        };
+
+        // Apply forward velocity in character's facing direction
+        let forward = transform.forward();
+        let forward_movement = *forward * forward_speed;
+
+        // Keep vertical velocity (gravity/jumping) but replace horizontal with parkour motion
+        velocity.x = forward_movement.x;
+        velocity.z = forward_movement.z;
+        // Don't touch velocity.y - let gravity/physics handle vertical
+    }
+}
+
+// ============================================================================
+// ANIMATION COMPLETION DETECTION
+// ============================================================================
+
+/// Component to track parkour animation timing
+#[derive(Component)]
+pub struct ParkourAnimationState {
+    /// The parkour state being animated
+    pub current_state: ParkourState,
+    /// Time when this animation started
+    pub start_time: f32,
+}
+
+/// Starts tracking when a parkour animation begins
+pub fn start_parkour_animation_tracking(
+    mut commands: Commands,
+    mut player_query: Query<(Entity, &ParkourController, Option<&mut ParkourAnimationState>), (With<Player>, Changed<ParkourController>)>,
+    time: Res<Time>,
+) {
+    for (entity, parkour, anim_state) in player_query.iter_mut() {
+        let is_parkour_action = matches!(
+            parkour.state,
+            ParkourState::Vaulting
+                | ParkourState::Climbing
+                | ParkourState::Sliding
+                | ParkourState::WallRunning
+        );
+
+        if is_parkour_action {
+            // Just entered a parkour state
+            if let Some(mut state) = anim_state {
+                // Update existing state if changed
+                if state.current_state != parkour.state {
+                    state.current_state = parkour.state;
+                    state.start_time = time.elapsed_secs();
+                    info!("🎬 Started parkour animation: {:?}", parkour.state);
+                }
+            } else {
+                // Add new tracking component
+                commands.entity(entity).insert(ParkourAnimationState {
+                    current_state: parkour.state,
+                    start_time: time.elapsed_secs(),
+                });
+                info!("🎬 Started parkour animation: {:?}", parkour.state);
+            }
+        } else if anim_state.is_some() {
+            // Exited parkour, remove tracking
+            commands.entity(entity).remove::<ParkourAnimationState>();
+        }
+    }
+}
+
+/// Detects when parkour animations complete and transitions back to locomotion
+/// For now uses fixed durations, later will query AnimationPlayer for actual clip length
+pub fn detect_parkour_animation_completion(
+    mut player_query: Query<(&mut ParkourController, &ParkourAnimationState), With<Player>>,
+    time: Res<Time>,
+) {
+    for (mut parkour, anim_state) in player_query.iter_mut() {
+        let elapsed = time.elapsed_secs() - anim_state.start_time;
+
+        // Fixed durations for parkour animations (in seconds)
+        // TODO: Get actual clip duration from AnimationPlayer/Assets
+        let animation_duration = match parkour.state {
+            ParkourState::Vaulting => 1.5,  // Vault takes ~1.5 seconds
+            ParkourState::Climbing => 2.0,  // Climb takes ~2 seconds
+            ParkourState::Sliding => 1.2,   // Slide takes ~1.2 seconds
+            ParkourState::WallRunning => 99999.0, // Wall run is continuous
+            _ => 0.0,
+        };
+
+        // Check if animation completed
+        if elapsed >= animation_duration {
+            info!("✅ Parkour animation completed ({}s), returning to locomotion", elapsed);
+            parkour.state = ParkourState::Idle;
         }
     }
 }

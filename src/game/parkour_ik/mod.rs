@@ -342,20 +342,23 @@ pub fn update_ik_targets_from_obstacles(
 /// Enable/disable IK constraints based on parkour state
 pub fn toggle_ik_constraints(
     player_query: Query<&ParkourIkTargets, (With<Player>, Changed<ParkourIkTargets>)>,
-    mut left_hand_constraint: Query<&mut IkConstraint, With<LeftHandIkTarget>>,
-    mut right_hand_constraint: Query<&mut IkConstraint, (With<RightHandIkTarget>, Without<LeftHandIkTarget>)>,
+    mut ik_constraint_query: Query<(&Name, &mut IkConstraint)>,
 ) {
     let Ok(ik_targets) = player_query.single() else {
         return;
     };
 
     // Enable/disable hand IK based on whether we have active targets
-    for mut constraint in left_hand_constraint.iter_mut() {
-        constraint.enabled = ik_targets.active;
-    }
-
-    for mut constraint in right_hand_constraint.iter_mut() {
-        constraint.enabled = ik_targets.active;
+    for (name, mut constraint) in ik_constraint_query.iter_mut() {
+        match name.as_str() {
+            "mixamorig12:LeftHand" | "mixamorig12:RightHand" => {
+                constraint.enabled = ik_targets.active;
+                if ik_targets.active {
+                    info!("✋ Enabled hand IK for {}", name);
+                }
+            }
+            _ => {}
+        }
     }
 }
 
