@@ -423,8 +423,7 @@ pub fn update_locomotion_foot_ik(
     bone_query: Query<(Entity, &GlobalTransform, &Name)>,
     mut left_foot_target_query: Query<&mut Transform, (With<LeftFootIkTarget>, Without<RightFootIkTarget>)>,
     mut right_foot_target_query: Query<&mut Transform, With<RightFootIkTarget>>,
-    mut left_foot_ik_query: Query<&mut IkConstraint, (With<Name>, Without<RightFootIkTarget>)>,
-    mut right_foot_ik_query: Query<&mut IkConstraint, (With<Name>, With<RightFootIkTarget>)>,
+    mut ik_constraint_query: Query<(&Name, &mut IkConstraint)>,
 ) {
     if !config.enabled {
         return;
@@ -435,9 +434,11 @@ pub fn update_locomotion_foot_ik(
         return;
     };
 
-    let is_normal_locomotion = matches!(
+    // Enable for all states except parkour actions
+    let is_normal_locomotion = !matches!(
         parkour.state,
-        ParkourState::Idle
+        ParkourState::Vaulting | ParkourState::Climbing |
+        ParkourState::Sliding | ParkourState::Hanging
     );
 
     // Find the foot bone entities
@@ -452,12 +453,14 @@ pub fn update_locomotion_foot_ik(
         }
     }
 
-    // Enable/disable foot IK based on state
-    for mut constraint in left_foot_ik_query.iter_mut() {
-        constraint.enabled = is_normal_locomotion;
-    }
-    for mut constraint in right_foot_ik_query.iter_mut() {
-        constraint.enabled = is_normal_locomotion;
+    // Enable/disable foot IK constraints based on state
+    for (name, mut constraint) in ik_constraint_query.iter_mut() {
+        match name.as_str() {
+            "mixamorig12:LeftFoot" | "mixamorig12:RightFoot" => {
+                constraint.enabled = is_normal_locomotion;
+            }
+            _ => {}
+        }
     }
 
     if !is_normal_locomotion {
