@@ -58,7 +58,7 @@ impl Default for ObstacleDetectionConfig {
             min_velocity_for_auto_actions: 3.0,
             center_ray_height: 0.3,  // Chest height
             upper_ray_height: 0.9,   // Above head / ledge detection
-            lower_ray_height: -0.7,   // Foot level
+            lower_ray_height: -0.6,   // Foot level
             debug_draw_rays: true,
         }
     }
@@ -557,9 +557,10 @@ pub fn control_tnua_during_parkour(
 /// Makes rigidbody kinematic position during parkour to allow free Transform manipulation
 /// This prevents physics from resetting the character position while animation plays
 pub fn control_rigidbody_during_parkour(
-    mut player_query: Query<(&ParkourController, &mut RigidBody), With<Player>>,
+    mut commands: Commands,
+    player_query: Query<(Entity, &ParkourController), With<Player>>,
 ) {
-    for (parkour, mut rigidbody) in player_query.iter_mut() {
+    for (player_entity, parkour) in player_query.iter() {
         let is_parkour_action = matches!(
             parkour.state,
             ParkourState::Vaulting
@@ -570,10 +571,10 @@ pub fn control_rigidbody_during_parkour(
 
         if is_parkour_action {
             // Make kinematic so we can freely modify Transform
-            *rigidbody = RigidBody::Kinematic;
+            commands.entity(player_entity).insert(RigidBody::Kinematic);
         } else {
             // Restore dynamic for normal physics
-            *rigidbody = RigidBody::Dynamic;
+            commands.entity(player_entity).insert(RigidBody::Dynamic);
         }
     }
 }
@@ -626,7 +627,7 @@ pub fn extract_and_apply_root_motion(
         let mut root_bone_transform: Option<&GlobalTransform> = None;
 
         for child in children.iter() {
-            if let Ok((bone_transform, bone_name)) = bone_query.get(*child) {
+            if let Ok((bone_transform, bone_name)) = bone_query.get(child) {
                 // The root bone for Mixamo animations is typically the Hips
                 if bone_name.as_str() == "mixamorig12:Hips" {
                     root_bone_transform = Some(bone_transform);
@@ -635,7 +636,7 @@ pub fn extract_and_apply_root_motion(
             }
 
             // If not found, search deeper in hierarchy
-            if let Ok(grandchildren) = bone_query.get(*child) {
+            if let Ok(grandchildren) = bone_query.get(child) {
                 // Search children recursively would go here
                 // For now, assume Hips is direct child
             }
@@ -647,9 +648,9 @@ pub fn extract_and_apply_root_motion(
         };
 
         // Get or initialize tracker
-        let Ok(player_entity) = player_query.get_single() else {
-            continue;
-        };
+        // let Ok(player_entity) = player_query.single() else {
+        //     continue;
+        // };
 
         // For now, use simplified approach: just apply forward velocity
         // TODO: Implement proper root bone tracking with delta calculation
