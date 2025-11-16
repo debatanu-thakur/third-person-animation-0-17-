@@ -194,14 +194,14 @@ pub struct ParkourController {
 /// Multi-ray raycasting system to detect obstacles ahead of player
 pub fn detect_obstacles(
     mut player_query: Query<
-        (&Transform, &LinearVelocity, &mut ObstacleDetectionResult),
+        (Entity, &Transform, &LinearVelocity, &mut ObstacleDetectionResult),
         With<Player>,
     >,
     config: Res<ObstacleDetectionConfig>,
     spatial_query: SpatialQuery,
     mut gizmos: Gizmos,
 ) {
-    for (transform, velocity, mut detection) in player_query.iter_mut() {
+    for (player_entity, transform, velocity, mut detection) in player_query.iter_mut() {
         // Reset detection
         *detection = ObstacleDetectionResult::default();
 
@@ -219,13 +219,17 @@ pub fn detect_obstacles(
         let ray_direction = forward; // Already Dir3
         let max_distance = config.detection_range;
 
+        // Create filter to exclude player entity
+        let mut filter = SpatialQueryFilter::default();
+        filter.excluded_entities.insert(player_entity);
+
         // Cast rays
         let center_hit = spatial_query.cast_ray(
             center_origin,
             ray_direction,
             max_distance,
             true,
-            &SpatialQueryFilter::default(),
+            &filter,
         );
 
         let upper_hit = spatial_query.cast_ray(
@@ -233,7 +237,7 @@ pub fn detect_obstacles(
             ray_direction,
             max_distance,
             true,
-            &SpatialQueryFilter::default(),
+            &filter,
         );
 
         let lower_hit = spatial_query.cast_ray(
@@ -241,7 +245,7 @@ pub fn detect_obstacles(
             ray_direction,
             max_distance,
             true,
-            &SpatialQueryFilter::default(),
+            &filter,
         );
 
         // Debug visualization
@@ -586,17 +590,56 @@ pub fn control_rigidbody_during_parkour(
 /// Component to track root bone position for motion extraction
 #[derive(Component)]
 pub struct RootMotionTracker {
-    /// Last frame's root bone position (in local space)
-    pub last_root_position: Vec3,
-    /// Whether this is the first frame (skip delta calculation)
-    pub first_frame: bool,
+    /// Position where animation started (player Transform)
+    pub animation_start_position: Vec3,
+    /// Position of root bone when animation started (relative to player)
+    pub root_bone_start_offset: Vec3,
 }
 
 impl Default for RootMotionTracker {
     fn default() -> Self {
         Self {
-            last_root_position: Vec3::ZERO,
-            first_frame: true,
+            animation_start_position: Vec3::ZERO,
+            root_bone_start_offset: Vec3::ZERO,
+        }
+    }
+}
+
+/// Initializes root motion tracking when parkour animation starts
+pub fn init_root_motion_tracker(
+    mut commands: Commands,
+    player_query: Query<(Entity, &Transform, &ParkourController, &Children, Option<&RootMotionTracker>), (With<Player>, Changed<ParkourController>)>,
+    bone_query: Query<(&GlobalTransform, &Name)>,
+) {
+    for (entity, player_transform, parkour, children, tracker) in player_query.iter() {
+        let is_parkour_action = matches!(
+            parkour.state,
+            ParkourState::Vaulting
+                | ParkourState::Climbing
+                | ParkourState::Sliding
+        );
+
+        if is_parkour_action && tracker.is_none() {
+            // Find root bone
+            let mut root_bone_pos = Vec3::ZERO;
+            for child in children.iter() {
+                if let Ok((bone_transform, bone_name)) = bone_query.get(*child) {
+                    if bone_name.as_str() == "mixamorig12:Hips" {
+                        root_bone_pos = bone_transform.translation();
+                        break;
+                    }
+                }
+            }
+
+            // Initialize tracker
+            commands.entity(entity).insert(RootMotionTracker {
+                animation_start_position: player_transform.translation,
+                root_bone_start_offset: root_bone_pos - player_transform.translation,
+            });
+            info!("🎯 Root motion tracker initialized at {:?}", player_transform.translation);
+        } else if !is_parkour_action && tracker.is_some() {
+            // Remove tracker when exiting parkour
+            commands.entity(entity).remove::<RootMotionTracker>();
         }
     }
 }
@@ -604,19 +647,16 @@ impl Default for RootMotionTracker {
 /// Extracts root motion from animation and applies to character Transform
 /// This prevents the "snap back" issue where animation moves mesh but not rigidbody
 pub fn extract_and_apply_root_motion(
-    mut player_query: Query<(&mut Transform, &ParkourController, &Children), With<Player>>,
-    mut tracker_query: Query<&mut RootMotionTracker>,
+    mut player_query: Query<(&mut Transform, &ParkourController, &Children, &RootMotionTracker), With<Player>>,
     bone_query: Query<(&GlobalTransform, &Name)>,
-    time: Res<Time>,
 ) {
-    for (mut player_transform, parkour, children) in player_query.iter_mut() {
+    for (mut player_transform, parkour, children, tracker) in player_query.iter_mut() {
         // Only extract root motion during parkour animations
         let is_parkour_action = matches!(
             parkour.state,
             ParkourState::Vaulting
                 | ParkourState::Climbing
                 | ParkourState::Sliding
-                | ParkourState::WallRunning
         );
 
         if !is_parkour_action {
@@ -624,48 +664,28 @@ pub fn extract_and_apply_root_motion(
         }
 
         // Find root bone (Hips bone contains the animation's root motion)
-        let mut root_bone_transform: Option<&GlobalTransform> = None;
+        let mut root_bone_pos: Option<Vec3> = None;
 
         for child in children.iter() {
-            if let Ok((bone_transform, bone_name)) = bone_query.get(child) {
-                // The root bone for Mixamo animations is typically the Hips
+            if let Ok((bone_transform, bone_name)) = bone_query.get(*child) {
                 if bone_name.as_str() == "mixamorig12:Hips" {
-                    root_bone_transform = Some(bone_transform);
+                    root_bone_pos = Some(bone_transform.translation());
                     break;
                 }
             }
-
-            // If not found, search deeper in hierarchy
-            if let Ok(grandchildren) = bone_query.get(child) {
-                // Search children recursively would go here
-                // For now, assume Hips is direct child
-            }
         }
 
-        let Some(root_bone) = root_bone_transform else {
-            // Root bone not found, skip this frame
+        let Some(current_root_pos) = root_bone_pos else {
             continue;
         };
 
-        // Get or initialize tracker
-        // let Ok(player_entity) = player_query.single() else {
-        //     continue;
-        // };
+        // Calculate how far the root bone has moved from start
+        let root_delta = current_root_pos - (tracker.animation_start_position + tracker.root_bone_start_offset);
 
-        // For now, use simplified approach: just apply forward velocity
-        // TODO: Implement proper root bone tracking with delta calculation
-        let forward = player_transform.forward();
-        let forward_speed = match parkour.state {
-            ParkourState::Vaulting => 2.5,   // Adjusted to match animation better
-            ParkourState::Climbing => 1.0,
-            ParkourState::Sliding => 3.5,
-            ParkourState::WallRunning => 3.0,
-            _ => 0.0,
-        };
-
-        // Apply movement to Transform directly
-        let delta_movement = *forward * forward_speed * time.delta_secs();
-        player_transform.translation += delta_movement;
+        // Apply only horizontal movement to player (XZ plane)
+        // Keep Y controlled by physics/gravity
+        player_transform.translation.x = tracker.animation_start_position.x + root_delta.x;
+        player_transform.translation.z = tracker.animation_start_position.z + root_delta.z;
     }
 }
 
