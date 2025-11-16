@@ -6,7 +6,9 @@
 
 ---
 
-## 🎯 ARCHITECTURE DECISION (2025-11-16)
+## 🎯 ARCHITECTURE DECISIONS (2025-11-16)
+
+### Decision 1: AnimationClip Direct Access
 
 **Decision**: Use `AnimationClip` curves directly instead of runtime sampling
 
@@ -17,12 +19,63 @@
 - Cleaner: Read curves → Calculate transforms → Apply IK
 - No need for intermediate RON files or sampling systems
 
-**Implementation Plan**:
-1. Remove sampling system code
-2. Create utility to read `AnimationClip` curves at specific times
-3. Use curve data directly for IK target calculation
-4. Keep basic locomotion (idle, walk, run) working first
-5. Layer parkour animations (vault, climb) with IK on top
+**Status**: ✅ Implemented (sampling code removed)
+
+---
+
+### Decision 2: Hybrid Movement System (Tnua + Custom Parkour)
+
+**Decision**: Keep Bevy Tnua for basic locomotion, use custom movement for parkour actions
+
+**The Problem**:
+- Parkour animations (vault, climb, slide) use **root motion** - animation drives character position
+- Tnua uses **physics-based movement** - physics calculations drive character position
+- These two systems **fight each other** and cannot coexist during parkour actions
+- Example: Vault animation moves character forward, Tnua's physics resets position → jittery/broken movement
+
+**The Solution - Two Movement Systems**:
+
+#### 1. Basic Locomotion (Tnua Enabled)
+- **States**: Idle, Walk, Run, Jump
+- **Tnua handles**: Physics, ground detection, slopes, stairs, collisions
+- **IK adds**: Foot placement adjustment for terrain adaptation
+- **Why keep it**: Solid physics system, handles complex scenarios (slopes, platforms) for free
+
+#### 2. Parkour Actions (Tnua Disabled)
+- **States**: Vaulting, Climbing, Sliding, Ledge Hang
+- **Custom controller handles**:
+  - Root motion extraction from animations
+  - OR procedural path calculation (bezier curves from start → end)
+  - IK for precise hand/foot placement on obstacles
+  - Collision validation before executing action
+- **Why custom**: Full control needed for animation-driven movement and precise positioning
+
+**State Transition Flow**:
+```
+Normal Movement (Tnua Active)
+  ↓
+Detect Obstacle + Player Input
+  ↓
+Enter Parkour State → Disable Tnua
+  ↓
+Play Parkour Animation + Custom Movement + IK
+  ↓
+Parkour Complete → Re-enable Tnua
+  ↓
+Resume Normal Movement
+```
+
+**Implementation Phases**:
+1. **Phase 1 (Current)**: Keep Tnua, add IK foot adjustment for basic locomotion
+2. **Phase 2 (Next)**: Implement parkour state machine with Tnua enable/disable
+3. **Phase 3**: Add custom parkour movement (root motion or procedural)
+4. **Phase 4**: Layer IK on parkour for obstacle adaptation
+
+**Benefits**:
+- ✅ Best of both worlds: solid physics + precise parkour control
+- ✅ No system conflicts (Tnua disabled during parkour)
+- ✅ Simpler than full custom physics
+- ✅ Can implement parkour incrementally
 
 ---
 
