@@ -110,7 +110,171 @@ pub struct AnimationSampler {
     pub animation_name: String,
     pub sample_times: Vec<f32>,
     pub current_sample_index: usize,
+    pub current_time: f32,
     pub samples_collected: Vec<(f32, Vec<(String, Vec3, Quat)>)>,
+    pub frames_waited: u32, // Wait a few frames after seeking for animation to apply
+}
+
+// ============================================================================
+// ANIMATION SAMPLING SYSTEM
+// ============================================================================
+
+/// Initializes animation sampling after animations are loaded
+/// This runs once and samples vault animation at key times
+pub fn init_animation_sampling(
+    mut commands: Commands,
+    library: Option<Res<ParkourAnimationLibrary>>,
+    mut sampled_poses: ResMut<SampledParkourPoses>,
+    player_query: Query<Entity, With<crate::game::player::Player>>,
+) {
+    // Only run once
+    if sampled_poses.sampled {
+        return;
+    }
+
+    let Some(_library) = library else {
+        return;
+    };
+
+    let Ok(player_entity) = player_query.get_single() else {
+        return;
+    };
+
+    info!("🎬 Initializing animation sampling system...");
+    info!("   Sampling vault animation at key times: [0.0, 0.25, 0.5, 0.75, 1.0]");
+
+    // Add sampler component to player to start sampling process
+    commands.entity(player_entity).insert(AnimationSampler {
+        animation_name: "vault".to_string(),
+        sample_times: vec![0.0, 0.25, 0.5, 0.75, 1.0],
+        current_sample_index: 0,
+        current_time: 0.0,
+        frames_waited: 0,
+        samples_collected: Vec::new(),
+    });
+}
+
+/// Samples animation bone transforms at specific times
+/// This runs over multiple frames, seeking and reading bone data
+pub fn sample_animation_bones(
+    mut commands: Commands,
+    mut sampler_query: Query<(Entity, &mut AnimationSampler, &mut AnimationPlayer)>,
+    mut sampled_poses: ResMut<SampledParkourPoses>,
+    animation_nodes: Option<Res<AnimationNodes>>,
+    children_query: Query<&Children>,
+    name_query: Query<&Name>,
+    transform_query: Query<&GlobalTransform>,
+) {
+    let Some(nodes) = animation_nodes else {
+        return;
+    };
+
+    let Ok((entity, mut sampler, mut player)) = sampler_query.get_single_mut() else {
+        return;
+    };
+
+    // Check if we've finished all samples
+    if sampler.current_sample_index >= sampler.sample_times.len() {
+        info!("✅ Animation sampling complete!");
+        info!("   Collected {} samples for {}", sampler.samples_collected.len(), sampler.animation_name);
+
+        // Store samples in resource
+        for (time, bones) in sampler.samples_collected.iter() {
+            let time_key = format!("{:.2}", time);
+            let sampled_bones: Vec<SampledBoneTransform> = bones.iter()
+                .map(|(name, translation, rotation)| SampledBoneTransform {
+                    bone_name: name.clone(),
+                    translation: *translation,
+                    rotation: *rotation,
+                    time: *time,
+                })
+                .collect();
+
+            sampled_poses.vault_samples.insert(time_key, sampled_bones);
+        }
+
+        sampled_poses.sampled = true;
+
+        // Remove sampler component - we're done
+        commands.entity(entity).remove::<AnimationSampler>();
+        return;
+    }
+
+    let target_time = sampler.sample_times[sampler.current_sample_index];
+
+    // State machine for sampling:
+    // 1. Seek to target time
+    // 2. Wait a few frames for animation to apply
+    // 3. Read bone transforms
+    // 4. Move to next sample
+
+    if sampler.frames_waited == 0 {
+        // Step 1: Seek to target time
+        info!("   Seeking to time: {:.2}s", target_time);
+
+        // Play vault animation and seek
+        player.start(nodes.vault);
+        player.seek_to(target_time);
+
+        sampler.current_time = target_time;
+        sampler.frames_waited = 1;
+
+    } else if sampler.frames_waited < 3 {
+        // Step 2: Wait for animation to apply (2-3 frames)
+        sampler.frames_waited += 1;
+
+    } else {
+        // Step 3: Read bone transforms
+        info!("   📸 Sampling bones at {:.2}s", target_time);
+
+        let mut bone_samples = Vec::new();
+
+        // Recursively collect all bone transforms
+        fn collect_bone_transforms(
+            entity: Entity,
+            children_query: &Query<&Children>,
+            name_query: &Query<&Name>,
+            transform_query: &Query<&GlobalTransform>,
+            output: &mut Vec<(String, Vec3, Quat)>,
+        ) {
+            if let Ok(name) = name_query.get(entity) {
+                // Only collect mixamorig bones
+                if name.as_str().starts_with("mixamorig") {
+                    if let Ok(transform) = transform_query.get(entity) {
+                        let (_, rotation, translation) = transform.to_scale_rotation_translation();
+                        output.push((
+                            name.as_str().to_string(),
+                            translation,
+                            rotation,
+                        ));
+                    }
+                }
+            }
+
+            if let Ok(children) = children_query.get(entity) {
+                for child in children.iter() {
+                    collect_bone_transforms(*child, children_query, name_query, transform_query, output);
+                }
+            }
+        }
+
+        collect_bone_transforms(
+            entity,
+            &children_query,
+            &name_query,
+            &transform_query,
+            &mut bone_samples,
+        );
+
+        info!("   Collected {} bone transforms", bone_samples.len());
+
+        // Store this sample
+        sampler.samples_collected.push((target_time, bone_samples));
+
+        // Move to next sample
+        sampler.current_sample_index += 1;
+        sampler.frames_waited = 0;
+    }
 }
 
 // ============================================================================
@@ -282,6 +446,7 @@ pub fn test_parkour_animation_playback(
 pub fn debug_sample_animation(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
+    sampled_poses: Res<SampledParkourPoses>,
 ) {
     if !keyboard.just_pressed(KeyCode::KeyP) {
         return;
@@ -296,6 +461,28 @@ pub fn debug_sample_animation(
     info!("   Vault clip: {:?}", library.vault_clip);
     info!("   Climb clip: {:?}", library.climb_clip);
     info!("   Slide clip: {:?}", library.slide_clip);
+    info!("");
+
+    // Print sampling status
+    if sampled_poses.sampled {
+        info!("✅ Animation sampling complete!");
+        info!("   Vault samples: {} keyframes", sampled_poses.vault_samples.len());
+
+        // Print sample data for each time
+        for (time_key, bones) in sampled_poses.vault_samples.iter() {
+            info!("   Time {}: {} bones sampled", time_key, bones.len());
+
+            // Print key bones (hands, hips)
+            for bone in bones.iter() {
+                if bone.bone_name.contains("Hand") || bone.bone_name.contains("Hips") {
+                    info!("     - {}: pos={:?}", bone.bone_name, bone.translation);
+                }
+            }
+        }
+    } else {
+        info!("⏳ Animation sampling in progress...");
+    }
+
     info!("");
     info!("💡 Press 'V' to test vault animation playback on character");
 }
@@ -355,6 +542,10 @@ pub(super) fn plugin(app: &mut App) {
             // Asset loading (runs once when GLTF loads)
             extract_parkour_animation_clips,
             create_parkour_library,
+
+            // Animation sampling (runs once after library is ready)
+            init_animation_sampling,
+            sample_animation_bones,
 
             // Debug systems
             test_parkour_animation_playback,  // 'O' key - dump bone data
