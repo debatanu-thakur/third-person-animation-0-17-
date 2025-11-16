@@ -409,8 +409,8 @@ pub fn update_parkour_capabilities(
     }
 }
 
-/// PLACEHOLDER: Trigger parkour animations based on input and detection
-/// This will be expanded with actual animation integration
+/// Trigger parkour animations based on input and detection
+/// CRITICAL: Does NOT update state during active parkour animations
 pub fn trigger_parkour_actions(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut player_query: Query<
@@ -418,14 +418,22 @@ pub fn trigger_parkour_actions(
             &ObstacleDetectionResult,
             &mut ParkourController,
             &LinearVelocity,
+            Option<&ParkourAnimationState>,
         ),
         With<Player>,
     >,
 ) {
-    for (detection, mut parkour, velocity) in player_query.iter_mut() {
+    for (detection, mut parkour, velocity, anim_state) in player_query.iter_mut() {
+        // ⚠️ CRITICAL: Don't update state if parkour animation is active
+        // The animation completion system will handle returning to locomotion
+        if anim_state.is_some() {
+            // Parkour animation in progress, don't touch the state
+            return;
+        }
+
         let speed = velocity.length();
 
-        // Update movement state based on velocity
+        // Update movement state based on velocity (ONLY when not doing parkour)
         parkour.state = match speed {
             s if s < 0.1 => ParkourState::Idle,
             s if s < 2.0 => ParkourState::Walking,
