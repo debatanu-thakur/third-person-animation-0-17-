@@ -2,327 +2,327 @@
   duration: 1.0333333,
   curves: [
     (
-      target_id: "AnimationTargetId(a5268742-9715-5751-9b2a-102c6d80b053)",
+      target_id: "AnimationTargetId(6b66a4d7-44e9-51e6-98ae-24cf220607e6)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(02ef8891-d4c3-535c-8fa0-7d7a378ecfdf)",
+      target_id: "AnimationTargetId(f9b680b0-e6c6-5099-8e48-b8f8aa0c5598)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(558d9455-5593-5a25-933b-2b558d0922a1)",
+      target_id: "AnimationTargetId(c72d1b7a-78cd-5f3d-b90c-16d2e64518bb)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(01bf8205-f072-501b-892a-e23e65d7639e)",
+      target_id: "AnimationTargetId(4ec1cf6f-7885-5051-92c6-17b24e1a64d6)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(d25a0773-08bb-52d6-bf74-0b019ba898d0)",
+      target_id: "AnimationTargetId(d4b8fe70-323e-5c3d-8025-5581398f66b5)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(f7d3f994-e8c4-553d-a48f-9599599d10ba)",
+      target_id: "AnimationTargetId(ef72066b-73a3-56d0-b103-5fc663f8abd9)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(4d2be198-14d5-5868-955a-9a2604290ce0)",
+      target_id: "AnimationTargetId(2a086d1e-6f56-53d3-8c66-a222c69e3155)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(74190c94-4c8f-5c0a-8951-dfa7bdfb4383)",
+      target_id: "AnimationTargetId(b92ac888-6657-5178-888b-966c5efded6e)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(417d4443-f985-54f2-b4ad-794370f87d78)",
+      target_id: "AnimationTargetId(fdff2d17-4171-537f-9124-cb08f96b90e8)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(a9404bee-3c96-56c7-8b58-c5a3ffacedc0)",
+      target_id: "AnimationTargetId(b47ec9e9-7a7f-5d10-932f-dbb5ea733c07)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(1b71d24a-9f70-574c-9605-1ce904b666c0)",
+      target_id: "AnimationTargetId(98bb47d5-0bd1-54ef-81d7-4bd958da43f8)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(ed35aa04-3e08-5928-9fd3-8be2e5a39a26)",
+      target_id: "AnimationTargetId(eb9fdb59-cc81-5014-9fa4-d157b70b6489)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(aaa01b35-295b-5c9c-a2a6-eb4a0878c112)",
+      target_id: "AnimationTargetId(320ce8c6-1042-5ced-b6f1-4724203675f3)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(295109d5-dd1e-5156-b044-cc58257c30c7)",
+      target_id: "AnimationTargetId(635ea5d2-9bbf-54e9-b673-bff6e0247077)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(eff8bfe4-fe13-55d6-b6de-1154f717d8c2)",
+      target_id: "AnimationTargetId(99a42f91-8d18-5235-bff3-900a70b0922b)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(747b5c06-a3a2-53af-ba41-d8e8b176bd39)",
+      target_id: "AnimationTargetId(5fa5577f-3d7c-5b3e-acb0-ece62d5c2e9b)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(c4f3d500-142a-5918-b511-0d5213d29201)",
+      target_id: "AnimationTargetId(b6acea7e-cdbc-56c4-b7c4-bb550d224a62)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(1c04bd14-9458-5d69-9873-fd004a5a6870)",
+      target_id: "AnimationTargetId(39358af0-5c35-5eae-9b6c-1a9a39b22304)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(f3c6adb1-bf10-5faa-ae90-956ec80cdbb1)",
+      target_id: "AnimationTargetId(12624204-ef94-513d-9458-28c7029fca93)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(7623a131-75ea-5d83-bce7-9e3374a2061f)",
+      target_id: "AnimationTargetId(ab8bb475-e43e-596e-a6d0-f5672befabc1)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(53da381a-2b71-505b-bfed-9fa5f29c89c5)",
+      target_id: "AnimationTargetId(5852d937-7e19-5767-ab47-b45a8907a557)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(af3a7252-6324-5271-ae92-ea27e0e493d7)",
+      target_id: "AnimationTargetId(7fde9f07-546e-5072-9736-605bfb7535c2)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(17d21a28-97cd-5305-8409-1c965ea68aa3)",
+      target_id: "AnimationTargetId(f6d16983-9f99-5670-9807-e6c8c9ab7e42)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(4701771a-b8e1-5eed-a74e-880772a9b0c6)",
+      target_id: "AnimationTargetId(5d89b471-3ac2-5013-a0dd-7f7f8529b321)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(73a3a144-ffe5-5a1e-bffd-2b7fef864e32)",
+      target_id: "AnimationTargetId(aa212274-35e6-584e-b56a-714703e19561)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(dea9183d-8824-537a-a8e6-216f326f6b51)",
+      target_id: "AnimationTargetId(7382fc94-db9a-527e-bd1a-488ce989c64b)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(35e4bb80-905c-5a41-b597-04e88df5ffef)",
+      target_id: "AnimationTargetId(1930aa7d-22c8-51e4-81aa-4778d7a42554)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(e9128be8-db1b-5e3e-8769-2eeabfef1e90)",
+      target_id: "AnimationTargetId(ab864835-3bbb-5044-b90e-ab3c796959f2)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(acb9b614-2f49-595a-870f-c1fd931779e9)",
+      target_id: "AnimationTargetId(a65fd081-10e6-5b96-903d-60dac8feaaae)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(c30ada8f-ce5c-547f-a4a3-a2603bfe7d4a)",
+      target_id: "AnimationTargetId(9148dbe2-7009-5d44-8aec-5c639249807d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(48f5fbd1-0744-52ef-ac67-f0f562a69659)",
+      target_id: "AnimationTargetId(6352d73c-356b-51aa-bd98-ade2c15fb99d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(64d4e95e-d51f-567d-9cc7-63118f47de4b)",
+      target_id: "AnimationTargetId(908b61fe-c86b-543c-a73f-5f34cea7df80)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(34ca55bb-2609-5266-8e44-12d57407165e)",
+      target_id: "AnimationTargetId(8fe82b5c-3fae-5fd2-81c5-3a9a78536bed)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(fc71b7cf-cb15-5743-9229-711c2c1883f6)",
+      target_id: "AnimationTargetId(97656320-99b3-5ab9-9f3b-1c4fef2693f9)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(cc76b05f-c3c1-5aa7-9297-bb0b4525861b)",
+      target_id: "AnimationTargetId(f07956ac-1967-5ef7-89cc-26949cbaa1b6)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(400b6abb-1e9f-551d-83c0-6b481323d7a0)",
+      target_id: "AnimationTargetId(67664d10-d6a8-5ac3-9113-883fb6d90f00)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(9065ba7d-8cc2-5950-81a6-2fe4dac9b510)",
+      target_id: "AnimationTargetId(27dbcd13-d14f-5212-bd05-e14e55e24cd4)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(d8b6cd7a-2eba-5693-8d4f-75ed1b63d1d3)",
+      target_id: "AnimationTargetId(d1b2a371-f10e-5f5f-810d-707b364d9819)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(a7056ae4-2934-5209-bd7c-c3332c6e6cc9)",
+      target_id: "AnimationTargetId(46aebc64-5f74-53a1-9d3c-a999b1eb6368)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(fbb69d3b-c798-5748-9d12-deaa5d722f8b)",
+      target_id: "AnimationTargetId(3ce20e82-e09a-5047-92cc-1d44bdcdee8d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(9deaa692-1235-5390-aada-e9bcda6faa54)",
+      target_id: "AnimationTargetId(54503f94-3573-5a86-9b20-72bea662594c)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(2f7eac01-6aff-570a-b1e6-b4b46d9ed64f)",
+      target_id: "AnimationTargetId(4972f70d-a893-5b1f-a93c-6d45cbae1a53)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(0c4ca153-47ad-59a3-ad3c-3622ee2efe65)",
+      target_id: "AnimationTargetId(adb04e21-7520-5abc-9baa-71c574bce271)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(38d81074-7770-5640-a9b0-fbc047519e86)",
+      target_id: "AnimationTargetId(b7826c0c-f18b-5f22-b3ca-e8d9ffea6576)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(02154660-c07b-535a-a68a-2294d935e09f)",
+      target_id: "AnimationTargetId(67ea545b-bccf-5334-a320-3dcebb4eaee1)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(15d99ac9-03f4-5bf5-b8fa-819927d79432)",
+      target_id: "AnimationTargetId(e31b9ec3-0489-5db9-a39f-75e3e803a76d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(13dc9312-6368-5a69-b099-050ca7893221)",
+      target_id: "AnimationTargetId(41c8a6c3-c844-5d13-890b-ecf164f93d4b)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(b9fea5ca-fda3-530a-9b84-cb4dc6999848)",
+      target_id: "AnimationTargetId(def877f6-ebd2-5eee-b5f9-1c77c4d94237)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(868059fd-16ea-560d-b8d3-bed1bb8047c3)",
+      target_id: "AnimationTargetId(e3eb603a-ef39-5325-9e66-419e6009e3fd)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(30946bf0-08a0-52a5-a46b-1caca78e076a)",
+      target_id: "AnimationTargetId(80dbc2d2-c089-5bca-920f-9d195598a015)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(45813145-1900-5e29-b4da-821d879eedfd)",
+      target_id: "AnimationTargetId(8b297ef0-69d1-5b3b-80d6-067ca0fb46d9)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(aa83e37b-c1a3-54bd-a2c7-2a6d72e5bceb)",
+      target_id: "AnimationTargetId(15beef3f-fb54-5d3d-a115-64d0462d7ade)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(cccc99c9-914d-5907-a79b-451ac03fcbd0)",
+      target_id: "AnimationTargetId(f36b1f93-1b8d-552d-a46c-749342beaacb)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(23a671db-e5d8-554f-a0d4-98bc08a7cd97)",
+      target_id: "AnimationTargetId(128f4d57-28eb-5be5-b81c-1f9d0b7f9c8d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(e8f522d4-f63e-50a4-b770-9593084f5bff)",
+      target_id: "AnimationTargetId(1775742e-ead4-5c5e-8303-78ed26a9eeb3)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(ee4922f0-6160-5c98-a439-500fd66d38c4)",
+      target_id: "AnimationTargetId(02153673-e763-51fc-a19c-ed6454f1ad92)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(0144cbab-4ef3-5ed1-9c1e-fb2b2cbfbc0f)",
+      target_id: "AnimationTargetId(017802c1-7e55-51b2-a7f8-83d45452c441)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(24a23f43-4c0c-51bb-aad6-0731e7d7f9da)",
+      target_id: "AnimationTargetId(ab4c892a-bab3-5e59-8d1e-90abb655aaad)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(0971e46f-9800-5e59-92f7-ae723530a63d)",
+      target_id: "AnimationTargetId(62cfd62f-58b6-5d0c-837e-1e50ccd282fb)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(4e725c4f-ca2a-5feb-9473-50261af7a003)",
+      target_id: "AnimationTargetId(39ca4d78-98ba-589d-8c10-73dba3efa367)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(f28bb2b5-1538-5e13-8eef-3423c2112c7e)",
+      target_id: "AnimationTargetId(83c84f71-8185-57bd-81ef-f343d98106c6)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(d7503741-9d86-583b-9bb2-3be354e67554)",
+      target_id: "AnimationTargetId(abb5848d-341e-505e-b504-34ee09bdffa2)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(47a580af-1e0c-558d-8b9e-151503f9ea62)",
+      target_id: "AnimationTargetId(77d5638e-1eb3-556d-85ec-05264512be90)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(62664ce4-c2e9-5c90-9bab-7bd3345033e2)",
+      target_id: "AnimationTargetId(648cf1a7-deb4-5067-b1e2-31c5661ee91d)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
     (
-      target_id: "AnimationTargetId(232b6bba-4132-5ecd-affc-b051aa02c1b9)",
+      target_id: "AnimationTargetId(55b727e4-8b8a-5a9f-a346-2ccd03833760)",
       curve_count: 3,
       // GLTF has 66 named nodes
     ),
@@ -346,7 +346,6 @@
     "mixamorig12:RightHandIndex3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 32 }), path: Some(models/animations/vault.glb#Node32) }
     "mixamorig12:LeftForeArm",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 24 }), path: Some(models/animations/vault.glb#Node24) }
     "mixamorig12:RightHandPinky1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 46 }), path: Some(models/animations/vault.glb#Node46) }
-    "Armature",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 65 }), path: Some(models/animations/vault.glb#Node65) }
     "mixamorig12:RightHandIndex4",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 31 }), path: Some(models/animations/vault.glb#Node31) }
     "mixamorig12:LeftHandRing2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 17 }), path: Some(models/animations/vault.glb#Node17) }
     "mixamorig12:LeftHandPinky2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 21 }), path: Some(models/animations/vault.glb#Node21) }
@@ -387,6 +386,7 @@
     "mixamorig12:Spine1",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 52 }), path: Some(models/animations/vault.glb#Node52) }
     "mixamorig12:RightHandPinky2",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 45 }), path: Some(models/animations/vault.glb#Node45) }
     "mixamorig12:LeftHandThumb3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 4 }), path: Some(models/animations/vault.glb#Node4) }
+    "brian",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 65 }), path: Some(models/animations/vault.glb#Node65) }
     "mixamorig12:LeftHandRing3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 16 }), path: Some(models/animations/vault.glb#Node16) }
     "mixamorig12:RightHandRing3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 40 }), path: Some(models/animations/vault.glb#Node40) }
     "mixamorig12:RightHandMiddle3",  // Node: StrongHandle<GltfNode>{ id: Index(AssetIndex { generation: 0, index: 36 }), path: Some(models/animations/vault.glb#Node36) }
