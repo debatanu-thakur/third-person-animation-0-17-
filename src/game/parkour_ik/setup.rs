@@ -262,12 +262,18 @@ pub fn update_ik_targets_from_obstacles(
     };
 
     // Determine if IK should be active based on parkour state
+    // NOTE: Don't use hand IK for Vaulting - animation has hand movements
+    // Only use for static hand positions (Hanging, Climbing)
     let should_use_ik = matches!(
         parkour.state,
-        ParkourState::Vaulting | ParkourState::Climbing | ParkourState::Hanging
+        ParkourState::Climbing | ParkourState::Hanging
     );
 
-    ik_targets.active = should_use_ik;
+    // Only update if changed to avoid triggering Changed<ParkourIkTargets> every frame
+    if ik_targets.active != should_use_ik {
+        ik_targets.active = should_use_ik;
+        info!("🎯 Hand IK {} for {:?}", if should_use_ik { "enabled" } else { "disabled" }, parkour.state);
+    }
 
     if !should_use_ik {
         return;
@@ -354,9 +360,7 @@ pub fn toggle_ik_constraints(
         match name.as_str() {
             "mixamorig12:LeftHand" | "mixamorig12:RightHand" => {
                 constraint.enabled = ik_targets.active;
-                if ik_targets.active {
-                    info!("✋ Enabled hand IK for {}", name);
-                }
+                // Note: Logging moved to update_ik_targets_from_obstacles to avoid spam
             }
             _ => {}
         }

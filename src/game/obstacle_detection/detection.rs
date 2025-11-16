@@ -599,6 +599,14 @@ pub struct ParkourAnimationComplete {
     pub action: ParkourState,
 }
 
+/// Event fired when parkour animation should start blending to locomotion
+/// Fired before animation ends to allow smooth transition
+#[derive(AnimationEvent, Clone, Reflect)]
+pub struct ParkourAnimationBlendToIdle {
+    /// Which parkour action is blending out
+    pub action: ParkourState,
+}
+
 /// Component to track parkour animation timing
 #[derive(Component)]
 pub struct ParkourAnimationState {
@@ -674,6 +682,24 @@ pub fn detect_parkour_animation_completion(
     }
 }
 
+/// Observer function that handles parkour animation blend start events
+/// Triggers smooth transition to locomotion before animation ends
+pub fn on_parkour_blend_to_idle(
+    trigger: Trigger<ParkourAnimationBlendToIdle>,
+    mut player_query: Query<&mut ParkourController, With<Player>>,
+) {
+    let event = trigger.event();
+    info!("🎨 Blend event: Starting transition from {:?} to Idle", event.action);
+
+    // Transition to idle - AnimationController will blend over duration
+    for mut parkour in player_query.iter_mut() {
+        if parkour.state == event.action {
+            parkour.state = ParkourState::Idle;
+            info!("✅ Blend started: {:?} → Idle (smooth transition)", event.action);
+        }
+    }
+}
+
 /// Observer function that handles parkour animation completion events
 /// This is triggered automatically when animation clips fire ParkourAnimationComplete
 pub fn on_parkour_animation_complete(
@@ -683,7 +709,7 @@ pub fn on_parkour_animation_complete(
     let event = trigger.event();
     info!("🎬 Animation event received: {:?} completed", event.action);
 
-    // Return player to idle state
+    // Return player to idle state (fallback if blend didn't happen)
     for mut parkour in player_query.iter_mut() {
         if parkour.state == event.action {
             parkour.state = ParkourState::Idle;

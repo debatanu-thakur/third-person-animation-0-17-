@@ -264,11 +264,18 @@ fn apply_animation_state(
             info!("Changed state is - {:?}", state);
             match state {
                 AnimationState::Idle => {
-                    // Transition from Walking → Idle: 200ms
-                    // Transition from Running → Idle happens via Walking first
+                    // Transition durations for smooth blending
                     let transition_duration = match old_state {
+                        // Normal locomotion transitions
                         Some(AnimationState::Walking) => Duration::from_millis(200),
                         Some(AnimationState::Running) => Duration::from_millis(200),
+
+                        // Parkour → Idle transitions (smooth blend)
+                        Some(AnimationState::Vaulting) => Duration::from_millis(300),
+                        Some(AnimationState::Climbing) => Duration::from_millis(400),
+                        Some(AnimationState::Sliding) => Duration::from_millis(250),
+                        Some(AnimationState::WallRunning) => Duration::from_millis(300),
+
                         _ => Duration::ZERO,
                     };
                     transitions

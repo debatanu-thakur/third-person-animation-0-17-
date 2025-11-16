@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use crate::screens::Screen;
-use crate::game::obstacle_detection::detection::{ParkourController, ParkourState, ParkourAnimationComplete};
+use crate::game::obstacle_detection::detection::{ParkourController, ParkourState, ParkourAnimationComplete, ParkourAnimationBlendToIdle};
 
 mod assets;
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
@@ -41,8 +41,9 @@ pub fn create_parkour_library(
 #[derive(Resource, Default)]
 struct AnimationEventsAdded;
 
-/// Adds completion events to parkour animation clips
-/// This runs once after clips are loaded and adds events at the end of each animation
+/// Adds blend and completion events to parkour animation clips
+/// Blend events fire before animation ends for smooth transitions
+/// This runs once after clips are loaded
 pub fn add_completion_events_to_clips(
     mut commands: Commands,
     library: Option<Res<ParkourAnimationLibrary>>,
@@ -58,47 +59,76 @@ pub fn add_completion_events_to_clips(
         return;
     };
 
-    info!("🎬 Adding completion events to parkour animations...");
+    info!("🎬 Adding blend and completion events to parkour animations...");
 
-    // Add completion event to vault animation
+    // Blend duration (how long before end to start blending)
+    const BLEND_TIME: f32 = 0.3; // Start blending 300ms before end
+
+    // Add events to vault animation
     if let Some(vault_clip) = animation_clips.get_mut(&library.vault_clip) {
         let duration = vault_clip.duration();
+
+        // Blend event (300ms before end)
+        vault_clip.add_event(
+            (duration - BLEND_TIME).max(0.0),
+            ParkourAnimationBlendToIdle {
+                action: ParkourState::Vaulting,
+            },
+        );
+
+        // Completion event (at end - fallback)
         vault_clip.add_event(
             duration,
             ParkourAnimationComplete {
                 action: ParkourState::Vaulting,
             },
         );
-        info!("  ✅ Vault animation: added completion event at {}s", duration);
+        info!("  ✅ Vault: blend@{:.2}s, complete@{:.2}s", duration - BLEND_TIME, duration);
     }
 
-    // Add completion event to climb animation
+    // Add events to climb animation
     if let Some(climb_clip) = animation_clips.get_mut(&library.climb_clip) {
         let duration = climb_clip.duration();
+
+        climb_clip.add_event(
+            (duration - BLEND_TIME).max(0.0),
+            ParkourAnimationBlendToIdle {
+                action: ParkourState::Climbing,
+            },
+        );
+
         climb_clip.add_event(
             duration,
             ParkourAnimationComplete {
                 action: ParkourState::Climbing,
             },
         );
-        info!("  ✅ Climb animation: added completion event at {}s", duration);
+        info!("  ✅ Climb: blend@{:.2}s, complete@{:.2}s", duration - BLEND_TIME, duration);
     }
 
-    // Add completion event to slide animation
+    // Add events to slide animation
     if let Some(slide_clip) = animation_clips.get_mut(&library.slide_clip) {
         let duration = slide_clip.duration();
+
+        slide_clip.add_event(
+            (duration - BLEND_TIME).max(0.0),
+            ParkourAnimationBlendToIdle {
+                action: ParkourState::Sliding,
+            },
+        );
+
         slide_clip.add_event(
             duration,
             ParkourAnimationComplete {
                 action: ParkourState::Sliding,
             },
         );
-        info!("  ✅ Slide animation: added completion event at {}s", duration);
+        info!("  ✅ Slide: blend@{:.2}s, complete@{:.2}s", duration - BLEND_TIME, duration);
     }
 
     // Mark as complete
     commands.insert_resource(AnimationEventsAdded);
-    info!("🎬 Animation completion events added successfully!");
+    info!("🎬 Animation events added successfully! (smooth blending enabled)");
 }
 
 /// Resource holding animation library

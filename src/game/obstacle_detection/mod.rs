@@ -10,9 +10,11 @@ pub(super) fn plugin(app: &mut App) {
     // Register reflection types for animation events
     app.register_type::<ParkourState>();
     app.register_type::<ParkourAnimationComplete>();
+    app.register_type::<ParkourAnimationBlendToIdle>();
 
-    // Register observer for animation completion events
-    app.add_observer(on_parkour_animation_complete);
+    // Register observers for animation events
+    app.add_observer(on_parkour_blend_to_idle);         // Blend start (early)
+    app.add_observer(on_parkour_animation_complete);    // Completion (fallback)
 
     // Insert config resource
     app.init_resource::<ObstacleDetectionConfig>();
