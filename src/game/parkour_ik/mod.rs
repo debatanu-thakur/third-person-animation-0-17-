@@ -103,7 +103,7 @@ pub fn setup_ik_chains(
     player_query: Query<Entity, (With<Player>, Without<ParkourIkTargets>)>,
     bone_query: Query<(Entity, &Name)>,
 ) {
-    let Ok(player_entity) = player_query.get_single() else {
+    let Ok(player_entity) = player_query.single() else {
         return;
     };
 
