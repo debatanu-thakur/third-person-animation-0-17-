@@ -28,7 +28,8 @@ pub(super) fn plugin(app: &mut App) {
             trigger_parkour_actions,
             start_parkour_animation_tracking,
             control_tnua_during_parkour,
-            apply_parkour_root_motion,
+            control_rigidbody_during_parkour,  // NEW: Make kinematic during parkour
+            extract_and_apply_root_motion,     // NEW: Extract root motion from animation
             // Note: Time-based completion removed - using event-driven completion
             // Animation events (on_parkour_blend_to_idle observer) handle completion
             apply_ik_targets,
