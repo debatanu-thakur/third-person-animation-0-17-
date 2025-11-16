@@ -584,7 +584,7 @@ pub fn write_ik_debug_info(
     debug_info.push_str("  ),\n");
 
     // Parkour state
-    if let Ok(parkour) = parkour_query.get_single() {
+    if let Ok(parkour) = parkour_query.single() {
         debug_info.push_str(&format!("  parkour_state: \"{:?}\",\n", parkour.state));
         let is_normal = !matches!(
             parkour.state,
@@ -648,14 +648,14 @@ pub fn write_ik_debug_info(
 
     // IK Targets
     debug_info.push_str("  ik_targets: (\n");
-    if let Ok(transform) = left_foot_target_query.get_single() {
+    if let Ok(transform) = left_foot_target_query.single() {
         debug_info.push_str(&format!("    left_foot_target: ({}, {}, {}),\n",
             transform.translation.x, transform.translation.y, transform.translation.z));
     } else {
         debug_info.push_str("    left_foot_target: \"Not Found\",\n");
     }
 
-    if let Ok(transform) = right_foot_target_query.get_single() {
+    if let Ok(transform) = right_foot_target_query.single() {
         debug_info.push_str(&format!("    right_foot_target: ({}, {}, {}),\n",
             transform.translation.x, transform.translation.y, transform.translation.z));
     } else {
