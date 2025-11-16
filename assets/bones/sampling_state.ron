@@ -1,9 +1,0 @@
-(
-  time: 6.920021,
-  library_exists: true,
-  animation_nodes_exists: true,
-  animation_player_exists: true,
-  sampling_complete: true,
-  vault_samples_count: 5,
-  has_sampler_component: false,
-)
