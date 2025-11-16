@@ -1,7 +1,7 @@
 (
-  timestamp: 19.11743,
+  timestamp: 34.72737,
   config: (
-    enabled: true,
+    enabled: false,
     max_ground_distance: 2,
     foot_height_offset: 0.05,
     adjustment_strength: 1,
@@ -10,26 +10,26 @@
   ik_should_be_active: true,
   bones_found: (
     left_foot: "Found",
-    left_foot_pos: (-2.259811, 1.1470162, -3.8856032),
+    left_foot_pos: (-9.083324, 0.34083062, 3.6485307),
     right_foot: "Found",
-    right_foot_pos: (-2.454702, 0.948834, -4.0034733),
+    right_foot_pos: (-9.377463, 0.34083447, 3.6637986),
   ),
   ik_constraints: [
     (
       bone: "mixamorig12:LeftFoot",
-      enabled: true,
+      enabled: false,
       chain_length: 2,
       iterations: 20,
     ),
     (
       bone: "mixamorig12:RightFoot",
-      enabled: true,
+      enabled: false,
       chain_length: 2,
       iterations: 20,
     ),
   ],
   ik_targets: (
-    left_foot_target: (-2.2263234, 1.6470926, -3.9973698),
-    right_foot_target: (-1.8515158, 0.175, -3.534417),
+    left_foot_target: (0, 0, 0),
+    right_foot_target: (0, 0, 0),
   ),
 )

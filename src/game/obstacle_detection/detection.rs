@@ -534,7 +534,7 @@ pub fn control_tnua_during_parkour(
             // This stops physics from moving the character
             tnua_controller.basis(TnuaBuiltinWalk {
                 desired_velocity: Vec3::ZERO,
-                desired_forward: Vec3::Z, // Keep a valid forward direction
+                desired_forward: Dir3::new(Vec3::Z).ok(), // Keep a valid forward direction
                 float_height: 1.5,
                 ..Default::default()
             });
