@@ -568,6 +568,55 @@ pub fn debug_sample_animation(
 }
 
 // ============================================================================
+// DEBUG: CONTINUOUS STATE MONITORING
+// ============================================================================
+
+/// Writes current sampling state to RON every second for debugging
+pub fn debug_sampling_state(
+    library: Option<Res<ParkourAnimationLibrary>>,
+    sampled_poses: Res<SampledParkourPoses>,
+    animation_nodes: Option<Res<AnimationNodes>>,
+    player_query: Query<Entity, With<crate::game::player::Player>>,
+    sampler_query: Query<&AnimationSampler>,
+    time: Res<Time>,
+) {
+    // Only write once per second to avoid spam
+    static mut LAST_WRITE: f32 = 0.0;
+    let current_time = time.elapsed_secs();
+
+    unsafe {
+        if current_time - LAST_WRITE < 1.0 {
+            return;
+        }
+        LAST_WRITE = current_time;
+    }
+
+    let mut status = String::new();
+    status.push_str("(\n");
+    status.push_str(&format!("  time: {},\n", current_time));
+    status.push_str(&format!("  library_exists: {},\n", library.is_some()));
+    status.push_str(&format!("  animation_nodes_exists: {},\n", animation_nodes.is_some()));
+    status.push_str(&format!("  player_exists: {},\n", player_query.get_single().is_ok()));
+    status.push_str(&format!("  sampling_complete: {},\n", sampled_poses.sampled));
+    status.push_str(&format!("  vault_samples_count: {},\n", sampled_poses.vault_samples.len()));
+
+    if let Ok(player_entity) = player_query.get_single() {
+        let has_sampler = sampler_query.get(player_entity).is_ok();
+        status.push_str(&format!("  has_sampler_component: {},\n", has_sampler));
+
+        if let Ok(sampler) = sampler_query.get(player_entity) {
+            status.push_str(&format!("  sampler_index: {},\n", sampler.current_sample_index));
+            status.push_str(&format!("  sampler_total: {},\n", sampler.sample_times.len()));
+            status.push_str(&format!("  frames_waited: {},\n", sampler.frames_waited));
+            status.push_str(&format!("  samples_collected: {},\n", sampler.samples_collected.len()));
+        }
+    }
+
+    status.push_str(")\n");
+    let _ = std::fs::write("assets/bones/sampling_state.ron", status);
+}
+
+// ============================================================================
 // DEBUG: TRIGGER VAULT STATE FOR TESTING
 // ============================================================================
 
@@ -626,6 +675,9 @@ pub(super) fn plugin(app: &mut App) {
             // Animation sampling (runs once after library is ready)
             init_animation_sampling,
             sample_animation_bones,
+
+            // Continuous debug monitoring (writes RON every second)
+            debug_sampling_state,
 
             // Debug systems
             test_parkour_animation_playback,  // 'O' key - dump bone data
