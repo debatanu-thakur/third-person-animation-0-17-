@@ -46,8 +46,8 @@ impl Default for MovementController {
 }
 
 // Constants
-pub const PLAYER_HEIGHT: f32 = 1.1;
-pub const PLAYER_RADIUS: f32 = 0.5;
+pub const PLAYER_HEIGHT: f32 = 1.0;
+pub const PLAYER_RADIUS: f32 = 0.3;
 
 // Player spawn command
 pub struct SpawnPlayer {
@@ -76,10 +76,10 @@ fn spawn_player(
             Visibility::Visible,
             // Avian3D physics components
             RigidBody::Dynamic,
-            Collider::capsule(PLAYER_HEIGHT / 2., PLAYER_RADIUS),
+            Collider::capsule(PLAYER_RADIUS, PLAYER_HEIGHT),
             TnuaController::default(),
             LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
-            TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
+            TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_RADIUS*0.99, 0.0)),
         ))
         .insert((
             // Animation state tracking
