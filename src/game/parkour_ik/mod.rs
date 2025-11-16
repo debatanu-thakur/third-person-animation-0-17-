@@ -83,7 +83,7 @@ pub struct LocomotionIkConfig {
 impl Default for LocomotionIkConfig {
     fn default() -> Self {
         Self {
-            enabled: true,
+            enabled: false, // DISABLED - causes fighting with animation
             max_ground_distance: 2.0, // Raycast 2m down
             foot_height_offset: 0.05, // 5cm above ground
             adjustment_strength: 1.0, // Full adjustment
