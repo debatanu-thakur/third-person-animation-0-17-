@@ -474,11 +474,11 @@ pub fn update_locomotion_foot_ik(
             Dir3::NEG_Y,
             config.max_ground_distance,
             true,
-            SpatialQueryFilter::default(),
+            &SpatialQueryFilter::default(),
         ) {
             // Adjust foot target to ground position
             if let Ok(mut target_transform) = left_foot_target_query.single_mut() {
-                let ground_pos = foot_pos + Vec3::NEG_Y * hit.time_of_impact;
+                let ground_pos = foot_pos + Vec3::NEG_Y * hit.distance;
                 let adjusted_pos = ground_pos + Vec3::Y * config.foot_height_offset;
 
                 // Blend between current and target position
@@ -498,10 +498,10 @@ pub fn update_locomotion_foot_ik(
             Dir3::NEG_Y,
             config.max_ground_distance,
             true,
-            SpatialQueryFilter::default(),
+            &SpatialQueryFilter::default(),
         ) {
             if let Ok(mut target_transform) = right_foot_target_query.single_mut() {
-                let ground_pos = foot_pos + Vec3::NEG_Y * hit.time_of_impact;
+                let ground_pos = foot_pos + Vec3::NEG_Y * hit.distance;
                 let adjusted_pos = ground_pos + Vec3::Y * config.foot_height_offset;
 
                 target_transform.translation = target_transform.translation.lerp(
