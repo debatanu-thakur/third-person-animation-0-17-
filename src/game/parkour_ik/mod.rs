@@ -97,13 +97,13 @@ impl Default for LocomotionIkConfig {
 // ============================================================================
 
 /// System to find and setup IK chains on the player skeleton
-/// This runs once after the player model is spawned
+/// This runs repeatedly until bones are found and IK is set up
 pub fn setup_ik_chains(
     mut commands: Commands,
     player_query: Query<Entity, (With<Player>, Without<ParkourIkTargets>)>,
     bone_query: Query<(Entity, &Name)>,
 ) {
-    let Ok(player_entity) = player_query.single() else {
+    let Ok(player_entity) = player_query.get_single() else {
         return;
     };
 
@@ -132,6 +132,13 @@ pub fn setup_ik_chains(
             _ => {}
         }
     }
+
+    // Don't setup until we have at least the foot bones
+    if left_foot_bone.is_none() || right_foot_bone.is_none() {
+        return;
+    }
+
+    info!("🦴 Found skeleton bones, setting up IK chains...");
 
     // Spawn IK target entities
     let left_hand_target = commands.spawn((
