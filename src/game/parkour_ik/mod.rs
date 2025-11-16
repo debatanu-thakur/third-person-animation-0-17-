@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use avian3d::prelude::*;
 use crate::{
     game::{
         obstacle_detection::detection::{ObstacleDetectionResult, ParkourController, ParkourState},
@@ -59,6 +60,33 @@ impl Default for IkConfig {
             enabled: true,
             hand_spread: 0.3, // 30cm apart
             hand_height_offset: 0.05, // 5cm above obstacle
+            debug_visualization: true,
+        }
+    }
+}
+
+/// Configuration for locomotion foot IK
+#[derive(Resource)]
+pub struct LocomotionIkConfig {
+    /// Enable foot IK during locomotion (walk, run)
+    pub enabled: bool,
+    /// Maximum distance to raycast down for ground
+    pub max_ground_distance: f32,
+    /// How high to lift foot above ground (prevents clipping)
+    pub foot_height_offset: f32,
+    /// How much to adjust foot vertically (0.0 = no adjustment, 1.0 = full adjustment)
+    pub adjustment_strength: f32,
+    /// Enable debug visualization
+    pub debug_visualization: bool,
+}
+
+impl Default for LocomotionIkConfig {
+    fn default() -> Self {
+        Self {
+            enabled: true,
+            max_ground_distance: 2.0, // Raycast 2m down
+            foot_height_offset: 0.05, // 5cm above ground
+            adjustment_strength: 1.0, // Full adjustment
             debug_visualization: true,
         }
     }
@@ -383,11 +411,145 @@ pub fn visualize_ik_targets(
 }
 
 // ============================================================================
+// LOCOMOTION FOOT IK SYSTEM
+// ============================================================================
+
+/// Updates foot IK targets based on ground raycasting during locomotion
+/// This runs during normal movement (not parkour) to adapt feet to terrain
+pub fn update_locomotion_foot_ik(
+    spatial_query: SpatialQuery,
+    config: Res<LocomotionIkConfig>,
+    parkour_query: Query<&ParkourController, With<Player>>,
+    bone_query: Query<(Entity, &GlobalTransform, &Name)>,
+    mut left_foot_target_query: Query<&mut Transform, (With<LeftFootIkTarget>, Without<RightFootIkTarget>)>,
+    mut right_foot_target_query: Query<&mut Transform, With<RightFootIkTarget>>,
+    mut left_foot_ik_query: Query<&mut IkConstraint, (With<Name>, Without<RightFootIkTarget>)>,
+    mut right_foot_ik_query: Query<&mut IkConstraint, (With<Name>, With<RightFootIkTarget>)>,
+) {
+    if !config.enabled {
+        return;
+    }
+
+    // Only apply foot IK during normal locomotion, not during parkour
+    let Ok(parkour) = parkour_query.single() else {
+        return;
+    };
+
+    let is_normal_locomotion = matches!(
+        parkour.state,
+        ParkourState::Idle
+    );
+
+    // Find the foot bone entities
+    let mut left_foot_data = None;
+    let mut right_foot_data = None;
+
+    for (entity, transform, name) in bone_query.iter() {
+        match name.as_str() {
+            "mixamorig12:LeftFoot" => left_foot_data = Some((entity, transform)),
+            "mixamorig12:RightFoot" => right_foot_data = Some((entity, transform)),
+            _ => {}
+        }
+    }
+
+    // Enable/disable foot IK based on state
+    for mut constraint in left_foot_ik_query.iter_mut() {
+        constraint.enabled = is_normal_locomotion;
+    }
+    for mut constraint in right_foot_ik_query.iter_mut() {
+        constraint.enabled = is_normal_locomotion;
+    }
+
+    if !is_normal_locomotion {
+        return;
+    }
+
+    // Raycast from each foot to find ground
+    if let Some((_entity, foot_transform)) = left_foot_data {
+        let foot_pos = foot_transform.translation();
+
+        // Raycast downward from foot position
+        if let Some(hit) = spatial_query.cast_ray(
+            foot_pos,
+            Dir3::NEG_Y,
+            config.max_ground_distance,
+            true,
+            SpatialQueryFilter::default(),
+        ) {
+            // Adjust foot target to ground position
+            if let Ok(mut target_transform) = left_foot_target_query.single_mut() {
+                let ground_pos = foot_pos + Vec3::NEG_Y * hit.time_of_impact;
+                let adjusted_pos = ground_pos + Vec3::Y * config.foot_height_offset;
+
+                // Blend between current and target position
+                target_transform.translation = target_transform.translation.lerp(
+                    adjusted_pos,
+                    config.adjustment_strength
+                );
+            }
+        }
+    }
+
+    if let Some((_entity, foot_transform)) = right_foot_data {
+        let foot_pos = foot_transform.translation();
+
+        if let Some(hit) = spatial_query.cast_ray(
+            foot_pos,
+            Dir3::NEG_Y,
+            config.max_ground_distance,
+            true,
+            SpatialQueryFilter::default(),
+        ) {
+            if let Ok(mut target_transform) = right_foot_target_query.single_mut() {
+                let ground_pos = foot_pos + Vec3::NEG_Y * hit.time_of_impact;
+                let adjusted_pos = ground_pos + Vec3::Y * config.foot_height_offset;
+
+                target_transform.translation = target_transform.translation.lerp(
+                    adjusted_pos,
+                    config.adjustment_strength
+                );
+            }
+        }
+    }
+}
+
+/// Debug visualization for locomotion foot IK
+pub fn visualize_locomotion_foot_ik(
+    config: Res<LocomotionIkConfig>,
+    left_foot_query: Query<&Transform, With<LeftFootIkTarget>>,
+    right_foot_query: Query<&Transform, (With<RightFootIkTarget>, Without<LeftFootIkTarget>)>,
+    mut gizmos: Gizmos,
+) {
+    if !config.debug_visualization || !config.enabled {
+        return;
+    }
+
+    // Visualize left foot target
+    if let Ok(transform) = left_foot_query.single() {
+        gizmos.sphere(
+            Isometry3d::from_translation(transform.translation),
+            0.06,
+            Color::srgb(0.0, 1.0, 0.0), // Green
+        );
+    }
+
+    // Visualize right foot target
+    if let Ok(transform) = right_foot_query.single() {
+        gizmos.sphere(
+            Isometry3d::from_translation(transform.translation),
+            0.06,
+            Color::srgb(1.0, 1.0, 0.0), // Yellow
+        );
+    }
+}
+
+// ============================================================================
 // PLUGIN
 // ============================================================================
 
 pub(super) fn plugin(app: &mut App) {
     app.init_resource::<IkConfig>();
+    app.init_resource::<LocomotionIkConfig>();
     app.add_plugins(InverseKinematicsPlugin);
 
     // IK setup happens once after player model loads
@@ -396,7 +558,7 @@ pub(super) fn plugin(app: &mut App) {
         setup_ik_chains.run_if(in_state(Screen::Gameplay)),
     );
 
-    // IK update systems run every frame during gameplay
+    // Parkour IK update systems run every frame during gameplay
     app.add_systems(
         Update,
         (
@@ -405,6 +567,16 @@ pub(super) fn plugin(app: &mut App) {
             visualize_ik_targets,
         )
             .chain()
+            .run_if(in_state(Screen::Gameplay)),
+    );
+
+    // Locomotion foot IK systems (for basic movement)
+    app.add_systems(
+        Update,
+        (
+            update_locomotion_foot_ik,
+            visualize_locomotion_foot_ik,
+        )
             .run_if(in_state(Screen::Gameplay)),
     );
 }
