@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use std::collections::HashMap;
+use std::time::Duration;
 use crate::{game::animations::animation_controller::AnimationNodes, screens::Screen};
 use crate::game::obstacle_detection::detection::{ParkourController, ParkourState};
 
@@ -136,7 +137,7 @@ pub fn init_animation_sampling(
         return;
     };
 
-    let Ok(player_entity) = player_query.get_single() else {
+    let Ok(player_entity) = player_query.single() else {
         return;
     };
 
@@ -158,7 +159,7 @@ pub fn init_animation_sampling(
 /// This runs over multiple frames, seeking and reading bone data
 pub fn sample_animation_bones(
     mut commands: Commands,
-    mut sampler_query: Query<(Entity, &mut AnimationSampler, &mut AnimationPlayer)>,
+    mut sampler_query: Query<(Entity, &mut AnimationSampler, &mut AnimationPlayer, &mut AnimationTransitions)>,
     mut sampled_poses: ResMut<SampledParkourPoses>,
     animation_nodes: Option<Res<AnimationNodes>>,
     children_query: Query<&Children>,
@@ -169,7 +170,7 @@ pub fn sample_animation_bones(
         return;
     };
 
-    let Ok((entity, mut sampler, mut player)) = sampler_query.get_single_mut() else {
+    let Ok((entity, mut sampler, mut player, mut transition)) = sampler_query.single_mut() else {
         return;
     };
 
@@ -213,8 +214,9 @@ pub fn sample_animation_bones(
         info!("   Seeking to time: {:.2}s", target_time);
 
         // Play vault animation and seek
-        player.start(nodes.vault);
-        player.seek_to(target_time);
+        transition
+        .play(&mut player, nodes.vault, Duration::from_millis(0))
+        .seek_to(target_time);
 
         sampler.current_time = target_time;
         sampler.frames_waited = 1;
@@ -253,7 +255,7 @@ pub fn sample_animation_bones(
 
             if let Ok(children) = children_query.get(entity) {
                 for child in children.iter() {
-                    collect_bone_transforms(*child, children_query, name_query, transform_query, output);
+                    collect_bone_transforms(child, children_query, name_query, transform_query, output);
                 }
             }
         }
