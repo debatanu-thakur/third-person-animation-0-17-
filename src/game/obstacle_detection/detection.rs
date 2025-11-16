@@ -57,7 +57,7 @@ impl Default for ObstacleDetectionConfig {
             detection_range: 2.0,
             min_velocity_for_auto_actions: 3.0,
             center_ray_height: 0.3,  // Chest height
-            upper_ray_height: 1.0,   // Above head / ledge detection
+            upper_ray_height: 0.9,   // Above head / ledge detection
             lower_ray_height: -0.7,   // Foot level
             debug_draw_rays: true,
         }
