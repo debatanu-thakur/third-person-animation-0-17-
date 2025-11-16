@@ -169,7 +169,7 @@ pub fn init_animation_sampling(
     mut commands: Commands,
     library: Option<Res<ParkourAnimationLibrary>>,
     mut sampled_poses: ResMut<SampledParkourPoses>,
-    player_query: Query<Entity, With<crate::game::player::Player>>,
+    animation_player_query: Query<Entity, (With<AnimationPlayer>, With<AnimationTransitions>)>,
 ) {
     // Only run once
     if sampled_poses.sampled {
@@ -180,15 +180,16 @@ pub fn init_animation_sampling(
         return;
     };
 
-    let Ok(player_entity) = player_query.single() else {
+    // Find the entity with AnimationPlayer and AnimationTransitions
+    let Ok(animation_entity) = animation_player_query.get_single() else {
         return;
     };
 
     info!("🎬 Initializing animation sampling system...");
     info!("   Sampling vault animation at key times: [0.0, 0.25, 0.5, 0.75, 1.0]");
 
-    // Add sampler component to player to start sampling process
-    commands.entity(player_entity).insert(AnimationSampler {
+    // Add sampler component to the animation player entity (not Player entity)
+    commands.entity(animation_entity).insert(AnimationSampler {
         animation_name: "vault".to_string(),
         sample_times: vec![0.0, 0.25, 0.5, 0.75, 1.0],
         current_sample_index: 0,
@@ -576,7 +577,7 @@ pub fn debug_sampling_state(
     library: Option<Res<ParkourAnimationLibrary>>,
     sampled_poses: Res<SampledParkourPoses>,
     animation_nodes: Option<Res<AnimationNodes>>,
-    player_query: Query<Entity, With<crate::game::player::Player>>,
+    animation_player_query: Query<Entity, (With<AnimationPlayer>, With<AnimationTransitions>)>,
     sampler_query: Query<&AnimationSampler>,
     time: Res<Time>,
 ) {
@@ -596,15 +597,16 @@ pub fn debug_sampling_state(
     status.push_str(&format!("  time: {},\n", current_time));
     status.push_str(&format!("  library_exists: {},\n", library.is_some()));
     status.push_str(&format!("  animation_nodes_exists: {},\n", animation_nodes.is_some()));
-    status.push_str(&format!("  player_exists: {},\n", player_query.single().is_ok()));
+    status.push_str(&format!("  animation_player_exists: {},\n", animation_player_query.get_single().is_ok()));
     status.push_str(&format!("  sampling_complete: {},\n", sampled_poses.sampled));
     status.push_str(&format!("  vault_samples_count: {},\n", sampled_poses.vault_samples.len()));
 
-    if let Ok(player_entity) = player_query.single() {
-        let has_sampler = sampler_query.get(player_entity).is_ok();
+    // Check the animation player entity for the sampler component
+    if let Ok(animation_entity) = animation_player_query.get_single() {
+        let has_sampler = sampler_query.get(animation_entity).is_ok();
         status.push_str(&format!("  has_sampler_component: {},\n", has_sampler));
 
-        if let Ok(sampler) = sampler_query.get(player_entity) {
+        if let Ok(sampler) = sampler_query.get(animation_entity) {
             status.push_str(&format!("  sampler_index: {},\n", sampler.current_sample_index));
             status.push_str(&format!("  sampler_total: {},\n", sampler.sample_times.len()));
             status.push_str(&format!("  frames_waited: {},\n", sampler.frames_waited));
