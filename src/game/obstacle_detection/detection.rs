@@ -612,7 +612,7 @@ pub fn start_parkour_animation_tracking(
                 if state.current_state != parkour.state {
                     state.current_state = parkour.state;
                     state.start_time = time.elapsed_secs();
-                    info!("🎬 Started parkour animation: {:?}", parkour.state);
+                    info!("🎬 Update existing parkour animation: {:?}", parkour.state);
                 }
             } else {
                 // Add new tracking component

@@ -1,5 +1,5 @@
 (
-  timestamp: 40.83909,
+  timestamp: 14.548881,
   config: (
     enabled: false,
     max_ground_distance: 2,
@@ -10,9 +10,9 @@
   ik_should_be_active: true,
   bones_found: (
     left_foot: "Found",
-    left_foot_pos: (-5.7621007, 0.3424609, -5.068203),
+    left_foot_pos: (-10.185684, 0.34260535, -0.5050799),
     right_foot: "Found",
-    right_foot_pos: (-5.527719, 0.34756318, -4.770438),
+    right_foot_pos: (-10.555116, 0.34770092, -0.5888608),
   ),
   ik_constraints: [
     (
