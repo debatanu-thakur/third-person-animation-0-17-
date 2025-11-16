@@ -120,6 +120,49 @@ pub struct AnimationSampler {
 // ANIMATION SAMPLING SYSTEM
 // ============================================================================
 
+/// Writes sampled animation data to a RON file for debugging
+fn write_sampled_data_to_ron(samples: &Vec<(f32, Vec<(String, Vec3, Quat)>)>, animation_name: &str) {
+    let mut ron_content = String::new();
+    ron_content.push_str("(\n");
+    ron_content.push_str(&format!("  animation_name: \"{}\",\n", animation_name));
+    ron_content.push_str(&format!("  sample_count: {},\n", samples.len()));
+    ron_content.push_str("  samples: [\n");
+
+    for (time, bones) in samples.iter() {
+        ron_content.push_str("    (\n");
+        ron_content.push_str(&format!("      time: {},\n", time));
+        ron_content.push_str("      bones: [\n");
+
+        // Only write key bones to keep file manageable
+        for (name, translation, rotation) in bones.iter() {
+            if name.contains("Hand") || name.contains("Hips") ||
+               name.contains("Foot") || name.contains("Spine") {
+                ron_content.push_str("        (\n");
+                ron_content.push_str(&format!("          name: \"{}\",\n", name));
+                ron_content.push_str(&format!("          translation: ({}, {}, {}),\n",
+                    translation.x, translation.y, translation.z));
+                ron_content.push_str(&format!("          rotation: ({}, {}, {}, {}),\n",
+                    rotation.x, rotation.y, rotation.z, rotation.w));
+                ron_content.push_str("        ),\n");
+            }
+        }
+
+        ron_content.push_str("      ],\n");
+        ron_content.push_str(&format!("      bone_count: {},\n", bones.len()));
+        ron_content.push_str("    ),\n");
+    }
+
+    ron_content.push_str("  ],\n");
+    ron_content.push_str(")\n");
+
+    let file_path = format!("assets/bones/sampled_{}.ron", animation_name);
+    if let Err(e) = std::fs::write(&file_path, ron_content) {
+        error!("Failed to write sampled data to {}: {}", file_path, e);
+    } else {
+        info!("📝 Wrote sampled data to: {}", file_path);
+    }
+}
+
 /// Initializes animation sampling after animations are loaded
 /// This runs once and samples vault animation at key times
 pub fn init_animation_sampling(
@@ -195,6 +238,9 @@ pub fn sample_animation_bones(
         }
 
         sampled_poses.sampled = true;
+
+        // Write samples to RON file for debugging
+        write_sampled_data_to_ron(&sampler.samples_collected, &sampler.animation_name);
 
         // Remove sampler component - we're done
         commands.entity(entity).remove::<AnimationSampler>();
@@ -444,7 +490,7 @@ pub fn test_parkour_animation_playback(
 // DEBUG: SAMPLE AND PRINT
 // ============================================================================
 
-/// Debug system to print animation library info (press 'P')
+/// Debug system to print animation library info and write status to RON (press 'P')
 pub fn debug_sample_animation(
     keyboard: Res<ButtonInput<KeyCode>>,
     library: Option<Res<ParkourAnimationLibrary>>,
@@ -465,14 +511,30 @@ pub fn debug_sample_animation(
     info!("   Slide clip: {:?}", library.slide_clip);
     info!("");
 
-    // Print sampling status
+    // Write library status to RON file
+    let mut status_content = String::new();
+    status_content.push_str("(\n");
+    status_content.push_str("  library_status: (\n");
+    status_content.push_str(&format!("    vault_clip: \"{:?}\",\n", library.vault_clip));
+    status_content.push_str(&format!("    climb_clip: \"{:?}\",\n", library.climb_clip));
+    status_content.push_str(&format!("    slide_clip: \"{:?}\",\n", library.slide_clip));
+    status_content.push_str("  ),\n");
+
+    // Print and write sampling status
     if sampled_poses.sampled {
         info!("✅ Animation sampling complete!");
         info!("   Vault samples: {} keyframes", sampled_poses.vault_samples.len());
 
+        status_content.push_str("  sampling_status: (\n");
+        status_content.push_str("    complete: true,\n");
+        status_content.push_str(&format!("    vault_keyframes: {},\n", sampled_poses.vault_samples.len()));
+        status_content.push_str("    keyframe_times: [\n");
+
         // Print sample data for each time
         for (time_key, bones) in sampled_poses.vault_samples.iter() {
             info!("   Time {}: {} bones sampled", time_key, bones.len());
+
+            status_content.push_str(&format!("      \"{}\",  // {} bones\n", time_key, bones.len()));
 
             // Print key bones (hands, hips)
             for bone in bones.iter() {
@@ -481,12 +543,28 @@ pub fn debug_sample_animation(
                 }
             }
         }
+
+        status_content.push_str("    ],\n");
+        status_content.push_str("  ),\n");
     } else {
         info!("⏳ Animation sampling in progress...");
+        status_content.push_str("  sampling_status: (\n");
+        status_content.push_str("    complete: false,\n");
+        status_content.push_str("  ),\n");
+    }
+
+    status_content.push_str(")\n");
+
+    // Write to file
+    if let Err(e) = std::fs::write("assets/bones/animation_library_status.ron", status_content) {
+        error!("Failed to write library status: {}", e);
+    } else {
+        info!("📝 Wrote library status to: assets/bones/animation_library_status.ron");
     }
 
     info!("");
     info!("💡 Press 'V' to test vault animation playback on character");
+    info!("💡 Check assets/bones/ for RON debug files");
 }
 
 // ============================================================================
