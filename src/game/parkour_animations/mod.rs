@@ -596,11 +596,11 @@ pub fn debug_sampling_state(
     status.push_str(&format!("  time: {},\n", current_time));
     status.push_str(&format!("  library_exists: {},\n", library.is_some()));
     status.push_str(&format!("  animation_nodes_exists: {},\n", animation_nodes.is_some()));
-    status.push_str(&format!("  player_exists: {},\n", player_query.get_single().is_ok()));
+    status.push_str(&format!("  player_exists: {},\n", player_query.single().is_ok()));
     status.push_str(&format!("  sampling_complete: {},\n", sampled_poses.sampled));
     status.push_str(&format!("  vault_samples_count: {},\n", sampled_poses.vault_samples.len()));
 
-    if let Ok(player_entity) = player_query.get_single() {
+    if let Ok(player_entity) = player_query.single() {
         let has_sampler = sampler_query.get(player_entity).is_ok();
         status.push_str(&format!("  has_sampler_component: {},\n", has_sampler));
 
