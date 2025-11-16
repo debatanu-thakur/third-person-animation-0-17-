@@ -655,32 +655,12 @@ pub fn start_parkour_animation_tracking(
     }
 }
 
-/// Detects when parkour animations complete and transitions back to locomotion
-/// For now uses fixed durations, later will query AnimationPlayer for actual clip length
-pub fn detect_parkour_animation_completion(
-    mut player_query: Query<(&mut ParkourController, &ParkourAnimationState), With<Player>>,
-    time: Res<Time>,
-) {
-    for (mut parkour, anim_state) in player_query.iter_mut() {
-        let elapsed = time.elapsed_secs() - anim_state.start_time;
-
-        // Fixed durations for parkour animations (in seconds)
-        // TODO: Get actual clip duration from AnimationPlayer/Assets
-        let animation_duration = match parkour.state {
-            ParkourState::Vaulting => 1.5,  // Vault takes ~1.5 seconds
-            ParkourState::Climbing => 2.0,  // Climb takes ~2 seconds
-            ParkourState::Sliding => 1.2,   // Slide takes ~1.2 seconds
-            ParkourState::WallRunning => 99999.0, // Wall run is continuous
-            _ => 0.0,
-        };
-
-        // Check if animation completed
-        if elapsed >= animation_duration {
-            info!("✅ Parkour animation completed ({}s), returning to locomotion", elapsed);
-            parkour.state = ParkourState::Idle;
-        }
-    }
-}
+// ============================================================================
+// EVENT-DRIVEN ANIMATION COMPLETION
+// ============================================================================
+// Note: Time-based completion system removed - fully event-driven now
+// Animation events (ParkourAnimationBlendToIdle + ParkourAnimationComplete)
+// embedded in clips handle all completion timing automatically
 
 /// Observer function that handles parkour animation blend start events
 /// Triggers smooth transition to locomotion before animation ends
