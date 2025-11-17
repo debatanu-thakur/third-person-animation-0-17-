@@ -9,6 +9,7 @@ mod hand_placement;
 mod player;
 mod scene;
 pub mod target_matching;
+mod target_matching_debug;
 pub mod third_person_camera;
 
 use bevy::{prelude::*, time::common_conditions::on_timer};
@@ -30,11 +31,15 @@ pub(super) fn plugin(app: &mut App) {
     // Configure target matching for Mixamo rigs
     app.insert_resource(target_matching::MaskGroupConfig::for_mixamo());
 
-    // Add diagnostic system for debugging (runs every 3 seconds)
+    // Add diagnostic systems for debugging
     app.add_systems(
         Update,
-        foot_placement_debug::diagnose_foot_placement
-            .run_if(on_timer(std::time::Duration::from_secs(3)))
+        (
+            foot_placement_debug::diagnose_foot_placement
+                .run_if(on_timer(std::time::Duration::from_secs(3))),
+            target_matching_debug::diagnose_bone_components
+                .run_if(on_timer(std::time::Duration::from_secs(5))),
+        )
             .run_if(in_state(Screen::Gameplay)),
     );
 }

@@ -150,9 +150,24 @@ pub fn setup_animation_graph(
     // Store the graph handle as a resource for easy access
     commands
     .entity(animation_player_entity)
-    .insert(AnimationGraphHandle(graph_handle))
+    .insert(AnimationGraphHandle(graph_handle.clone()))
     .insert(transitions)
     ;
+
+    // Disable mask groups for procedural limb control
+    // This actually TURNS OFF animation for hands and feet
+    if let Some(graph) = graphs.get_mut(&graph_handle) {
+        for node_index in [idle_node, walk_node, run_node, jump_node, running_jump_node, fall_node] {
+            if let Some(animation_node) = graph.get_mut(node_index) {
+                // Disable groups 1-4 (left foot, right foot, left hand, right hand)
+                animation_node.mask &= !(1 << 1);  // Left foot
+                animation_node.mask &= !(1 << 2);  // Right foot
+                animation_node.mask &= !(1 << 3);  // Left hand
+                animation_node.mask &= !(1 << 4);  // Right hand
+            }
+        }
+        info!("✓ Disabled animation masks for procedural limb control (groups 1-4)");
+    }
 
     info!("Animation graph successfully created with unified GLTF animations and procedural limb control masks!");
 }

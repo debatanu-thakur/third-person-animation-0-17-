@@ -62,21 +62,27 @@ pub fn update_active_matching(
                     // Use smooth easing for natural movement
                     let t_eased = ease_in_out_cubic(t);
 
-                    // Get current position at start of matching
-                    // For now, we'll just smoothly move toward target
-                    // In a full implementation, we'd store the original position
                     let target_pos = request.target_position;
+                    let current_pos = bone_transform.translation;
 
-                    // Lerp toward target position
-                    bone_transform.translation = bone_transform.translation.lerp(target_pos, t_eased * 0.3);
+                    // Lerp toward target position aggressively for visibility
+                    bone_transform.translation = current_pos.lerp(target_pos, t_eased * 0.8);
 
-                    trace!(
-                        "Moving {:?} bone toward {:?} (progress: {:.2})",
-                        request.bone,
-                        target_pos,
-                        t
-                    );
+                    if elapsed < 0.1 || (elapsed % 0.5) < 0.016 {  // Log occasionally
+                        info!(
+                            "Moving {:?} bone from {:?} toward {:?} (progress: {:.2}, t_eased: {:.2})",
+                            request.bone,
+                            current_pos,
+                            target_pos,
+                            t,
+                            t_eased
+                        );
+                    }
+                } else {
+                    warn!("Could not get mutable Transform for bone entity {:?}", bone_entity);
                 }
+            } else {
+                warn!("Bone {:?} not found in BoneMap", request.bone);
             }
 
             // Check if matching duration has elapsed
