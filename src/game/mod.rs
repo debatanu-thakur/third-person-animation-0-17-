@@ -4,6 +4,7 @@ mod camera_controller;
 pub mod configs;
 mod player;
 mod scene;
+pub mod target_matching;
 pub mod third_person_camera;
 mod animations;
 
@@ -16,5 +17,9 @@ pub(super) fn plugin(app: &mut App) {
         player::plugin,
         camera_controller::plugin,
         animations::plugin,
+        target_matching::TargetMatchingPlugin,
     ));
+
+    // Configure target matching for Mixamo rigs
+    app.insert_resource(target_matching::MaskGroupConfig::for_mixamo());
 }
