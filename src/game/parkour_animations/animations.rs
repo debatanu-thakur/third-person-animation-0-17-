@@ -1,3 +1,4 @@
+use avian3d::prelude::RigidBody;
 use bevy::prelude::*;
 use bevy::animation::*;
 use bevy_tnua::TnuaToggle;
@@ -89,7 +90,9 @@ pub fn on_parkour_blend_to_idle(
         if parkour.state == event.action {
             parkour.state = ParkourState::Idle;
             info!("✅ Blend started: {:?} → Idle (smooth transition)", event.action);
+            // commands.entity(player_entity).insert(TnuaToggle::Enabled);
             commands.entity(player_entity).insert(TnuaToggle::Enabled);
+            commands.entity(player_entity).insert(RigidBody::Dynamic);
             commands.entity(player_entity).remove::<PlayingParkourAnimation>();
         }
     }
@@ -112,6 +115,7 @@ pub fn on_parkour_animation_complete(
             info!("✅ Animation event: Returning to Idle from {:?}", event.action);
         }
         commands.entity(player_entity).insert(TnuaToggle::Enabled);
+        commands.entity(player_entity).insert(RigidBody::Dynamic);
         commands.entity(player_entity).remove::<PlayingParkourAnimation>();
     }
 }
@@ -127,6 +131,7 @@ pub fn on_parkour_animation_start(
     // Return player to idle state (fallback if blend didn't happen)
     for player_entity in player_query.iter_mut() {
         commands.entity(player_entity).insert(TnuaToggle::Disabled);
+        commands.entity(player_entity).insert(RigidBody::Kinematic);
     }
 }
 

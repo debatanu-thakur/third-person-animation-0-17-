@@ -1,4 +1,4 @@
-use avian3d::prelude::*;
+use avian3d::{parry::na::inf, prelude::*};
 use bevy::prelude::*;
 use bevy::animation::AnimationEvent;
 use bevy_tnua::prelude::*;
@@ -628,15 +628,13 @@ pub fn extract_and_apply_root_motion(
         // Find root bone (Hips bone contains the animation's root motion)
         let mut root_bone_pos: Option<Vec3> = None;
 
-        for child in children.iter() {
-            if let Ok((bone_transform, bone_name)) = bone_query.get(child) {
+        for (bone_transform, bone_name) in bone_query.iter() {
                 if bone_name.as_str() == "mixamorig12:Hips" {
                     root_bone_pos = Some(bone_transform.translation());
                     break;
                 }
             }
-        }
-
+        info!("player position - {}",player_transform.translation);
         let Some(current_root_pos) = root_bone_pos else {
             continue;
         };
@@ -646,8 +644,8 @@ pub fn extract_and_apply_root_motion(
 
         // Apply only horizontal movement to player (XZ plane)
         // Keep Y controlled by physics/gravity
-        player_transform.translation.x = tracker.animation_start_position.x + root_delta.x;
-        player_transform.translation.z = tracker.animation_start_position.z + root_delta.z;
+        // player_transform.translation.x = tracker.animation_start_position.x + root_delta.x;
+        // player_transform.translation.z = tracker.animation_start_position.z + root_delta.z;
     }
 }
 
