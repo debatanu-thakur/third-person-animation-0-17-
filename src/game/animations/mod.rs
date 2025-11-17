@@ -32,11 +32,6 @@ pub(super) fn plugin(app: &mut App) {
     // Initialize animation state tracking
     // app.init_resource::<PreviousAnimationState>();
 
-    // Animation systems - multi-stage loading:
-    // 1. PlayerGltfAsset is loaded (handled in player module)
-    // 2. PlayerAssets is extracted from GLTF (handled in player module)
-    // 3. Build animation graph from PlayerAssets -> AnimationNodes resource
-    // 4. Apply animations to player
     app.add_systems(
         FixedUpdate,
         (

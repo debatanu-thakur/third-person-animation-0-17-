@@ -89,13 +89,7 @@ pub fn setup_animation_graph(
         slide: slide_node,
         wall_run: wall_run_node,
     });
-    let mut transitions = AnimationTransitions::new();
-    transitions
-        .play(
-            &mut animation_player,
-            idle_node,
-            Duration::ZERO)
-        .repeat();
+    let transitions = AnimationTransitions::new();
 
     // Store the graph handle as a resource for easy access
     commands

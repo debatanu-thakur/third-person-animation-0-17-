@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{color::palettes::css, prelude::*};
 use avian3d::prelude::*;
 use crate::{
     game::{
@@ -35,6 +35,12 @@ pub struct ParkourIkTargets {
     pub right_foot_target: Option<Vec3>,
     pub active: bool,
 }
+
+#[derive(Component)]
+pub struct PoleTargets;
+
+#[derive(Component)]
+pub struct HandTargets;
 
 // ============================================================================
 // IK CONFIGURATION
@@ -102,6 +108,8 @@ pub fn setup_ik_chains(
     mut commands: Commands,
     player_query: Query<Entity, (With<Player>, Without<ParkourIkTargets>)>,
     bone_query: Query<(Entity, &Name)>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     let Ok(player_entity) = player_query.single() else {
         return;
@@ -169,27 +177,74 @@ pub fn setup_ik_chains(
         Visibility::Visible,
     )).id();
 
+    let left_hand_pole_target = commands
+            .spawn((
+                Mesh3d(meshes.add(Sphere::new(0.05).mesh().uv(7, 7))),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: css::BLUE_VIOLET.into(),
+                    ..default()
+                })),
+                Transform::from_xyz(-1.0, 0.4, -0.2),
+                PoleTargets
+            ))
+            .id();
+    let left_targets = commands
+            .spawn((
+                Mesh3d(meshes.add(Sphere::new(0.05).mesh().uv(7, 7))),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: css::RED.into(),
+                    ..default()
+                })),
+                Transform::from_xyz(-1.0, 1.0, -0.2),
+                HandTargets,
+                Name::new("LEFTYHandTargets")
+            ))
+            .id();
     // Setup IK chains if bones were found
     if let Some(left_hand) = left_hand_bone {
         commands.entity(left_hand).insert(IkConstraint {
-            chain_length: 3, // Hand -> Forearm -> Arm
+            chain_length: 2, // Hand -> Forearm -> Arm
             iterations: 20,
-            target: left_hand_target,
-            pole_target: left_forearm_bone,
+            target: left_targets,
+            pole_target: Some(left_hand_pole_target),
             pole_angle: 0.0,
-            enabled: false,
+            enabled: true,
         });
         info!("✓ Set up left hand IK chain");
     }
 
+      let pole_target = commands
+            .spawn((
+                Mesh3d(meshes.add(Sphere::new(0.05).mesh().uv(7, 7))),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: css::LIMEGREEN.into(),
+                    ..default()
+                })),
+                Transform::from_xyz(1.0, 0.4, -0.2),
+                PoleTargets
+            ))
+            .id();
+        let right_targets = commands
+            .spawn((
+                Mesh3d(meshes.add(Sphere::new(0.05).mesh().uv(7, 7))),
+                MeshMaterial3d(materials.add(StandardMaterial {
+                    base_color: css::ORANGE.into(),
+                    ..default()
+                })),
+                Transform::from_xyz(1.0, 1.0, -0.2),
+                HandTargets,
+                Name::new("RIGHTYHandTargets")
+            ))
+            .id();
     if let Some(right_hand) = right_hand_bone {
         commands.entity(right_hand).insert(IkConstraint {
-            chain_length: 3,
+            chain_length: 2,
             iterations: 20,
-            target: right_hand_target,
-            pole_target: right_forearm_bone,
+            target: right_targets,
+            // pole_target: right_forearm_bone,
+            pole_target: Some(pole_target),
             pole_angle: 0.0,
-            enabled: false,
+            enabled: true,
         });
         info!("✓ Set up right hand IK chain");
     }

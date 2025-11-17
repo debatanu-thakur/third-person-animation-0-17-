@@ -44,7 +44,7 @@ fn attach_camera_to_player(
                     offset_toggle_enabled: true,
                     offset_toggle_speed: 5.0,
 
-                    cursor_lock_key: KeyCode::KeyL,
+                    cursor_lock_key: KeyCode::F4,
                     cursor_lock_active: true, // Start with cursor locked
                     ..default()
                 },

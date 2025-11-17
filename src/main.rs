@@ -3,7 +3,7 @@
 // Disable console on Windows for non-dev builds.
 #![cfg_attr(not(feature = "dev"), windows_subsystem = "windows")]
 
-use avian3d::{PhysicsPlugins, prelude::PhysicsDebugPlugin};
+use avian3d::{PhysicsPlugins};
 use bevy_hotpatching_experiments::prelude::*;
 
 mod asset_tracking;
@@ -48,7 +48,6 @@ impl Plugin for AppPlugin {
         );
         app.add_plugins(SimpleSubsecondPlugin::default());
         app.add_plugins(PhysicsPlugins::default());
-        app.add_plugins(PhysicsDebugPlugin::default());
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,

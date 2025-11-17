@@ -12,7 +12,7 @@ const FLOAT_HEIGHT: f32 = 0.9;
 const ROTATION_SPEED: f32 = 10.0;
 const WALK_TO_RUN_DURATION: f32 = 1.0; // Seconds to transition from walk to run
 
-#[hot]
+
 pub fn apply_controls(
     keyboard: Res<ButtonInput<KeyCode>>,
     mut query: Query<&mut TnuaController>,
