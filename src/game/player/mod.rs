@@ -70,8 +70,9 @@ fn spawn_player(
             DespawnOnExit(Screen::Gameplay), // Cleanup when leaving Gameplay screen
             Transform::from_translation(spawn_config.position),
             Visibility::Visible,
-            FootPlacementEnabled::default(),
-            TargetMatchEnabled,              // Enables target matching (BoneMap will be auto-populated by build_bone_map system)
+            FootPlacementEnabled::for_testing(),
+            TargetMatchEnabled,              // Enables target matching
+            BoneMap::default(),              // Auto-populates with foot bones
         ))
         .insert((
             // Avian3D physics components

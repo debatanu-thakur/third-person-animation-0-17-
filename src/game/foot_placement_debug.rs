@@ -1,8 +1,7 @@
 //! Debug commands for foot placement testing
 
 use bevy::prelude::*;
-use super::{FootPlacementEnabled, Player};
-use crate::game::target_matching::{BoneMap, TargetBone};
+use crate::game::{foot_placement::FootPlacementEnabled, player::Player, target_matching::{BoneMap, TargetBone}};
 
 /// Diagnostic system to check foot placement status
 pub fn diagnose_foot_placement(
