@@ -168,7 +168,7 @@ fn raycast_for_ground(
     offset: f32,
 ) -> Option<Vec3> {
     let ray_origin = from_position;
-    let ray_direction = Direction3d::NEG_Y;
+    let ray_direction = Dir3::NEG_Y;
 
     // Cast ray downward
     if let Some(hit) = spatial_query.cast_ray(
@@ -176,10 +176,12 @@ fn raycast_for_ground(
         ray_direction,
         max_distance,
         true, // Should hit all
-        SpatialQueryFilter::default(),
+        &SpatialQueryFilter::default(),
     ) {
         // Return hit position with offset applied
-        Some(hit.point + Vec3::Y * offset)
+        // Calculate hit point from ray origin, direction, and distance
+        let hit_point = ray_origin + *ray_direction * hit.distance;
+        Some(hit_point + Vec3::Y * offset)
     } else {
         None
     }
@@ -191,14 +193,14 @@ fn detect_ground_normal(
     player_transform: &GlobalTransform,
 ) -> Option<Vec3> {
     let ray_origin = player_transform.translation();
-    let ray_direction = Direction3d::NEG_Y;
+    let ray_direction = Dir3::NEG_Y;
 
     if let Some(hit) = spatial_query.cast_ray(
         ray_origin,
         ray_direction,
         2.0,
         true,
-        SpatialQueryFilter::default(),
+        &SpatialQueryFilter::default(),
     ) {
         Some(hit.normal)
     } else {

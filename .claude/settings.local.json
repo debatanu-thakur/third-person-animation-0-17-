@@ -3,7 +3,8 @@
     "allow": [
       "Bash(cargo check:*)",
       "Bash(cargo doc:*)",
-      "Bash(cargo rustc:*)"
+      "Bash(cargo rustc:*)",
+      "Bash(RUSTFLAGS=-Awarnings cargo check:*)"
     ],
     "deny": [],
     "ask": []

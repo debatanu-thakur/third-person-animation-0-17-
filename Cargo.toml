@@ -11,7 +11,6 @@ bevy = { version = "0.17" }
 bevy-tnua = "0.26.0"
 bevy-tnua-avian3d = "0.8.0"
 bevy_hotpatching_experiments = "0.3.0"
-bevy_mod_inverse_kinematics = "0.9.0"
 rand = "0.9"
 ron = "0.8"
 serde = { version = "1.0", features = ["derive"] }

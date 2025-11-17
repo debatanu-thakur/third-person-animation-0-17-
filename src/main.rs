@@ -11,6 +11,7 @@ mod audio;
 #[cfg(feature = "dev")]
 mod dev_tools;
 mod game;
+mod ik;
 mod menus;
 mod screens;
 mod theme;

@@ -1,6 +1,7 @@
 //! Animation mask configuration and setup
 
-use bevy::{animation::AnimationTargetId, prelude::*, utils::HashMap};
+use bevy::{animation::AnimationTargetId, prelude::*};
+use std::collections::HashMap;
 
 use super::TargetBone;
 
@@ -98,7 +99,7 @@ impl MaskGroupConfig {
     pub fn bones_in_group(&self, group_id: u32) -> Vec<String> {
         self.bone_to_group
             .iter()
-            .filter(|(_, &g)| g == group_id)
+            .filter(|&(_, &g)| g == group_id)
             .map(|(name, _)| name.clone())
             .collect()
     }
@@ -134,23 +135,29 @@ impl MaskGroupConfig {
 }
 
 /// System to automatically assign bones to mask groups
+/// Note: In Bevy 0.17, AnimationTargetId is not a component, so this system
+/// is disabled until we find the proper way to query animation targets
 pub fn setup_animation_masks(
     mut commands: Commands,
     config: Option<Res<MaskGroupConfig>>,
-    targets: Query<(Entity, &AnimationTargetId, &Name), Added<AnimationTargetId>>,
+    targets: Query<(Entity, &Name)>,
 ) {
     let Some(config) = config else {
         return;
     };
 
-    for (entity, target_id, name) in targets.iter() {
-        // Try to find this bone in our configuration
-        if let Some(group_id) = config.group_for_bone(name.as_str()) {
-            info!("Assigned bone '{}' to mask group {}", name, group_id);
-            // The mask group assignment will happen when building the animation graph
-            // We just track it here for debugging
-        }
-    }
+    // TODO: Update this system for Bevy 0.17's animation system
+    // AnimationTargetId is no longer a component in Bevy 0.17
+    // Need to find the proper way to identify animation target entities
+
+    // for (entity, name) in targets.iter() {
+    //     // Try to find this bone in our configuration
+    //     if let Some(group_id) = config.group_for_bone(name.as_str()) {
+    //         info!("Assigned bone '{}' to mask group {}", name, group_id);
+    //         // The mask group assignment will happen when building the animation graph
+    //         // We just track it here for debugging
+    //     }
+    // }
 }
 
 #[cfg(test)]

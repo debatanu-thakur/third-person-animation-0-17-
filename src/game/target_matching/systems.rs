@@ -122,16 +122,19 @@ pub fn debug_visualize_targets(
 }
 
 /// System to build bone map from scene hierarchy
+/// Note: In Bevy 0.17, AnimationTargetId is not a component, so we query all named entities
 pub fn build_bone_map(
     mut commands: Commands,
     characters: Query<Entity, (With<TargetMatchEnabled>, Without<BoneMap>)>,
-    bones: Query<(&Name, &Parent)>,
-    targets: Query<(Entity, &Name), With<bevy::animation::AnimationTargetId>>,
+    bones: Query<(&Name, &ChildOf)>,
+    targets: Query<(Entity, &Name)>,
 ) {
     for character_entity in characters.iter() {
         let mut bone_map = BoneMap::default();
 
         // Find all bone entities in the character's hierarchy
+        // TODO: In Bevy 0.17, we need a better way to identify animation targets
+        // For now, we check all entities with names
         for (bone_entity, bone_name) in targets.iter() {
             // Check if this bone is a known target bone
             if let Some(target_bone) = name_to_target_bone(bone_name.as_str()) {
@@ -141,11 +144,12 @@ pub fn build_bone_map(
         }
 
         if !bone_map.bones.is_empty() {
+            let bone_count = bone_map.bones.len();
             commands.entity(character_entity).insert(bone_map);
             info!(
                 "Built bone map for entity {:?} with {} bones",
                 character_entity,
-                bone_map.bones.len()
+                bone_count
             );
         }
     }

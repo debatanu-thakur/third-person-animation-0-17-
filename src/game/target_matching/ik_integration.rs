@@ -1,7 +1,7 @@
-//! Integration with bevy_mod_inverse_kinematics
+//! Integration with local IK solver
 
 use bevy::prelude::*;
-use bevy_mod_inverse_kinematics::{IkConstraint, IkPoleTarget};
+use crate::ik::IkConstraint;
 
 use super::{BoneMap, TargetBone, TargetMatchRequest};
 
@@ -64,7 +64,7 @@ pub fn cleanup_ik_constraints(
 
 /// Update IK target position during matching
 pub fn update_ik_target(
-    mut targets: Query<&mut Transform, With<IkPoleTarget>>,
+    mut targets: Query<&mut Transform>,
     new_position: Vec3,
     target_entity: Entity,
 ) {
