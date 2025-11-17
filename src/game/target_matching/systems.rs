@@ -44,15 +44,43 @@ pub fn handle_target_match_requests(
 /// Update active target matching operations
 pub fn update_active_matching(
     mut commands: Commands,
-    mut matching: Query<(Entity, &mut TargetMatchingState, &TargetMatchRequest)>,
+    mut matching: Query<(Entity, &mut TargetMatchingState, &TargetMatchRequest, &BoneMap)>,
+    mut bone_transforms: Query<&mut Transform>,
     time: Res<Time>,
 ) {
-    for (entity, mut state, request) in matching.iter_mut() {
+    for (entity, mut state, request, bone_map) in matching.iter_mut() {
         if let TargetMatchingState::Matching { start_time, .. } = *state {
             let elapsed = time.elapsed_secs() - start_time;
+            let duration = request.match_duration();
+
+            // Get the bone entity we need to move
+            if let Some(bone_entity) = bone_map.get(request.bone) {
+                if let Ok(mut bone_transform) = bone_transforms.get_mut(bone_entity) {
+                    // Calculate interpolation progress (0.0 to 1.0)
+                    let t = (elapsed / duration).clamp(0.0, 1.0);
+
+                    // Use smooth easing for natural movement
+                    let t_eased = ease_in_out_cubic(t);
+
+                    // Get current position at start of matching
+                    // For now, we'll just smoothly move toward target
+                    // In a full implementation, we'd store the original position
+                    let target_pos = request.target_position;
+
+                    // Lerp toward target position
+                    bone_transform.translation = bone_transform.translation.lerp(target_pos, t_eased * 0.3);
+
+                    trace!(
+                        "Moving {:?} bone toward {:?} (progress: {:.2})",
+                        request.bone,
+                        target_pos,
+                        t
+                    );
+                }
+            }
 
             // Check if matching duration has elapsed
-            if elapsed >= request.match_duration() {
+            if elapsed >= duration {
                 info!("Target matching completed for {:?}", request.bone);
 
                 *state = TargetMatchingState::Complete {
@@ -63,6 +91,15 @@ pub fn update_active_matching(
                 commands.entity(entity).remove::<TargetMatchRequest>();
             }
         }
+    }
+}
+
+/// Smooth cubic easing function for natural movement
+fn ease_in_out_cubic(t: f32) -> f32 {
+    if t < 0.5 {
+        4.0 * t * t * t
+    } else {
+        1.0 - (-2.0 * t + 2.0).powi(3) / 2.0
     }
 }
 

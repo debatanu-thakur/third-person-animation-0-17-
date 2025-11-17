@@ -1,7 +1,7 @@
 mod assets;
 use crate::{
     asset_tracking::LoadResource,
-    game::{animations::models::AnimationState, foot_placement::FootPlacementEnabled, target_matching::{BoneMap, TargetMatchEnabled}, third_person_camera::ThirdPersonCameraTarget},
+    game::{animations::models::AnimationState, foot_placement::FootPlacementEnabled, target_matching::{BoneMap, TargetMatchEnabled, TargetMatchingState}, third_person_camera::ThirdPersonCameraTarget},
     screens::Screen,
 };
 use avian3d::prelude::*;
@@ -71,8 +71,8 @@ fn spawn_player(
             Transform::from_translation(spawn_config.position),
             Visibility::Visible,
             FootPlacementEnabled::for_testing(),
-            TargetMatchEnabled,              // Enables target matching
-            BoneMap::default(),              // Auto-populates with foot bones
+            TargetMatchEnabled,              // Enables target matching (BoneMap will be auto-populated by build_bone_map system)
+            TargetMatchingState::Idle,       // Tracks target matching state
         ))
         .insert((
             // Avian3D physics components
