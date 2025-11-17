@@ -78,16 +78,19 @@ pub struct PlayingParkourAnimation;
 /// Triggers smooth transition to locomotion before animation ends
 pub fn on_parkour_blend_to_idle(
     trigger: On<ParkourAnimationBlendToIdle>,
-    mut player_query: Query<&mut ParkourController, With<Player>>,
+    mut commands: Commands,
+    mut player_query: Query<(Entity, &mut ParkourController), With<Player>>,
 ) {
     let event = trigger.event();
     info!("🎨 Blend event: Starting transition from {:?} to Idle", event.action);
 
     // Transition to idle - AnimationController will blend over duration
-    for mut parkour in player_query.iter_mut() {
+    for (player_entity, mut parkour) in player_query.iter_mut() {
         if parkour.state == event.action {
             parkour.state = ParkourState::Idle;
             info!("✅ Blend started: {:?} → Idle (smooth transition)", event.action);
+            commands.entity(player_entity).insert(TnuaToggle::Enabled);
+            commands.entity(player_entity).remove::<PlayingParkourAnimation>();
         }
     }
 }

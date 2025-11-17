@@ -535,13 +535,13 @@ pub fn control_rigidbody_during_parkour(
                 | ParkourState::Sliding
         );
 
-        if is_parkour_action {
-            // Make kinematic so we can freely modify Transform
-            commands.entity(player_entity).insert(RigidBody::Kinematic);
-        } else {
-            // Restore dynamic for normal physics
-            commands.entity(player_entity).insert(RigidBody::Dynamic);
-        }
+        // if is_parkour_action {
+        //     // Make kinematic so we can freely modify Transform
+        //     commands.entity(player_entity).insert(RigidBody::Kinematic);
+        // } else {
+        //     // Restore dynamic for normal physics
+        //     commands.entity(player_entity).insert(RigidBody::Dynamic);
+        // }
     }
 }
 

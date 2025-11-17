@@ -78,12 +78,12 @@ pub fn add_completion_events_to_clips(
             },
         );
         // Blend event (300ms before end)
-        // vault_clip.add_event(
-        //     (duration - BLEND_TIME).max(0.0),
-        //     ParkourAnimationBlendToIdle {
-        //         action: ParkourState::Vaulting,
-        //     },
-        // );
+        vault_clip.add_event(
+            (duration - BLEND_TIME).max(0.0),
+            ParkourAnimationBlendToIdle {
+                action: ParkourState::Vaulting,
+            },
+        );
 
         // Completion event (at end - fallback)
         vault_clip.add_event(
