@@ -149,7 +149,7 @@ fn raycast_for_wall(
     // Cast ray forward from hand position
     if let Some(hit) = spatial_query.cast_ray(
         from_position,
-        Direction3d::new(forward_direction).ok()?,
+        Dir3::new(forward_direction).ok()?,
         max_distance,
         true,
         &filter,
