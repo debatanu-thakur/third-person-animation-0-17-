@@ -44,22 +44,24 @@ pub fn setup_animation_graph(
 
     let animations = &player_assets.animations;
 
-    // Mask configuration for foot placement:
-    // - Group 0: Body (all bones animated)
-    // - Group 1: Left Foot chain (excluded from animations for procedural control)
-    // - Group 2: Right Foot chain (excluded from animations for procedural control)
+    // Mask configuration for procedural limb control:
+    // - Group 0: Body (all bones animated - spine, head, legs upper parts)
+    // - Group 1: Left Foot (excluded from animations for procedural control)
+    // - Group 2: Right Foot (excluded from animations for procedural control)
+    // - Group 3: Left Hand (excluded from animations for procedural control)
+    // - Group 4: Right Hand (excluded from animations for procedural control)
     //
-    // Mask bitfield: 0b001 = only animate group 0 (body), exclude groups 1 & 2 (feet)
-    const FOOT_PLACEMENT_MASK: u32 = 0b001;
+    // Mask bitfield: 0b00001 = only animate group 0 (body), exclude groups 1-4 (feet & hands)
+    const PROCEDURAL_LIMB_MASK: u32 = 0b00001;
 
-    // Add all animation clips with mask to exclude feet
-    let idle_node = graph.add_clip_with_mask(animations.idle.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
-    let walk_node = graph.add_clip_with_mask(animations.walking.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
-    let run_node = graph.add_clip_with_mask(animations.running.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
-    let jump_node = graph.add_clip_with_mask(animations.standing_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
-    let running_jump_node = graph.add_clip_with_mask(animations.running_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    // Add all animation clips with mask to exclude feet and hands
+    let idle_node = graph.add_clip_with_mask(animations.idle.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
+    let walk_node = graph.add_clip_with_mask(animations.walking.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
+    let run_node = graph.add_clip_with_mask(animations.running.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
+    let jump_node = graph.add_clip_with_mask(animations.standing_jump.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
+    let running_jump_node = graph.add_clip_with_mask(animations.running_jump.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
-    let fall_node = graph.add_clip_with_mask(animations.standing_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    let fall_node = graph.add_clip_with_mask(animations.standing_jump.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
 
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
@@ -80,17 +82,19 @@ pub fn setup_animation_graph(
             Duration::ZERO)
         .repeat();
 
-    // Assign foot bones to mask groups
+    // Assign limb bones to mask groups
     // We need to do this to tell the animation system which bones should be excluded
     //
     // Mask groups:
     // - Group 0: Body (everything not explicitly assigned)
     // - Group 1: Left Foot
     // - Group 2: Right Foot
+    // - Group 3: Left Hand
+    // - Group 4: Right Hand
     use bevy::animation::AnimationTargetId;
 
     // Create animation target IDs for foot bones
-    // Based on Mixamo rig structure: brian/mixamorig12:Hips/mixamorig12:LeftUpLeg/mixamorig12:LeftLeg/mixamorig12:LeftFoot
+    // Based on Mixamo rig structure: brian/mixamorig12:Hips/.../mixamorig12:LeftFoot
     let left_foot_id = AnimationTargetId::from_names([
         &Name::new("brian"),
         &Name::new("mixamorig12:Hips"),
@@ -107,11 +111,39 @@ pub fn setup_animation_graph(
         &Name::new("mixamorig12:RightFoot"),
     ].iter());
 
+    // Create animation target IDs for hand bones
+    // Based on Mixamo rig structure: brian/mixamorig12:Hips/.../mixamorig12:LeftHand
+    let left_hand_id = AnimationTargetId::from_names([
+        &Name::new("brian"),
+        &Name::new("mixamorig12:Hips"),
+        &Name::new("mixamorig12:Spine"),
+        &Name::new("mixamorig12:Spine1"),
+        &Name::new("mixamorig12:Spine2"),
+        &Name::new("mixamorig12:LeftShoulder"),
+        &Name::new("mixamorig12:LeftArm"),
+        &Name::new("mixamorig12:LeftForeArm"),
+        &Name::new("mixamorig12:LeftHand"),
+    ].iter());
+
+    let right_hand_id = AnimationTargetId::from_names([
+        &Name::new("brian"),
+        &Name::new("mixamorig12:Hips"),
+        &Name::new("mixamorig12:Spine"),
+        &Name::new("mixamorig12:Spine1"),
+        &Name::new("mixamorig12:Spine2"),
+        &Name::new("mixamorig12:RightShoulder"),
+        &Name::new("mixamorig12:RightArm"),
+        &Name::new("mixamorig12:RightForeArm"),
+        &Name::new("mixamorig12:RightHand"),
+    ].iter());
+
     // Get mutable access to the graph to assign mask groups
     if let Some(graph) = graphs.get_mut(&graph_handle) {
         graph.add_target_to_mask_group(left_foot_id, 1);  // Left foot = group 1
         graph.add_target_to_mask_group(right_foot_id, 2); // Right foot = group 2
-        info!("Assigned foot bones to mask groups for procedural control");
+        graph.add_target_to_mask_group(left_hand_id, 3);  // Left hand = group 3
+        graph.add_target_to_mask_group(right_hand_id, 4); // Right hand = group 4
+        info!("Assigned foot and hand bones to mask groups for procedural control");
     }
 
     // Store the graph handle as a resource for easy access
@@ -121,7 +153,7 @@ pub fn setup_animation_graph(
     .insert(transitions)
     ;
 
-    info!("Animation graph successfully created with unified GLTF animations and foot placement masks!");
+    info!("Animation graph successfully created with unified GLTF animations and procedural limb control masks!");
 }
 
 

@@ -5,6 +5,7 @@ mod camera_controller;
 pub mod configs;
 mod foot_placement;
 mod foot_placement_debug;
+mod hand_placement;
 mod player;
 mod scene;
 pub mod target_matching;
@@ -23,6 +24,7 @@ pub(super) fn plugin(app: &mut App) {
         animations::plugin,
         target_matching::TargetMatchingPlugin,
         foot_placement::FootPlacementPlugin,
+        hand_placement::HandPlacementPlugin,
     ));
 
     // Configure target matching for Mixamo rigs
