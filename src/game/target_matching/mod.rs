@@ -51,6 +51,7 @@ impl Plugin for TargetMatchingPlugin {
             .add_systems(
                 Update,
                 (
+                    systems::build_bone_map,  // Build bone map for new characters
                     systems::handle_target_match_requests,
                     systems::update_active_matching,
                     systems::debug_visualize_targets,

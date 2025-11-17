@@ -89,6 +89,17 @@ impl FootPlacementEnabled {
             timer: Timer::from_seconds(0.15, TimerMode::Repeating),
         }
     }
+
+    /// Create for testing - always active, even on flat ground
+    pub fn for_testing() -> Self {
+        Self {
+            raycast_distance: 5.0,   // Look far down
+            foot_offset: 0.05,
+            update_interval: 0.1,
+            min_slope_angle: 0.0,    // ALWAYS ACTIVE - no slope requirement
+            timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+        }
+    }
 }
 
 /// System that detects ground beneath feet and requests target matching
@@ -110,6 +121,14 @@ fn update_foot_placement(
             continue;
         }
 
+        // Debug: Check if bone map is populated
+        if bone_map.bones.is_empty() {
+            warn!("BoneMap is empty for player {:?}", player_entity);
+            continue;
+        }
+
+        trace!("Foot placement update - bone map has {} bones", bone_map.bones.len());
+
         // Optionally check if we're on a slope before activating
         if foot_placement.min_slope_angle > 0.0 {
             if let Some(ground_normal) = detect_ground_normal(
@@ -128,7 +147,9 @@ fn update_foot_placement(
 
         // Process left foot
         if let Some(left_foot_entity) = bone_map.get(TargetBone::LeftFoot) {
+            trace!("Found left foot entity: {:?}", left_foot_entity);
             if let Ok(left_foot_transform) = foot_transforms.get(left_foot_entity) {
+                trace!("Left foot position: {:?}", left_foot_transform.translation());
                 if let Some(target_pos) = raycast_for_ground(
                     &spatial_query,
                     left_foot_transform.translation(),
@@ -136,18 +157,27 @@ fn update_foot_placement(
                     foot_placement.foot_offset,
                     player_entity, // Exclude player from raycast
                 ) {
+                    info!("Left foot raycast hit ground at: {:?}", target_pos);
                     commands.entity(player_entity).insert(TargetMatchRequest::new(
                         TargetBone::LeftFoot,
                         target_pos,
                         foot_placement.update_interval,
                     ));
+                } else {
+                    trace!("Left foot raycast missed ground");
                 }
+            } else {
+                warn!("Left foot entity has no GlobalTransform");
             }
+        } else {
+            warn!("Left foot not found in bone map");
         }
 
         // Process right foot
         if let Some(right_foot_entity) = bone_map.get(TargetBone::RightFoot) {
+            trace!("Found right foot entity: {:?}", right_foot_entity);
             if let Ok(right_foot_transform) = foot_transforms.get(right_foot_entity) {
+                trace!("Right foot position: {:?}", right_foot_transform.translation());
                 if let Some(target_pos) = raycast_for_ground(
                     &spatial_query,
                     right_foot_transform.translation(),
@@ -155,13 +185,20 @@ fn update_foot_placement(
                     foot_placement.foot_offset,
                     player_entity, // Exclude player from raycast
                 ) {
+                    info!("Right foot raycast hit ground at: {:?}", target_pos);
                     commands.entity(player_entity).insert(TargetMatchRequest::new(
                         TargetBone::RightFoot,
                         target_pos,
                         foot_placement.update_interval,
                     ));
+                } else {
+                    trace!("Right foot raycast missed ground");
                 }
+            } else {
+                warn!("Right foot entity has no GlobalTransform");
             }
+        } else {
+            warn!("Right foot not found in bone map");
         }
     }
 }
@@ -182,6 +219,12 @@ fn raycast_for_ground(
     // Create filter that excludes the player entity
     let filter = SpatialQueryFilter::from_excluded_entities([player_entity]);
 
+    trace!(
+        "Raycasting from {:?} down for {} units",
+        ray_origin,
+        max_distance
+    );
+
     // Cast ray downward
     if let Some(hit) = spatial_query.cast_ray(
         ray_origin,
@@ -193,8 +236,11 @@ fn raycast_for_ground(
         // Return hit position with offset applied
         // Calculate hit point from ray origin, direction, and distance
         let hit_point = ray_origin + *ray_direction * hit.distance;
-        Some(hit_point + Vec3::Y * offset)
+        let final_pos = hit_point + Vec3::Y * offset;
+        trace!("Raycast hit at distance {}, final position: {:?}", hit.distance, final_pos);
+        Some(final_pos)
     } else {
+        trace!("Raycast did not hit anything");
         None
     }
 }
