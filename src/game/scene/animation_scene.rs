@@ -284,7 +284,10 @@ fn spawn_obstacle(
     label: &str,
 ) {
     let mesh = Mesh::from(Cuboid::new(size.x, size.y, size.z));
-
+    let Some(collider) = Collider::trimesh_from_mesh(&mesh) else {
+        warn!("Cannot build trimesh from the mesh given");
+        return;
+    };
     commands.spawn((
         DespawnOnExit(Screen::Gameplay),
         AnimationTestSceneEntity,
@@ -293,7 +296,8 @@ fn spawn_obstacle(
         Transform::from_translation(position),
         RigidBody::Static,
         // Collider::cuboid takes half-extents
-        Collider::cuboid(collider_size.x, collider_size.y, collider_size.z),
+        // Collider::cuboid(collider_size.x, collider_size.y, collider_size.z),
+        collider.clone(),
         Name::new(label.to_string()),
     ));
 
@@ -313,6 +317,10 @@ fn spawn_ramp(
 ) {
     let mesh = Mesh::from(Cuboid::new(size.x, size.y, size.z));
     let angle_radians = angle_degrees.to_radians();
+    let Some(collider) = Collider::trimesh_from_mesh(&mesh) else {
+        warn!("Cannot build trimesh from the mesh given");
+        return;
+    };
 
     commands.spawn((
         DespawnOnExit(Screen::Gameplay),
@@ -322,7 +330,8 @@ fn spawn_ramp(
         Transform::from_translation(position).with_rotation(Quat::from_rotation_z(angle_radians)),
         RigidBody::Static,
         // Collider::cuboid takes half-extents
-        Collider::cuboid(size.x / 2.0, size.y / 2.0, size.z / 2.0),
+        // Collider::cuboid(size.x / 2.0, size.y / 2.0, size.z / 2.0),
+        collider.clone(),
         Name::new(label.to_string()),
     ));
 
@@ -330,21 +339,4 @@ fn spawn_ramp(
         "Spawned ramp: {} at {} with angle {}°",
         label, position, angle_degrees
     );
-    let animation_files = vec![
-        "animation_models/Jump To Hang.glb",
-        "animation_models/Freehang Climb.glb",
-        "animation_models/Standard Run.glb",
-        "animation_models/Jump To Freehang.glb",
-        "animation_models/Running Slide.glb",
-        "animation_models/Over Obstacle Jumping.glb",
-        "animation_models/Braced Hang To Crouch.glb",
-        "animation_models/Braced Hang Drop.glb",
-        "animation_models/Breathing Idle.glb",
-        "animation_models/Standing Jumping.glb",
-        "animation_models/Braced Hang.glb",
-        "animation_models/Hard Landing.glb",
-        "animation_models/Free Hang To Braced.glb",
-        "animation_models/Falling To Roll.glb",
-        "animation_models/Stand To Freehang.glb",
-    ];
 }

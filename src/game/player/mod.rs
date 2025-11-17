@@ -1,7 +1,7 @@
 mod assets;
 use crate::{
     asset_tracking::LoadResource,
-    game::{animations::models::AnimationState, third_person_camera::ThirdPersonCameraTarget},
+    game::{animations::models::AnimationState, foot_placement::FootPlacementEnabled, target_matching::{BoneMap, TargetMatchEnabled}, third_person_camera::ThirdPersonCameraTarget},
     screens::Screen,
 };
 use avian3d::prelude::*;
@@ -42,8 +42,8 @@ impl Default for MovementController {
 }
 
 // Constants
-pub const PLAYER_HEIGHT: f32 = 1.1;
-pub const PLAYER_RADIUS: f32 = 0.5;
+pub const PLAYER_HEIGHT: f32 = 0.94;
+pub const PLAYER_RADIUS: f32 = 0.34;
 
 // Player spawn command
 pub struct SpawnPlayer {
@@ -70,16 +70,22 @@ fn spawn_player(
             DespawnOnExit(Screen::Gameplay), // Cleanup when leaving Gameplay screen
             Transform::from_translation(spawn_config.position),
             Visibility::Visible,
+            FootPlacementEnabled::default(),
+            TargetMatchEnabled,              // Enables target matching
+            BoneMap::default(),              // Auto-populates with foot bones
+        ))
+        .insert((
             // Avian3D physics components
             RigidBody::Dynamic,
-            Collider::capsule(PLAYER_HEIGHT / 2., PLAYER_RADIUS),
+            Collider::capsule(PLAYER_RADIUS, PLAYER_HEIGHT),
             TnuaController::default(),
-            LockedAxes::ROTATION_LOCKED.unlock_rotation_y(), // Prevent player from tipping over
-            TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_HEIGHT / 2., 0.0)),
+            TnuaAvian3dSensorShape(Collider::cylinder(PLAYER_RADIUS*0.99, 0.0)),
             TnuaAnimatingState::<AnimationState>::default(),
+            LockedAxes::ROTATION_LOCKED.unlock_rotation_y(),
         ))
         .with_children(|parent| {
             parent.spawn((
+                 // Prevent player from tipping over
                 SceneRoot(player_assets.character_scene.clone()),
                 Transform::from_translation(Vec3::new(0., -0.8, 0.))
                     .with_rotation(Quat::from_rotation_y(std::f32::consts::PI))
