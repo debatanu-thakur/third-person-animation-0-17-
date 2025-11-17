@@ -1,8 +1,11 @@
-use bevy::prelude::*;
-use crate::screens::Screen;
-use crate::game::obstacle_detection::detection::{ParkourController, ParkourState, ParkourAnimationComplete, ParkourAnimationBlendToIdle};
-
 mod assets;
+pub mod animations;
+
+use bevy::prelude::*;
+use crate::game::parkour_animations::animations::*;
+use crate::screens::Screen;
+
+
 pub use assets::{ParkourGltfAssets, ParkourAnimations, extract_parkour_animation_clips};
 
 // ============================================================================
@@ -68,6 +71,12 @@ pub fn add_completion_events_to_clips(
     if let Some(vault_clip) = animation_clips.get_mut(&library.vault_clip) {
         let duration = vault_clip.duration();
 
+        vault_clip.add_event(
+            0.0,
+            ParkourAnimationStart {
+                action: ParkourState::Vaulting,
+            },
+        );
         // Blend event (300ms before end)
         vault_clip.add_event(
             (duration - BLEND_TIME).max(0.0),
@@ -188,6 +197,14 @@ pub fn test_trigger_vault_animation(
 // ============================================================================
 
 pub(super) fn plugin(app: &mut App) {
+    app.register_type::<ParkourAnimationComplete>();
+    app.register_type::<ParkourAnimationBlendToIdle>();
+
+    // Register observers for animation events
+    app.add_observer(on_parkour_blend_to_idle);         // Blend start (early)
+    app.add_observer(on_parkour_animation_start);         // Blend start (early)
+    app.add_observer(on_parkour_animation_complete);    // Completion (fallback)
+
     app.init_resource::<ParkourGltfAssets>();
 
     app.add_systems(
@@ -197,7 +214,6 @@ pub(super) fn plugin(app: &mut App) {
             extract_parkour_animation_clips,
             create_parkour_library,
             add_completion_events_to_clips,  // Add completion events to animations
-
             // Debug systems
             test_trigger_vault_animation,      // 'V' key - trigger vault animation
         )

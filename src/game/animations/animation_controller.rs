@@ -4,9 +4,7 @@ use bevy::{animation, ecs::error::info, prelude::*};
 use bevy_tnua::{TnuaAnimatingState, TnuaAnimatingStateDirective, builtins::TnuaBuiltinJumpState, prelude::*};
 
 use crate::game::{
-    player::{self, MovementController, Player, PlayerAssets},
-    obstacle_detection::detection::{ParkourController, ParkourState},
-    parkour_animations::ParkourAnimationLibrary,
+    parkour_animations::{ParkourAnimationLibrary, animations::{ParkourController, ParkourState, PlayingParkourAnimation}}, player::{self, MovementController, Player, PlayerAssets}
 };
 
 use super::models::{AnimationState, CharacterAnimationController, MovementTimer};
@@ -104,8 +102,10 @@ pub fn setup_animation_graph(
 
 /// Updates animation state based on Tnua controller state and parkour actions
 pub fn update_animation_state(
+    mut commands: Commands,
     mut player_query: Query<
         (
+            Entity,
             &TnuaController,
             &mut TnuaAnimatingState<AnimationState>,
             &mut MovementTimer,
@@ -124,7 +124,7 @@ pub fn update_animation_state(
         return;
     };
 
-    for (controller, mut animating_state, mut movement_timer, parkour) in player_query.iter_mut() {
+    for (player_entity, controller, mut animating_state, mut movement_timer, parkour) in player_query.iter_mut() {
         let new_state = determine_animation_state(controller, &mut movement_timer, &time, parkour);
         apply_animation_state(
             &mut animating_state,
@@ -133,6 +133,14 @@ pub fn update_animation_state(
             &mut transitions,
             &animation_nodes,
         );
+        if [
+            ParkourState::Vaulting,
+            ParkourState::Climbing,
+            ParkourState::Sliding,
+            ParkourState::WallRunning].contains(&parkour.state) {
+                commands.entity(player_entity).insert(PlayingParkourAnimation);
+            }
+
     }
 }
 

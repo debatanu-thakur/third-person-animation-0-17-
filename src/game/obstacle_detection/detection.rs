@@ -4,7 +4,7 @@ use bevy::animation::AnimationEvent;
 use bevy_tnua::prelude::*;
 use bevy_tnua::builtins::TnuaBuiltinWalk;
 
-use crate::{game::player::Player, screens::Screen};
+use crate::{game::{parkour_animations::animations::{ParkourController, ParkourState, PlayingParkourAnimation}, player::Player}, screens::Screen};
 
 // ============================================================================
 // OBSTACLE TAGS - Add these to scene objects to classify them
@@ -152,40 +152,6 @@ pub struct RightFootIKTarget {
 // ANIMATION STATE - Tracks which parkour action is active
 // ============================================================================
 
-/// Current parkour animation state
-#[derive(Component, Default, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
-#[reflect(Component)]
-pub enum ParkourState {
-    #[default]
-    Idle,
-    Walking,
-    Running,
-    Sprinting,
-    /// Vaulting over obstacle
-    Vaulting,
-    /// Climbing up wall
-    Climbing,
-    /// Hanging on ledge
-    Hanging,
-    /// Wall running
-    WallRunning,
-    /// Sliding under/on obstacle
-    Sliding,
-    /// Jumping over gap
-    Jumping,
-    /// Landing from height
-    Landing,
-}
-
-/// Component to track player's parkour state
-#[derive(Component, Default)]
-pub struct ParkourController {
-    pub state: ParkourState,
-    pub can_vault: bool,
-    pub can_climb: bool,
-    pub can_wall_run: bool,
-    pub can_slide: bool,
-}
 
 // ============================================================================
 // DETECTION SYSTEMS
@@ -424,18 +390,14 @@ pub fn trigger_parkour_actions(
             &ObstacleDetectionResult,
             &mut ParkourController,
             &LinearVelocity,
-            Option<&ParkourAnimationState>,
         ),
-        With<Player>,
+        (With<Player>,
+        Without<PlayingParkourAnimation>),
     >,
 ) {
-    for (detection, mut parkour, velocity, anim_state) in player_query.iter_mut() {
+    for (detection, mut parkour, velocity) in player_query.iter_mut() {
         // ⚠️ CRITICAL: Don't update state if parkour animation is active
         // The animation completion system will handle returning to locomotion
-        if anim_state.is_some() {
-            // Parkour animation in progress, don't touch the state
-            return;
-        }
 
         let speed = velocity.length();
 
@@ -718,115 +680,3 @@ pub fn apply_parkour_root_motion_deprecated(
         // Don't touch velocity.y - let gravity/physics handle vertical
     }
 }
-
-// ============================================================================
-// ANIMATION COMPLETION DETECTION
-// ============================================================================
-
-/// Event fired when a parkour animation completes
-/// This is embedded in animation clips and fired automatically by Bevy
-#[derive(AnimationEvent, Clone, Reflect)]
-pub struct ParkourAnimationComplete {
-    /// Which parkour action just completed
-    pub action: ParkourState,
-}
-
-/// Event fired when parkour animation should start blending to locomotion
-/// Fired before animation ends to allow smooth transition
-#[derive(AnimationEvent, Clone, Reflect)]
-pub struct ParkourAnimationBlendToIdle {
-    /// Which parkour action is blending out
-    pub action: ParkourState,
-}
-
-/// Component to track parkour animation timing
-#[derive(Component)]
-pub struct ParkourAnimationState {
-    /// The parkour state being animated
-    pub current_state: ParkourState,
-    /// Time when this animation started
-    pub start_time: f32,
-}
-
-/// Starts tracking when a parkour animation begins
-pub fn start_parkour_animation_tracking(
-    mut commands: Commands,
-    mut player_query: Query<(Entity, &ParkourController, Option<&mut ParkourAnimationState>), (With<Player>, Changed<ParkourController>)>,
-    time: Res<Time>,
-) {
-    for (entity, parkour, anim_state) in player_query.iter_mut() {
-        let is_parkour_action = matches!(
-            parkour.state,
-            ParkourState::Vaulting
-                | ParkourState::Climbing
-                | ParkourState::Sliding
-                | ParkourState::WallRunning
-        );
-
-        if is_parkour_action {
-            // Just entered a parkour state
-            if let Some(mut state) = anim_state {
-                // Update existing state if changed
-                if state.current_state != parkour.state {
-                    state.current_state = parkour.state;
-                    state.start_time = time.elapsed_secs();
-                    info!("🎬 Update existing parkour animation: {:?}", parkour.state);
-                }
-            } else {
-                // Add new tracking component
-                commands.entity(entity).insert(ParkourAnimationState {
-                    current_state: parkour.state,
-                    start_time: time.elapsed_secs(),
-                });
-                info!("🎬 Started parkour animation: {:?}", parkour.state);
-            }
-        } else if anim_state.is_some() {
-            // Exited parkour, remove tracking
-            commands.entity(entity).remove::<ParkourAnimationState>();
-        }
-    }
-}
-
-// ============================================================================
-// EVENT-DRIVEN ANIMATION COMPLETION
-// ============================================================================
-// Note: Time-based completion system removed - fully event-driven now
-// Animation events (ParkourAnimationBlendToIdle + ParkourAnimationComplete)
-// embedded in clips handle all completion timing automatically
-
-/// Observer function that handles parkour animation blend start events
-/// Triggers smooth transition to locomotion before animation ends
-pub fn on_parkour_blend_to_idle(
-    trigger: Trigger<ParkourAnimationBlendToIdle>,
-    mut player_query: Query<&mut ParkourController, With<Player>>,
-) {
-    let event = trigger.event();
-    info!("🎨 Blend event: Starting transition from {:?} to Idle", event.action);
-
-    // Transition to idle - AnimationController will blend over duration
-    for mut parkour in player_query.iter_mut() {
-        if parkour.state == event.action {
-            parkour.state = ParkourState::Idle;
-            info!("✅ Blend started: {:?} → Idle (smooth transition)", event.action);
-        }
-    }
-}
-
-/// Observer function that handles parkour animation completion events
-/// This is triggered automatically when animation clips fire ParkourAnimationComplete
-pub fn on_parkour_animation_complete(
-    trigger: Trigger<ParkourAnimationComplete>,
-    mut player_query: Query<&mut ParkourController, With<Player>>,
-) {
-    let event = trigger.event();
-    info!("🎬 Animation event received: {:?} completed", event.action);
-
-    // Return player to idle state (fallback if blend didn't happen)
-    for mut parkour in player_query.iter_mut() {
-        if parkour.state == event.action {
-            parkour.state = ParkourState::Idle;
-            info!("✅ Animation event: Returning to Idle from {:?}", event.action);
-        }
-    }
-}
-
