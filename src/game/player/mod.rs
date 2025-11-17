@@ -86,7 +86,7 @@ fn spawn_player(
             parent.spawn((
                  // Prevent player from tipping over
                 SceneRoot(player_assets.character_scene.clone()),
-                Transform::from_translation(Vec3::new(0., -0.8, 0.))
+                Transform::from_translation(Vec3::new(0., -0.9, 0.))
                     .with_rotation(Quat::from_rotation_y(std::f32::consts::PI))
             ));
         });
