@@ -51,8 +51,9 @@ pub fn setup_animation_graph(
     // - Group 3: Left Hand (excluded from animations for procedural control)
     // - Group 4: Right Hand (excluded from animations for procedural control)
     //
+
     // Mask bitfield: 0b00001 = only animate group 0 (body), exclude groups 1-4 (feet & hands)
-    const PROCEDURAL_LIMB_MASK: u32 = 0b00001;
+    const PROCEDURAL_LIMB_MASK: u64 = 0b00001;
 
     // Add all animation clips with mask to exclude feet and hands
     let idle_node = graph.add_clip_with_mask(animations.idle.clone(), PROCEDURAL_LIMB_MASK, 1.0, root_node);
@@ -101,7 +102,7 @@ pub fn setup_animation_graph(
         &Name::new("mixamorig12:LeftUpLeg"),
         &Name::new("mixamorig12:LeftLeg"),
         &Name::new("mixamorig12:LeftFoot"),
-    ].iter());
+    ].into_iter());
 
     let right_foot_id = AnimationTargetId::from_names([
         &Name::new("brian"),
@@ -109,7 +110,7 @@ pub fn setup_animation_graph(
         &Name::new("mixamorig12:RightUpLeg"),
         &Name::new("mixamorig12:RightLeg"),
         &Name::new("mixamorig12:RightFoot"),
-    ].iter());
+    ].into_iter());
 
     // Create animation target IDs for hand bones
     // Based on Mixamo rig structure: brian/mixamorig12:Hips/.../mixamorig12:LeftHand
@@ -123,7 +124,7 @@ pub fn setup_animation_graph(
         &Name::new("mixamorig12:LeftArm"),
         &Name::new("mixamorig12:LeftForeArm"),
         &Name::new("mixamorig12:LeftHand"),
-    ].iter());
+    ].into_iter());
 
     let right_hand_id = AnimationTargetId::from_names([
         &Name::new("brian"),
@@ -135,7 +136,7 @@ pub fn setup_animation_graph(
         &Name::new("mixamorig12:RightArm"),
         &Name::new("mixamorig12:RightForeArm"),
         &Name::new("mixamorig12:RightHand"),
-    ].iter());
+    ].into_iter());
 
     // Get mutable access to the graph to assign mask groups
     if let Some(graph) = graphs.get_mut(&graph_handle) {
