@@ -4,7 +4,7 @@ use bevy_hotpatching_experiments::hot;
 use crate::{game::player::{MovementController, Player}};
 
 
-const FLOAT_HEIGHT: f32 = 0.9;
+const FLOAT_HEIGHT: f32 = 0.8;
 const ROTATION_SPEED: f32 = 10.0;
 
 #[hot]
