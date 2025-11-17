@@ -112,7 +112,11 @@ fn update_foot_placement(
 
         // Optionally check if we're on a slope before activating
         if foot_placement.min_slope_angle > 0.0 {
-            if let Some(ground_normal) = detect_ground_normal(&spatial_query, player_transform) {
+            if let Some(ground_normal) = detect_ground_normal(
+                &spatial_query,
+                player_transform,
+                player_entity,
+            ) {
                 let slope_angle = ground_normal.angle_between(Vec3::Y).to_degrees();
 
                 if slope_angle < foot_placement.min_slope_angle {
@@ -130,6 +134,7 @@ fn update_foot_placement(
                     left_foot_transform.translation(),
                     foot_placement.raycast_distance,
                     foot_placement.foot_offset,
+                    player_entity, // Exclude player from raycast
                 ) {
                     commands.entity(player_entity).insert(TargetMatchRequest::new(
                         TargetBone::LeftFoot,
@@ -148,6 +153,7 @@ fn update_foot_placement(
                     right_foot_transform.translation(),
                     foot_placement.raycast_distance,
                     foot_placement.foot_offset,
+                    player_entity, // Exclude player from raycast
                 ) {
                     commands.entity(player_entity).insert(TargetMatchRequest::new(
                         TargetBone::RightFoot,
@@ -161,22 +167,28 @@ fn update_foot_placement(
 }
 
 /// Raycast downward from a position to find ground
+///
+/// Excludes the player entity to prevent self-collision
 fn raycast_for_ground(
     spatial_query: &SpatialQuery,
     from_position: Vec3,
     max_distance: f32,
     offset: f32,
+    player_entity: Entity,
 ) -> Option<Vec3> {
     let ray_origin = from_position;
     let ray_direction = Dir3::NEG_Y;
+
+    // Create filter that excludes the player entity
+    let filter = SpatialQueryFilter::from_excluded_entities([player_entity]);
 
     // Cast ray downward
     if let Some(hit) = spatial_query.cast_ray(
         ray_origin,
         ray_direction,
         max_distance,
-        true, // Should hit all
-        &SpatialQueryFilter::default(),
+        true, // Should hit all (except excluded)
+        &filter,
     ) {
         // Return hit position with offset applied
         // Calculate hit point from ray origin, direction, and distance
@@ -188,19 +200,25 @@ fn raycast_for_ground(
 }
 
 /// Detect the ground normal beneath the player for slope detection
+///
+/// Excludes the player entity to prevent self-collision
 fn detect_ground_normal(
     spatial_query: &SpatialQuery,
     player_transform: &GlobalTransform,
+    player_entity: Entity,
 ) -> Option<Vec3> {
     let ray_origin = player_transform.translation();
     let ray_direction = Dir3::NEG_Y;
+
+    // Create filter that excludes the player entity
+    let filter = SpatialQueryFilter::from_excluded_entities([player_entity]);
 
     if let Some(hit) = spatial_query.cast_ray(
         ray_origin,
         ray_direction,
         2.0,
         true,
-        &SpatialQueryFilter::default(),
+        &filter,
     ) {
         Some(hit.normal)
     } else {
