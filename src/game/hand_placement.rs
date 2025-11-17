@@ -94,12 +94,13 @@ fn update_hand_placement(
                     info!("Left hand raycast hit wall at: {:?}", wall_pos);
 
                     // Create target match request
-                    commands.entity(player_entity).insert(TargetMatchRequest {
-                        bone: TargetBone::LeftHand,
-                        target_position: wall_pos,
-                        start_time: 0.0,
-                        end_time: 1.0,
-                    });
+                    commands.entity(player_entity).insert(
+                        TargetMatchRequest::new(
+                            TargetBone::LeftHand,
+                            wall_pos,
+                            0.5, // 0.5 second animation duration
+                        )
+                    );
                 }
             }
         }
@@ -120,12 +121,13 @@ fn update_hand_placement(
                     info!("Right hand raycast hit wall at: {:?}", wall_pos);
 
                     // Create target match request
-                    commands.entity(player_entity).insert(TargetMatchRequest {
-                        bone: TargetBone::RightHand,
-                        target_position: wall_pos,
-                        start_time: 0.0,
-                        end_time: 1.0,
-                    });
+                    commands.entity(player_entity).insert(
+                        TargetMatchRequest::new(
+                            TargetBone::RightHand,
+                            wall_pos,
+                            0.5, // 0.5 second animation duration
+                        )
+                    );
                 }
             }
         }
