@@ -44,14 +44,22 @@ pub fn setup_animation_graph(
 
     let animations = &player_assets.animations;
 
-    // Add all animation clips as nodes
-    let idle_node = graph.add_clip(animations.idle.clone(), 1.0, root_node);
-    let walk_node = graph.add_clip(animations.walking.clone(), 1.0, root_node);
-    let run_node = graph.add_clip(animations.running.clone(), 1.0, root_node);
-    let jump_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
-    let running_jump_node = graph.add_clip(animations.running_jump.clone(), 1.0, root_node);
+    // Mask configuration for foot placement:
+    // - Group 0: Body (all bones animated)
+    // - Group 1: Left Foot chain (excluded from animations for procedural control)
+    // - Group 2: Right Foot chain (excluded from animations for procedural control)
+    //
+    // Mask bitfield: 0b001 = only animate group 0 (body), exclude groups 1 & 2 (feet)
+    const FOOT_PLACEMENT_MASK: u32 = 0b001;
+
+    // Add all animation clips with mask to exclude feet
+    let idle_node = graph.add_clip_with_mask(animations.idle.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    let walk_node = graph.add_clip_with_mask(animations.walking.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    let run_node = graph.add_clip_with_mask(animations.running.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    let jump_node = graph.add_clip_with_mask(animations.standing_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
+    let running_jump_node = graph.add_clip_with_mask(animations.running_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
     // Note: Reusing standing_jump for falling since we don't have a dedicated falling animation yet
-    let fall_node = graph.add_clip(animations.standing_jump.clone(), 1.0, root_node);
+    let fall_node = graph.add_clip_with_mask(animations.standing_jump.clone(), FOOT_PLACEMENT_MASK, 1.0, root_node);
 
     // Store the graph and node indices
     let graph_handle = graphs.add(graph);
@@ -72,6 +80,40 @@ pub fn setup_animation_graph(
             Duration::ZERO)
         .repeat();
 
+    // Assign foot bones to mask groups
+    // We need to do this to tell the animation system which bones should be excluded
+    //
+    // Mask groups:
+    // - Group 0: Body (everything not explicitly assigned)
+    // - Group 1: Left Foot
+    // - Group 2: Right Foot
+    use bevy::animation::AnimationTargetId;
+
+    // Create animation target IDs for foot bones
+    // Based on Mixamo rig structure: brian/mixamorig12:Hips/mixamorig12:LeftUpLeg/mixamorig12:LeftLeg/mixamorig12:LeftFoot
+    let left_foot_id = AnimationTargetId::from_names([
+        &Name::new("brian"),
+        &Name::new("mixamorig12:Hips"),
+        &Name::new("mixamorig12:LeftUpLeg"),
+        &Name::new("mixamorig12:LeftLeg"),
+        &Name::new("mixamorig12:LeftFoot"),
+    ].iter());
+
+    let right_foot_id = AnimationTargetId::from_names([
+        &Name::new("brian"),
+        &Name::new("mixamorig12:Hips"),
+        &Name::new("mixamorig12:RightUpLeg"),
+        &Name::new("mixamorig12:RightLeg"),
+        &Name::new("mixamorig12:RightFoot"),
+    ].iter());
+
+    // Get mutable access to the graph to assign mask groups
+    if let Some(graph) = graphs.get_mut(&graph_handle) {
+        graph.add_target_to_mask_group(left_foot_id, 1);  // Left foot = group 1
+        graph.add_target_to_mask_group(right_foot_id, 2); // Right foot = group 2
+        info!("Assigned foot bones to mask groups for procedural control");
+    }
+
     // Store the graph handle as a resource for easy access
     commands
     .entity(animation_player_entity)
@@ -79,7 +121,7 @@ pub fn setup_animation_graph(
     .insert(transitions)
     ;
 
-    info!("Animation graph successfully created with unified GLTF animations!");
+    info!("Animation graph successfully created with unified GLTF animations and foot placement masks!");
 }
 
 
