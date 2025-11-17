@@ -71,8 +71,7 @@ fn spawn_player(
             Transform::from_translation(spawn_config.position),
             Visibility::Visible,
             FootPlacementEnabled::default(),
-            TargetMatchEnabled,              // Enables target matching
-            BoneMap::default(),              // Auto-populates with foot bones
+            TargetMatchEnabled,              // Enables target matching (BoneMap will be auto-populated by build_bone_map system)
         ))
         .insert((
             // Avian3D physics components

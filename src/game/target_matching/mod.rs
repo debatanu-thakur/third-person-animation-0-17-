@@ -52,6 +52,7 @@ impl Plugin for TargetMatchingPlugin {
                 Update,
                 (
                     systems::build_bone_map,  // Build bone map for new characters
+                    systems::retry_bone_map_if_empty,  // Retry if scene wasn't loaded yet
                     systems::handle_target_match_requests,
                     systems::update_active_matching,
                     systems::debug_visualize_targets,

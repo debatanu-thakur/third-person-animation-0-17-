@@ -122,35 +122,95 @@ pub fn debug_visualize_targets(
 }
 
 /// System to build bone map from scene hierarchy
-/// Note: In Bevy 0.17, AnimationTargetId is not a component, so we query all named entities
+/// Searches through the character's children to find bone entities
 pub fn build_bone_map(
     mut commands: Commands,
     characters: Query<Entity, (With<TargetMatchEnabled>, Without<BoneMap>)>,
-    bones: Query<(&Name, &ChildOf)>,
-    targets: Query<(Entity, &Name)>,
+    children_query: Query<&Children>,
+    names: Query<&Name>,
 ) {
     for character_entity in characters.iter() {
-        let mut bone_map = BoneMap::default();
+        info!("Attempting to build bone map for entity {:?}", character_entity);
 
-        // Find all bone entities in the character's hierarchy
-        // TODO: In Bevy 0.17, we need a better way to identify animation targets
-        // For now, we check all entities with names
-        for (bone_entity, bone_name) in targets.iter() {
-            // Check if this bone is a known target bone
-            if let Some(target_bone) = name_to_target_bone(bone_name.as_str()) {
-                bone_map.insert(target_bone, bone_entity);
-                info!("Mapped bone '{}' to {:?}", bone_name, target_bone);
+        let mut bone_map = BoneMap::default();
+        let mut bones_found = 0;
+
+        // Recursively search all descendants for bone entities
+        let mut to_search = vec![character_entity];
+        let mut searched_count = 0;
+
+        while let Some(entity) = to_search.pop() {
+            searched_count += 1;
+
+            // Check if this entity has a name that matches a bone
+            if let Ok(name) = names.get(entity) {
+                if let Some(target_bone) = name_to_target_bone(name.as_str()) {
+                    bone_map.insert(target_bone, entity);
+                    bones_found += 1;
+                    info!("✓ Found bone '{}' -> {:?} (entity {:?})", name, target_bone, entity);
+                }
+            }
+
+            // Add children to search queue
+            if let Ok(children) = children_query.get(entity) {
+                to_search.extend(children.iter());
             }
         }
 
+        info!("Searched {} entities, found {} bones", searched_count, bones_found);
+
         if !bone_map.bones.is_empty() {
-            let bone_count = bone_map.bones.len();
             commands.entity(character_entity).insert(bone_map);
             info!(
-                "Built bone map for entity {:?} with {} bones",
+                "✓ Built bone map for entity {:?} with {} bones",
                 character_entity,
-                bone_count
+                bones_found
             );
+        } else {
+            warn!(
+                "⚠️  No bones found for entity {:?} after searching {} entities. \
+                Make sure the character scene is loaded and has bones named 'mixamorig12:LeftFoot', etc.",
+                character_entity,
+                searched_count
+            );
+        }
+    }
+}
+
+/// System to retry building bone map if it's empty (scene might load later)
+pub fn retry_bone_map_if_empty(
+    mut commands: Commands,
+    mut characters: Query<(Entity, &mut BoneMap), With<TargetMatchEnabled>>,
+    children_query: Query<&Children>,
+    names: Query<&Name>,
+) {
+    for (character_entity, mut bone_map) in characters.iter_mut() {
+        // Only retry if bone map is empty
+        if !bone_map.bones.is_empty() {
+            continue;
+        }
+
+        trace!("Retrying bone map build for entity {:?}", character_entity);
+
+        let mut bones_found = 0;
+        let mut to_search = vec![character_entity];
+
+        while let Some(entity) = to_search.pop() {
+            if let Ok(name) = names.get(entity) {
+                if let Some(target_bone) = name_to_target_bone(name.as_str()) {
+                    bone_map.insert(target_bone, entity);
+                    bones_found += 1;
+                    info!("✓ Found bone '{}' -> {:?} on retry", name, target_bone);
+                }
+            }
+
+            if let Ok(children) = children_query.get(entity) {
+                to_search.extend(children.iter());
+            }
+        }
+
+        if bones_found > 0 {
+            info!("✓ Bone map retry successful: found {} bones", bones_found);
         }
     }
 }
