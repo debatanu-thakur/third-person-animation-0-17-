@@ -30,7 +30,9 @@ pub struct IkConstraint {
 
 impl Plugin for InverseKinematicsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, solver::inverse_kinematics_system);
+        // Run IK in PostUpdate AFTER animation systems
+        // This ensures IK can override animation bone rotations
+        app.add_systems(PostUpdate, solver::inverse_kinematics_system);
         app.register_type::<IkConstraint>();
     }
 }
