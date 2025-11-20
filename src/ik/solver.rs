@@ -12,7 +12,7 @@ struct PoleTarget {
 
 pub fn inverse_kinematics_system(
     query: Query<(Entity, &IkConstraint)>,
-    parents: Query<&Parent>,
+    parents: Query<&ChildOf>,
     mut transforms: Query<(&mut Transform, &mut GlobalTransform)>,
 ) {
     for (entity, constraint) in query.iter() {
@@ -30,7 +30,7 @@ impl IkConstraint {
     pub fn solve(
         &self,
         entity: Entity,
-        parents: &Query<&Parent>,
+        parents: &Query<&ChildOf>,
         transforms: &mut Query<(&mut Transform, &mut GlobalTransform)>,
     ) -> Result<(), QueryEntityError> {
         if self.chain_length == 0 {
@@ -40,7 +40,7 @@ impl IkConstraint {
         let mut joints = Vec::with_capacity(self.chain_length + 2);
         joints.push(entity);
         for i in 0..self.chain_length + 1 {
-            joints.push(parents.get(joints[i])?.get());
+            joints.push(parents.get(joints[i])?.0);
         }
 
         let target = transforms.get(self.target)?.1.translation();
