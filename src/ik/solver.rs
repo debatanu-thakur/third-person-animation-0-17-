@@ -1,6 +1,5 @@
 use bevy::ecs::query::QueryEntityError;
 use bevy::prelude::*;
-use bevy::hierarchy::Parent;
 
 use super::IkConstraint;
 
