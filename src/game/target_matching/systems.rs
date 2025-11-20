@@ -30,11 +30,15 @@ pub fn handle_target_match_requests(
             curve_handle: None,
         };
 
-        // TODO: Generate and apply animation curve
-        // TODO: Setup IK if bone map is available
-        if let Some(_bone_map) = bone_map {
-            // IK integration would go here
-            // let ik_target = setup_ik_for_target_match(&mut commands, request, bone_map, entity);
+        // Setup IK constraint for this target
+        if let Some(bone_map) = bone_map {
+            if let Some(ik_target) = setup_ik_for_target_match(&mut commands, request, bone_map, entity) {
+                info!("✓ IK constraint created for {:?} with target entity {:?}", request.bone, ik_target);
+            } else {
+                warn!("Failed to create IK constraint for {:?}", request.bone);
+            }
+        } else {
+            warn!("No BoneMap available for entity {:?}, cannot setup IK", entity);
         }
 
         info!("Target matching initiated for entity {:?}", entity);

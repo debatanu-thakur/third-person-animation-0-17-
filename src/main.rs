@@ -49,6 +49,7 @@ impl Plugin for AppPlugin {
         app.add_plugins(SimpleSubsecondPlugin::default());
         app.add_plugins(PhysicsPlugins::default());
         app.add_plugins(PhysicsDebugPlugin::default());
+        app.add_plugins(ik::InverseKinematicsPlugin);  // Enable custom IK solver
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
