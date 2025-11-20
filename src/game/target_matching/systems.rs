@@ -13,8 +13,10 @@ pub fn handle_target_match_requests(
     mut commands: Commands,
     mut requests: Query<
         (Entity, &TargetMatchRequest, &mut TargetMatchingState, Option<&BoneMap>),
-        Added<TargetMatchRequest>,
+        Changed<TargetMatchRequest>,  // Changed instead of Added - triggers every update!
     >,
+    ik_constraints: Query<&crate::ik::IkConstraint>,
+    mut ik_targets: Query<&mut Transform>,
     time: Res<Time>,
 ) {
     for (entity, request, mut state, bone_map) in requests.iter_mut() {
@@ -30,18 +32,32 @@ pub fn handle_target_match_requests(
             curve_handle: None,
         };
 
-        // Setup IK constraint for this target
+        // Setup or update IK constraint for this target
         if let Some(bone_map) = bone_map {
-            if let Some(ik_target) = setup_ik_for_target_match(&mut commands, request, bone_map, entity) {
-                info!("✓ IK constraint created for {:?} with target entity {:?}", request.bone, ik_target);
-            } else {
-                warn!("Failed to create IK constraint for {:?}", request.bone);
+            if let Some(bone_entity) = bone_map.get(request.bone) {
+                // Check if IK constraint already exists on this bone
+                if let Ok(ik_constraint) = ik_constraints.get(bone_entity) {
+                    // Update existing IK target position
+                    if let Ok(mut target_transform) = ik_targets.get_mut(ik_constraint.target) {
+                        target_transform.translation = request.target_position;
+                        info!("✓ Updated IK target for {:?} to {:?}", request.bone, request.target_position);
+                    } else {
+                        warn!("IK target entity not found for {:?}", request.bone);
+                    }
+                } else {
+                    // Create new IK constraint (first time)
+                    if let Some(ik_target) = setup_ik_for_target_match(&mut commands, request, bone_map, entity) {
+                        info!("✓ IK constraint created for {:?} with target entity {:?}", request.bone, ik_target);
+                    } else {
+                        warn!("Failed to create IK constraint for {:?}", request.bone);
+                    }
+                }
             }
         } else {
             warn!("No BoneMap available for entity {:?}, cannot setup IK", entity);
         }
 
-        info!("Target matching initiated for entity {:?}", entity);
+        info!("Target matching initiated/updated for entity {:?}", entity);
     }
 }
 
