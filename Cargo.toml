@@ -43,6 +43,9 @@ dev_native = [
     # Enable embedded asset hot reloading for native dev builds.
     "bevy/embedded_watcher",
 ]
+# Enable pose extraction tool to sample frames from animations and save to RON files.
+# Usage: cargo run --features extract_poses
+extract_poses = []
 
 
 [package.metadata.bevy_cli.release]

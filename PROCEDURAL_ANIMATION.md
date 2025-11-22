@@ -79,16 +79,24 @@ Poses are stored as `.pose.ron` files in `assets/poses/` directory.
 
 ### Step 1: Extract Poses from Existing Animations
 
-Run the game with extraction mode enabled:
+Run the game with the extraction feature enabled:
 
 ```bash
-EXTRACT_POSES=1 cargo run
+cargo run --features extract_poses
+```
+
+Or combine with other features:
+
+```bash
+cargo run --features "dev_native,extract_poses"
 ```
 
 This will:
 1. Load the character GLB file (`assets/models/characters/brian_parkour.glb`)
 2. Sample specific frames from animations (configured in `extraction.rs`)
 3. Save 13 pose files to `assets/poses/`
+
+**Note**: The extraction code is only compiled when the `extract_poses` feature is enabled, so there's zero overhead in normal builds.
 
 ### Step 2: Configure Extraction Times
 

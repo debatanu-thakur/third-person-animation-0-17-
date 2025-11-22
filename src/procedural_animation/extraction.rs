@@ -148,22 +148,26 @@ impl Default for ExtractionConfig {
 pub fn setup_extraction_mode(
     mut commands: Commands,
 ) {
-    // Check environment variable to enable extraction mode
-    let extraction_enabled = std::env::var("EXTRACT_POSES").is_ok();
-
-    if extraction_enabled {
-        info!("🎬 Pose extraction mode ENABLED");
+    // Only compile this code when extract_poses feature is enabled
+    #[cfg(feature = "extract_poses")]
+    {
+        info!("🎬 Pose extraction mode ENABLED (feature flag active)");
         commands.insert_resource(ExtractionMode {
             enabled: true,
             ..default()
         });
         commands.insert_resource(ExtractionConfig::default());
-    } else {
-        debug!("Pose extraction mode disabled. Set EXTRACT_POSES=1 to enable");
+    }
+
+    #[cfg(not(feature = "extract_poses"))]
+    {
+        debug!("Pose extraction mode disabled. Run with: cargo run --features extract_poses");
     }
 }
 
 /// System to perform pose extraction from loaded animations
+/// Only compiled when the extract_poses feature is enabled
+#[cfg(feature = "extract_poses")]
 pub fn extract_poses_from_animations(
     mut commands: Commands,
     extraction_mode: Option<Res<ExtractionMode>>,
@@ -229,7 +233,14 @@ pub fn extract_poses_from_animations(
     commands.remove_resource::<ExtractionMode>();
 }
 
+/// Dummy system when extract_poses feature is not enabled
+#[cfg(not(feature = "extract_poses"))]
+pub fn extract_poses_from_animations() {
+    // No-op when feature is disabled
+}
+
 /// Extract a single pose from an animation at a specific time
+#[cfg(feature = "extract_poses")]
 fn extract_pose_at_time(
     animation_clip: &AnimationClip,
     time_seconds: f32,
@@ -286,6 +297,7 @@ fn extract_pose_at_time(
 }
 
 /// Save a pose to a RON file
+#[cfg(feature = "extract_poses")]
 fn save_pose_to_ron(pose: &Pose, pose_id: PoseId, output_path: &Path) {
     let filename = format!("{}.pose.ron", pose_id_to_filename(pose_id));
     let filepath = output_path.join(filename);
