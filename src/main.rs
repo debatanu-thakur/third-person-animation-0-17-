@@ -13,6 +13,7 @@ mod dev_tools;
 mod game;
 mod ik;
 mod menus;
+mod procedural_animation;
 mod screens;
 mod theme;
 
@@ -50,6 +51,7 @@ impl Plugin for AppPlugin {
         app.add_plugins(PhysicsPlugins::default());
         app.add_plugins(PhysicsDebugPlugin::default());
         app.add_plugins(ik::InverseKinematicsPlugin);  // Enable custom IK solver
+        // app.add_plugins(procedural_animation::ProceduralAnimationPlugin);  // Experimental: Overgrowth-style animation
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
