@@ -6,7 +6,7 @@ pub mod configs;
 mod foot_placement;
 mod foot_placement_debug;
 mod hand_placement;
-mod player;
+pub mod player;
 mod scene;
 pub mod target_matching;
 mod target_matching_debug;

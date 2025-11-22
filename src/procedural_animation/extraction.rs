@@ -197,7 +197,7 @@ pub fn extract_poses_from_animations(
 
     // Extract each configured pose
     for entry in &config.extraction_map {
-        if let Some(anim_handle) = gltf.named_animations.get(&entry.animation_name) {
+        if let Some(anim_handle) = gltf.named_animations.get(entry.animation_name.as_str()) {
             if let Some(animation_clip) = animation_clips.get(anim_handle) {
                 match extract_pose_at_time(
                     animation_clip,

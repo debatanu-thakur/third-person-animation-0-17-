@@ -1,4 +1,4 @@
-mod assets;
+pub mod assets;
 use crate::{
     asset_tracking::LoadResource,
     game::{animations::models::AnimationState, foot_placement::FootPlacementEnabled, hand_placement::HandPlacementEnabled, target_matching::{BoneMap, TargetMatchEnabled, TargetMatchingState}, third_person_camera::ThirdPersonCameraTarget},
