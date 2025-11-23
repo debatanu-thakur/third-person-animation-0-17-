@@ -51,11 +51,10 @@ impl Plugin for AppPlugin {
         app.add_plugins(PhysicsPlugins::default());
         app.add_plugins(PhysicsDebugPlugin::default());
         app.add_plugins(ik::InverseKinematicsPlugin);  // Enable custom IK solver
-        // app.add_plugins(procedural_animation::ProceduralAnimationPlugin);  // Experimental: Overgrowth-style animation
+        app.add_plugins(procedural_animation::ProceduralAnimationPlugin);  // Experimental: Overgrowth-style animation
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,
-            // TODO: Re-enable audio when audio feature is restored
             audio::plugin,
             #[cfg(feature = "dev")]
             dev_tools::plugin,

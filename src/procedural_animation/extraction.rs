@@ -172,13 +172,16 @@ pub fn extract_poses_from_animations(
     mut commands: Commands,
     extraction_mode: Option<Res<ExtractionMode>>,
     extraction_config: Option<Res<ExtractionConfig>>,
-    gltf_asset: Res<crate::game::player::assets::PlayerGltfAsset>,
+    gltf_player_asset: Option<Res<crate::game::player::assets::PlayerGltfAsset>>,
     gltf_assets: Res<Assets<Gltf>>,
     animation_clips: Res<Assets<AnimationClip>>,
     mut extracted: Local<bool>,
 ) {
     // Only run if extraction mode is enabled
     let Some(mode) = extraction_mode else { return; };
+    if !gltf_player_asset.is_some() {
+        return;
+    }
     if !mode.enabled || *extracted {
         return;
     }
@@ -186,7 +189,7 @@ pub fn extract_poses_from_animations(
     let Some(config) = extraction_config else { return; };
 
     // Wait for GLTF to load
-    let Some(gltf) = gltf_assets.get(&gltf_asset.gltf) else {
+    let Some(gltf) = gltf_assets.get(&gltf_player_asset.gltf) else {
         return;
     };
 
