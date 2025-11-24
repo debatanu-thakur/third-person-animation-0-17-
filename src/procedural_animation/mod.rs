@@ -33,9 +33,12 @@ impl Plugin for ProceduralAnimationPlugin {
             // Initialize Pose asset type
             .init_asset::<Pose>()
             .init_asset_loader::<PoseAssetLoader>()
-            // Extraction systems (only run when EXTRACT_POSES env var is set)
+            // Extraction systems (only compile when extract_poses feature is enabled)
             .add_systems(Startup, extraction::setup_extraction_mode)
-            .add_systems(Update, extraction::extract_poses_from_animations)
+            .add_systems(Update, (
+                extraction::load_pose_glbs,
+                extraction::extract_poses_from_glbs,
+            ).chain())
             // Animation systems
             .add_systems(Update, (
                 blending::update_blend_weights,
