@@ -18,7 +18,7 @@ impl Default for ExtractionMode {
     fn default() -> Self {
         Self {
             enabled: false,
-            poses_input_path: "poses".to_string(),  // Relative to assets/
+            poses_input_path: "models/poses".to_string(),  // Relative to assets/
             ron_output_path: "assets/poses_ron".to_string(),
         }
     }
@@ -43,7 +43,7 @@ pub struct PoseMapping {
 
 /// Resource to track loaded pose GLBs
 #[derive(Resource, Default)]
-struct PoseGltfHandles {
+pub struct PoseGltfHandles {
     handles: Vec<(PoseId, Handle<Gltf>, String)>,  // (pose_id, handle, notes)
     loaded_count: usize,
 }
@@ -57,66 +57,66 @@ impl Default for ExtractionConfig {
                     pose_id: PoseId::Idle,
                     notes: Some("Neutral standing pose".to_string()),
                 },
-                PoseMapping {
-                    glb_name: "walk_left".to_string(),
-                    pose_id: PoseId::WalkLeftFootForward,
-                    notes: Some("Left foot forward, right foot back".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "walk_right".to_string(),
-                    pose_id: PoseId::WalkRightFootForward,
-                    notes: Some("Right foot forward, left foot back".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "run_left".to_string(),
-                    pose_id: PoseId::RunLeftFootForward,
-                    notes: Some("Running, left foot forward".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "run_right".to_string(),
-                    pose_id: PoseId::RunRightFootForward,
-                    notes: Some("Running, right foot forward".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "jump_takeoff".to_string(),
-                    pose_id: PoseId::JumpTakeoff,
-                    notes: Some("Crouch before jump".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "jump_air".to_string(),
-                    pose_id: PoseId::JumpAirborne,
-                    notes: Some("Mid-air pose".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "jump_land".to_string(),
-                    pose_id: PoseId::JumpLanding,
-                    notes: Some("Landing impact".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "roll_left".to_string(),
-                    pose_id: PoseId::RollLeft,
-                    notes: Some("Left roll".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "roll_right".to_string(),
-                    pose_id: PoseId::RollRight,
-                    notes: Some("Right roll".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "attack_punch".to_string(),
-                    pose_id: PoseId::AttackPunch,
-                    notes: Some("Punch pose".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "attack_kick".to_string(),
-                    pose_id: PoseId::AttackKick,
-                    notes: Some("Kick pose".to_string()),
-                },
-                PoseMapping {
-                    glb_name: "crouch".to_string(),
-                    pose_id: PoseId::Crouch,
-                    notes: Some("Crouching pose".to_string()),
-                },
+                // PoseMapping {
+                //     glb_name: "walk_left".to_string(),
+                //     pose_id: PoseId::WalkLeftFootForward,
+                //     notes: Some("Left foot forward, right foot back".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "walk_right".to_string(),
+                //     pose_id: PoseId::WalkRightFootForward,
+                //     notes: Some("Right foot forward, left foot back".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "run_left".to_string(),
+                //     pose_id: PoseId::RunLeftFootForward,
+                //     notes: Some("Running, left foot forward".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "run_right".to_string(),
+                //     pose_id: PoseId::RunRightFootForward,
+                //     notes: Some("Running, right foot forward".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "jump_takeoff".to_string(),
+                //     pose_id: PoseId::JumpTakeoff,
+                //     notes: Some("Crouch before jump".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "jump_air".to_string(),
+                //     pose_id: PoseId::JumpAirborne,
+                //     notes: Some("Mid-air pose".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "jump_land".to_string(),
+                //     pose_id: PoseId::JumpLanding,
+                //     notes: Some("Landing impact".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "roll_left".to_string(),
+                //     pose_id: PoseId::RollLeft,
+                //     notes: Some("Left roll".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "roll_right".to_string(),
+                //     pose_id: PoseId::RollRight,
+                //     notes: Some("Right roll".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "attack_punch".to_string(),
+                //     pose_id: PoseId::AttackPunch,
+                //     notes: Some("Punch pose".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "attack_kick".to_string(),
+                //     pose_id: PoseId::AttackKick,
+                //     notes: Some("Kick pose".to_string()),
+                // },
+                // PoseMapping {
+                //     glb_name: "crouch".to_string(),
+                //     pose_id: PoseId::Crouch,
+                //     notes: Some("Crouching pose".to_string()),
+                // },
             ],
         }
     }
