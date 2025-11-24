@@ -5,3 +5,4 @@ assets/audio/sound_effects/button_click.ogg filter=lfs diff=lfs merge=lfs -text
 assets/audio/sound_effects/button_hover.ogg filter=lfs diff=lfs merge=lfs -text
 assets/audio/sound_effects/step1.ogg filter=lfs diff=lfs merge=lfs -text
 assets/models/characters/brian_parkour.glb filter=lfs diff=lfs merge=lfs -text
+assets/models/poses/idle_frame_1.glb filter=lfs diff=lfs merge=lfs -text
