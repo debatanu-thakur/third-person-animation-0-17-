@@ -279,19 +279,23 @@ fn extract_pose_from_gltf(
 
     let mut bone_count = 0;
 
-    // Query all entities with Transform and Name components
-    let mut query = world.query::<(&Transform, &Name)>();
+    // Iterate through all entities and extract Transform + Name components
+    for entity_ref in world.iter_entities() {
+        // Check if entity has both Transform and Name components
+        if let (Some(transform), Some(name)) = (
+            entity_ref.get::<Transform>(),
+            entity_ref.get::<Name>(),
+        ) {
+            let bone_name = name.as_str().to_string();
 
-    for (transform, name) in query.iter(world) {
-        let bone_name = name.as_str().to_string();
+            // Store the transform
+            pose.bone_transforms.insert(
+                bone_name.clone(),
+                BoneTransform::from(*transform),
+            );
 
-        // Store the transform
-        pose.bone_transforms.insert(
-            bone_name.clone(),
-            BoneTransform::from(*transform),
-        );
-
-        bone_count += 1;
+            bone_count += 1;
+        }
     }
 
     pose.metadata = PoseMetadata {
