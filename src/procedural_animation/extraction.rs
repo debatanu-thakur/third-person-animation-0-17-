@@ -1,4 +1,4 @@
-//! Pose extraction tool - Samples frames from GLB animations and saves as RON files
+//! Pose extraction tool - Loads pose GLB files and saves as RON files
 
 use bevy::prelude::*;
 use bevy::gltf::Gltf;
@@ -10,134 +10,112 @@ use super::{Pose, BoneTransform, PoseMetadata, PoseId};
 #[derive(Resource)]
 pub struct ExtractionMode {
     pub enabled: bool,
-    pub output_path: String,
+    pub poses_input_path: String,
+    pub ron_output_path: String,
 }
 
 impl Default for ExtractionMode {
     fn default() -> Self {
         Self {
             enabled: false,
-            output_path: "assets/poses".to_string(),
+            poses_input_path: "poses".to_string(),  // Relative to assets/
+            ron_output_path: "assets/poses_ron".to_string(),
         }
     }
 }
 
-/// Configuration for which frames to extract from each animation
+/// Configuration mapping GLB filenames to PoseIds
 #[derive(Resource)]
 pub struct ExtractionConfig {
-    /// Map of (animation_name, frame_time) -> PoseId
-    pub extraction_map: Vec<ExtractionEntry>,
+    /// Map of (glb_filename, PoseId, notes)
+    pub pose_mapping: Vec<PoseMapping>,
 }
 
 #[derive(Clone)]
-pub struct ExtractionEntry {
-    pub animation_name: String,
-    pub time_seconds: f32,
+pub struct PoseMapping {
+    /// GLB filename (without .glb extension) in assets/poses/
+    pub glb_name: String,
+    /// Which pose this represents
     pub pose_id: PoseId,
+    /// Optional notes
     pub notes: Option<String>,
+}
+
+/// Resource to track loaded pose GLBs
+#[derive(Resource, Default)]
+struct PoseGltfHandles {
+    handles: Vec<(PoseId, Handle<Gltf>, String)>,  // (pose_id, handle, notes)
+    loaded_count: usize,
 }
 
 impl Default for ExtractionConfig {
     fn default() -> Self {
         Self {
-            extraction_map: vec![
-                // Idle pose
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.5,
+            pose_mapping: vec![
+                PoseMapping {
+                    glb_name: "idle".to_string(),
                     pose_id: PoseId::Idle,
                     notes: Some("Neutral standing pose".to_string()),
                 },
-
-                // Walk cycle - left foot forward (mid-stride)
-                ExtractionEntry {
-                    animation_name: "walk".to_string(),
-                    time_seconds: 0.25, // Quarter way through cycle
+                PoseMapping {
+                    glb_name: "walk_left".to_string(),
                     pose_id: PoseId::WalkLeftFootForward,
                     notes: Some("Left foot forward, right foot back".to_string()),
                 },
-
-                // Walk cycle - right foot forward
-                ExtractionEntry {
-                    animation_name: "walk".to_string(),
-                    time_seconds: 0.75, // Three quarters through cycle
+                PoseMapping {
+                    glb_name: "walk_right".to_string(),
                     pose_id: PoseId::WalkRightFootForward,
                     notes: Some("Right foot forward, left foot back".to_string()),
                 },
-
-                // Run cycle - left foot forward
-                ExtractionEntry {
-                    animation_name: "running".to_string(),
-                    time_seconds: 0.2,
+                PoseMapping {
+                    glb_name: "run_left".to_string(),
                     pose_id: PoseId::RunLeftFootForward,
-                    notes: Some("Left foot forward, right foot back, running pose".to_string()),
+                    notes: Some("Running, left foot forward".to_string()),
                 },
-
-                // Run cycle - right foot forward
-                ExtractionEntry {
-                    animation_name: "running".to_string(),
-                    time_seconds: 0.6,
+                PoseMapping {
+                    glb_name: "run_right".to_string(),
                     pose_id: PoseId::RunRightFootForward,
-                    notes: Some("Right foot forward, left foot back, running pose".to_string()),
+                    notes: Some("Running, right foot forward".to_string()),
                 },
-
-                // Jump takeoff
-                ExtractionEntry {
-                    animation_name: "standing_jump".to_string(),
-                    time_seconds: 0.1,
+                PoseMapping {
+                    glb_name: "jump_takeoff".to_string(),
                     pose_id: PoseId::JumpTakeoff,
                     notes: Some("Crouch before jump".to_string()),
                 },
-
-                // Jump airborne
-                ExtractionEntry {
-                    animation_name: "standing_jump".to_string(),
-                    time_seconds: 0.5,
+                PoseMapping {
+                    glb_name: "jump_air".to_string(),
                     pose_id: PoseId::JumpAirborne,
                     notes: Some("Mid-air pose".to_string()),
                 },
-
-                // Jump landing
-                ExtractionEntry {
-                    animation_name: "standing_jump".to_string(),
-                    time_seconds: 0.9,
+                PoseMapping {
+                    glb_name: "jump_land".to_string(),
                     pose_id: PoseId::JumpLanding,
-                    notes: Some("Landing crouch".to_string()),
+                    notes: Some("Landing impact".to_string()),
                 },
-
-                // TODO: Add extraction entries for rolls and attacks
-                // These will need appropriate animations in the GLB
-
-                // Placeholders for now (using idle)
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.0,
+                PoseMapping {
+                    glb_name: "roll_left".to_string(),
                     pose_id: PoseId::RollLeft,
-                    notes: Some("PLACEHOLDER - needs roll animation".to_string()),
+                    notes: Some("Left roll".to_string()),
                 },
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.0,
+                PoseMapping {
+                    glb_name: "roll_right".to_string(),
                     pose_id: PoseId::RollRight,
-                    notes: Some("PLACEHOLDER - needs roll animation".to_string()),
+                    notes: Some("Right roll".to_string()),
                 },
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.0,
+                PoseMapping {
+                    glb_name: "attack_punch".to_string(),
                     pose_id: PoseId::AttackPunch,
-                    notes: Some("PLACEHOLDER - needs attack animation".to_string()),
+                    notes: Some("Punch pose".to_string()),
                 },
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.0,
+                PoseMapping {
+                    glb_name: "attack_kick".to_string(),
                     pose_id: PoseId::AttackKick,
-                    notes: Some("PLACEHOLDER - needs attack animation".to_string()),
+                    notes: Some("Kick pose".to_string()),
                 },
-                ExtractionEntry {
-                    animation_name: "idle".to_string(),
-                    time_seconds: 0.3,
+                PoseMapping {
+                    glb_name: "crouch".to_string(),
                     pose_id: PoseId::Crouch,
-                    notes: Some("Slight crouch from idle".to_string()),
+                    notes: Some("Crouching pose".to_string()),
                 },
             ],
         }
@@ -165,136 +143,169 @@ pub fn setup_extraction_mode(
     }
 }
 
-/// System to perform pose extraction from loaded animations
+/// System to load pose GLB files
 /// Only compiled when the extract_poses feature is enabled
 #[cfg(feature = "extract_poses")]
-pub fn extract_poses_from_animations(
+pub fn load_pose_glbs(
     mut commands: Commands,
     extraction_mode: Option<Res<ExtractionMode>>,
     extraction_config: Option<Res<ExtractionConfig>>,
-    gltf_player_asset: Option<Res<crate::game::player::assets::PlayerGltfAsset>>,
-    gltf_assets: Res<Assets<Gltf>>,
-    animation_clips: Res<Assets<AnimationClip>>,
-    mut extracted: Local<bool>,
+    asset_server: Res<AssetServer>,
+    handles: Option<Res<PoseGltfHandles>>,
 ) {
-    // Only run if extraction mode is enabled
-    let Some(mode) = extraction_mode else { return; };
-    if !gltf_player_asset.is_some() {
+    // Only run once
+    if handles.is_some() {
         return;
     }
-    if !mode.enabled || *extracted {
+
+    let Some(mode) = extraction_mode else { return; };
+    if !mode.enabled {
         return;
     }
 
     let Some(config) = extraction_config else { return; };
 
-    // Wait for GLTF to load
-    let Some(gltf) = gltf_assets.get(&gltf_player_asset.gltf) else {
-        return;
-    };
+    info!("🎬 Loading {} pose GLB files from assets/{}/", config.pose_mapping.len(), mode.poses_input_path);
 
-    info!("🎬 Starting pose extraction from {} animations", gltf.named_animations.len());
+    let mut pose_handles = PoseGltfHandles::default();
 
-    // Create output directory
-    let output_path = Path::new(&mode.output_path);
-    if !output_path.exists() {
-        fs::create_dir_all(output_path)
-            .unwrap_or_else(|e| error!("Failed to create poses directory: {}", e));
+    // Load each pose GLB
+    for mapping in &config.pose_mapping {
+        let glb_path = format!("{}/{}.glb", mode.poses_input_path, mapping.glb_name);
+        let handle: Handle<Gltf> = asset_server.load(&glb_path);
+
+        pose_handles.handles.push((
+            mapping.pose_id,
+            handle,
+            mapping.notes.clone().unwrap_or_default(),
+        ));
+
+        info!("  Loading: {} → {:?}", glb_path, mapping.pose_id);
     }
 
-    // Extract each configured pose
-    for entry in &config.extraction_map {
-        if let Some(anim_handle) = gltf.named_animations.get(entry.animation_name.as_str()) {
-            if let Some(animation_clip) = animation_clips.get(anim_handle) {
-                match extract_pose_at_time(
-                    animation_clip,
-                    entry.time_seconds,
-                    &entry.animation_name,
-                    entry.pose_id,
-                    entry.notes.clone(),
-                ) {
-                    Ok(pose) => {
-                        // Save pose to RON file
-                        save_pose_to_ron(&pose, entry.pose_id, output_path);
-                    }
-                    Err(e) => {
-                        error!("Failed to extract pose {:?}: {}", entry.pose_id, e);
-                    }
+    commands.insert_resource(pose_handles);
+}
+
+/// Dummy system when extract_poses feature is not enabled
+#[cfg(not(feature = "extract_poses"))]
+pub fn load_pose_glbs() {}
+
+/// System to extract poses from loaded GLBs
+/// Only compiled when the extract_poses feature is enabled
+#[cfg(feature = "extract_poses")]
+pub fn extract_poses_from_glbs(
+    mut commands: Commands,
+    extraction_mode: Option<Res<ExtractionMode>>,
+    mut pose_handles: Option<ResMut<PoseGltfHandles>>,
+    gltf_assets: Res<Assets<Gltf>>,
+    scenes: Res<Assets<Scene>>,
+    mut extracted: Local<bool>,
+) {
+    if *extracted {
+        return;
+    }
+
+    let Some(mode) = extraction_mode else { return; };
+    let Some(ref mut handles) = pose_handles else { return; };
+
+    // Check if all GLTFs are loaded
+    let total_count = handles.handles.len();
+    let loaded_count = handles.handles.iter()
+        .filter(|(_, handle, _)| gltf_assets.get(handle).is_some())
+        .count();
+
+    if loaded_count < total_count {
+        if loaded_count != handles.loaded_count {
+            info!("Loading poses: {}/{}", loaded_count, total_count);
+            handles.loaded_count = loaded_count;
+        }
+        return;
+    }
+
+    info!("✓ All {} pose GLBs loaded. Starting extraction...", total_count);
+
+    // Create output directory
+    let output_path = Path::new(&mode.ron_output_path);
+    if !output_path.exists() {
+        fs::create_dir_all(output_path)
+            .unwrap_or_else(|e| error!("Failed to create output directory: {}", e));
+    }
+
+    // Extract each pose
+    for (pose_id, gltf_handle, notes) in &handles.handles {
+        if let Some(gltf) = gltf_assets.get(gltf_handle) {
+            match extract_pose_from_gltf(gltf, &scenes, *pose_id, notes.clone()) {
+                Ok(pose) => {
+                    save_pose_to_ron(&pose, *pose_id, output_path);
                 }
-            } else {
-                warn!("Animation clip not loaded yet for '{}'", entry.animation_name);
+                Err(e) => {
+                    error!("Failed to extract pose {:?}: {}", pose_id, e);
+                }
             }
-        } else {
-            warn!("Animation '{}' not found in GLTF", entry.animation_name);
         }
     }
 
-    info!("✅ Pose extraction complete! Check {}", mode.output_path);
+    info!("✅ Pose extraction complete! Check {}", mode.ron_output_path);
     *extracted = true;
 
-    // Disable extraction mode to prevent re-running
+    // Clean up
+    commands.remove_resource::<PoseGltfHandles>();
     commands.remove_resource::<ExtractionMode>();
 }
 
 /// Dummy system when extract_poses feature is not enabled
 #[cfg(not(feature = "extract_poses"))]
-pub fn extract_poses_from_animations() {
-    // No-op when feature is disabled
-}
+pub fn extract_poses_from_glbs() {}
 
-/// Extract a single pose from an animation at a specific time
+/// Extract a single pose from a loaded GLTF
 #[cfg(feature = "extract_poses")]
-fn extract_pose_at_time(
-    animation_clip: &AnimationClip,
-    time_seconds: f32,
-    source_animation: &str,
+fn extract_pose_from_gltf(
+    gltf: &Gltf,
+    scenes: &Assets<Scene>,
     pose_id: PoseId,
-    notes: Option<String>,
+    notes: String,
 ) -> Result<Pose, String> {
     let mut pose = Pose::new(pose_id.name());
 
-    pose.metadata = PoseMetadata {
-        source_animation: Some(source_animation.to_string()),
-        source_time: Some(time_seconds),
-        source_frame: None,
-        notes,
-    };
+    // Get the first scene from the GLTF
+    let scene_handle = gltf.scenes.first()
+        .ok_or("No scenes found in GLTF")?;
 
-    // Iterate through all curves in the animation
-    for (target_id, curves) in animation_clip.curves() {
-        // For each target (bone), sample its transform at the given time
-        // Note: This is simplified - in reality we need to sample the curves
-        // and construct the transform from rotation/translation/scale curves
+    let scene = scenes.get(scene_handle)
+        .ok_or("Scene not loaded")?;
 
-        // TODO: Properly sample the curves using curve.sample_clamped(time_seconds)
-        // For now, we'll add a placeholder transform
+    // Extract bone transforms from the scene's world
+    let world = &scene.world;
 
-        // The target_id contains the bone name/path
-        let bone_name = format!("{:?}", target_id); // Simplified - need better name extraction
+    let mut bone_count = 0;
 
-        // Sample each curve for this target
-        // The curves contain rotation, translation, scale data
-        // We need to sample all three and combine into a Transform
+    // Query all entities with Transform and Name components
+    let mut query = world.query::<(&Transform, &Name)>();
 
-        warn!("TODO: Implement proper curve sampling for bone: {}", bone_name);
+    for (transform, name) in query.iter(world) {
+        let bone_name = name.as_str().to_string();
 
-        // Placeholder transform
+        // Store the transform
         pose.bone_transforms.insert(
-            bone_name,
-            BoneTransform {
-                translation: Vec3::ZERO,
-                rotation: Quat::IDENTITY,
-                scale: Vec3::ONE,
-            },
+            bone_name.clone(),
+            BoneTransform::from(*transform),
         );
+
+        bone_count += 1;
     }
 
-    info!("✓ Extracted pose '{}' from '{}' at {}s ({} bones)",
-        pose_id.name(),
-        source_animation,
-        time_seconds,
-        pose.bone_transforms.len()
-    );
+    pose.metadata = PoseMetadata {
+        source_animation: Some(format!("{:?}.glb", pose_id)),
+        source_frame: None,
+        source_time: None,
+        notes: Some(notes),
+    };
+
+    info!("✓ Extracted pose '{}' with {} bones", pose_id.name(), bone_count);
+
+    if bone_count == 0 {
+        warn!("⚠️  No bones found in pose '{}'", pose_id.name());
+    }
 
     Ok(pose)
 }
