@@ -74,6 +74,11 @@ fn spawn_player(
             HandPlacementEnabled::for_testing(),
             TargetMatchEnabled,              // Enables target matching (BoneMap will be auto-populated by build_bone_map system)
             TargetMatchingState::Idle,       // Tracks target matching state
+            // Procedural animation
+            crate::procedural_animation::ProceduralAnimationController {
+                enabled: true,
+                blend_state: Default::default(),
+            },
         ))
         .insert((
             // Avian3D physics components

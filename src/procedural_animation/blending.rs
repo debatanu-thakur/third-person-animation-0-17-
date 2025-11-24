@@ -6,7 +6,11 @@ use super::{ProceduralAnimationController, PoseBlendState, PoseId, ContactState}
 
 /// Update blend weights based on character velocity and state
 pub fn update_blend_weights(
-    mut controllers: Query<(&mut ProceduralAnimationController, &LinearVelocity, &Transform)>,
+    mut controllers: Query<(
+        &mut ProceduralAnimationController,
+        Option<&LinearVelocity>,
+        &Transform
+    )>,
     time: Res<Time>,
 ) {
     for (mut controller, velocity, transform) in controllers.iter_mut() {
@@ -14,8 +18,13 @@ pub fn update_blend_weights(
             continue;
         }
 
-        let vel = velocity.0;
-        let speed = vel.xz().length(); // Horizontal speed
+        // Get velocity (0 if no physics component)
+        let speed = if let Some(vel) = velocity {
+            vel.0.xz().length() // Horizontal speed
+        } else {
+            0.0
+        };
+
         let acceleration = Vec3::ZERO; // TODO: Calculate from previous frame
 
         // Update velocity and acceleration
@@ -23,11 +32,7 @@ pub fn update_blend_weights(
         controller.blend_state.acceleration = acceleration;
 
         // Calculate contact state (simplified - TODO: use raycast)
-        controller.blend_state.contact_state = if transform.translation.y < 0.1 {
-            ContactState::Grounded
-        } else {
-            ContactState::Airborne
-        };
+        controller.blend_state.contact_state = ContactState::Grounded;
 
         // Calculate blend weights
         controller.blend_state.active_poses = calculate_pose_weights(
@@ -138,26 +143,78 @@ fn blend_run_cycle(speed: f32, foot_phase: &mut f32, delta_time: f32) -> Vec<(Po
 /// Apply the blended pose to character bones
 pub fn apply_pose_blending(
     controllers: Query<(&ProceduralAnimationController, &Children)>,
-    mut bone_transforms: Query<(&mut Transform, &Name)>,
-    // TODO: Add pose library and assets here
+    mut bone_transforms: Query<(&mut Transform, &Name, Option<&Children>)>,
+    pose_library: Option<Res<super::PoseLibrary>>,
+    pose_assets: Res<Assets<super::Pose>>,
 ) {
+    let Some(library) = pose_library else {
+        return;
+    };
+
     for (controller, children) in controllers.iter() {
         if !controller.enabled {
             continue;
         }
 
-        // TODO: Get actual pose data from PoseLibrary
-        // TODO: Blend poses according to active_poses weights
-        // TODO: Apply blended transforms to bones
+        // For now, just apply idle pose (100% weight)
+        // Later we'll blend multiple poses based on blend_state
+        if controller.blend_state.active_poses.is_empty() {
+            continue;
+        }
 
-        // For now, just log the blend state
-        if controller.blend_state.active_poses.len() > 0 {
-            trace!(
-                "Blending {} poses at speed {:.2} m/s, phase {:.2}",
-                controller.blend_state.active_poses.len(),
-                controller.blend_state.velocity,
-                controller.blend_state.foot_phase
-            );
+        // Get the first pose (for idle, this will be the only one)
+        let (pose_id, weight) = controller.blend_state.active_poses[0];
+
+        // Get the pose handle from library
+        let Some(pose_handle) = library.get(pose_id) else {
+            warn_once!("Pose {:?} not found in library", pose_id);
+            continue;
+        };
+
+        // Get the actual pose data
+        let Some(pose) = pose_assets.get(pose_handle) else {
+            // Pose still loading
+            continue;
+        };
+
+        // Apply pose to all bones in the character hierarchy
+        apply_pose_to_bones(children, &mut bone_transforms, pose, weight);
+    }
+}
+
+/// Apply a pose to character bones (recursively traverses children)
+fn apply_pose_to_bones(
+    children: &Children,
+    bone_transforms: &mut Query<(&mut Transform, &Name, Option<&Children>)>,
+    pose: &super::Pose,
+    weight: f32,
+) {
+    for &child in children.iter() {
+        if let Ok((mut transform, name, child_children)) = bone_transforms.get_mut(child) {
+            let bone_name = name.as_str();
+
+            // Check if this bone has a transform in the pose
+            if let Some(pose_transform) = pose.bone_transforms.get(bone_name) {
+                // Apply the pose transform
+                // For weight = 1.0, fully replace the transform
+                // For weight < 1.0, blend with current transform
+                if weight >= 0.999 {
+                    // Full replacement
+                    transform.translation = pose_transform.translation;
+                    transform.rotation = pose_transform.rotation;
+                    transform.scale = pose_transform.scale;
+                } else {
+                    // Blend
+                    transform.translation = transform.translation.lerp(pose_transform.translation, weight);
+                    transform.rotation = transform.rotation.slerp(pose_transform.rotation, weight);
+                    transform.scale = transform.scale.lerp(pose_transform.scale, weight);
+                }
+            }
+
+            // Recursively process children
+            if let Some(grand_children) = child_children {
+                apply_pose_to_bones(grand_children, bone_transforms, pose, weight);
+            }
         }
     }
 }

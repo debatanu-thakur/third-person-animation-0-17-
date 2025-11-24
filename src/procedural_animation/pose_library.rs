@@ -50,9 +50,9 @@ pub fn load_pose_library(
 ) {
     let mut library = PoseLibrary::new();
 
-    // Load each pose from assets/poses/ directory
+    // Load each pose from assets/poses_ron/ directory
     for pose_id in PoseId::all() {
-        let path = format!("poses/{}.pose.ron", pose_id_to_filename(pose_id));
+        let path = format!("poses_ron/{}.pose.ron", pose_id_to_filename(pose_id));
         let handle: Handle<Pose> = asset_server.load(&path);
         library.add_pose(pose_id, handle);
         info!("Loading pose: {} from {}", pose_id.name(), path);

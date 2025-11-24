@@ -39,6 +39,9 @@ impl Plugin for ProceduralAnimationPlugin {
                 extraction::load_pose_glbs,
                 extraction::extract_poses_from_glbs,
             ).chain())
+            // Pose loading systems
+            .add_systems(Startup, pose_library::load_pose_library)
+            .add_systems(Update, pose_library::check_pose_loading)
             // Animation systems
             .add_systems(Update, (
                 blending::update_blend_weights,
