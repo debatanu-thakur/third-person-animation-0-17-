@@ -178,43 +178,43 @@ pub fn apply_pose_blending(
         };
 
         // Apply pose to all bones in the character hierarchy
-        apply_pose_to_bones(children, &mut bone_transforms, pose, weight);
+            apply_pose_to_bones(&children[..], &mut bone_transforms, pose, weight);
     }
 }
 
 /// Apply a pose to character bones (recursively traverses children)
 fn apply_pose_to_bones(
-    children: &Children,
+    children: &[Entity],
     bone_transforms: &mut Query<(&mut Transform, &Name, Option<&Children>)>,
     pose: &super::Pose,
     weight: f32,
 ) {
     for child in children.iter() {
-        if let Ok((mut transform, name, child_children)) = bone_transforms.get_mut(child) {
+        let mut grand_children_vec = None;
+        if let Ok((mut transform, name, child_children)) = bone_transforms.get_mut(*child) {
             let bone_name = name.as_str();
 
             // Check if this bone has a transform in the pose
             if let Some(pose_transform) = pose.bone_transforms.get(bone_name) {
-                // Apply the pose transform
-                // For weight = 1.0, fully replace the transform
-                // For weight < 1.0, blend with current transform
                 if weight >= 0.999 {
-                    // Full replacement
                     transform.translation = pose_transform.translation;
                     transform.rotation = pose_transform.rotation;
                     transform.scale = pose_transform.scale;
                 } else {
-                    // Blend
                     transform.translation = transform.translation.lerp(pose_transform.translation, weight);
                     transform.rotation = transform.rotation.slerp(pose_transform.rotation, weight);
                     transform.scale = transform.scale.lerp(pose_transform.scale, weight);
                 }
             }
 
-            // Recursively process children
+            // Collect grandchild entities for recursion
             if let Some(grand_children) = child_children {
-                apply_pose_to_bones(grand_children, bone_transforms, pose, weight);
+                grand_children_vec = Some(grand_children.to_vec());
             }
+        }
+        // Mutable borrow ends here
+        if let Some(grand_children) = grand_children_vec {
+            apply_pose_to_bones(&grand_children, bone_transforms, pose, weight);
         }
     }
 }
