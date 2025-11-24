@@ -189,7 +189,7 @@ fn apply_pose_to_bones(
     pose: &super::Pose,
     weight: f32,
 ) {
-    for &child in children.iter() {
+    for child in children.iter() {
         if let Ok((mut transform, name, child_children)) = bone_transforms.get_mut(child) {
             let bone_name = name.as_str();
 
